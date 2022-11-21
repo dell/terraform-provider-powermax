@@ -10,15 +10,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	TestAccHostName1   = "test_acc_chost11"
-	TestAccHostName2   = "test_acc_chost1"
-	TestAccHostName3   = "test_acc_chost2"
-	TestAccHostName4   = "test_acc_chost3"
-	TestAccHostName5   = "test_acc_chost4"
-	InvalidInitiatorID = "0000000000000000"
+	TestAccHostName1        = "test_acc_chost11"
+	TestAccHostName2        = "test_acc_chost1"
+	TestAccHostName3        = "test_acc_chost2"
+	TestAccHostName4        = "test_acc_chost3"
+	TestAccHostName5        = "test_acc_chost4"
+	InvalidInitiatorID      = "0000000000000000"
+	ImportHostID            = "TestAccHost_DoNotModify"
+	ImportHostResourceName1 = "powermax_host.import_host_success"
+	ImportHostResourceName2 = "powermax_host.import_host_failure"
 )
 
 func TestAccHost_CreateHost(t *testing.T) {
@@ -102,7 +106,7 @@ func TestAccHost_UpdateHostRename(t *testing.T) {
 				Config: HostParams,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName4),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "2"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.1", InitiatorID2)),
 			},
 			{
@@ -126,14 +130,14 @@ func TestAccHost_UpdateHostInitiatorsRemove(t *testing.T) {
 				Config: HostParams,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName4),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "2"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.1", InitiatorID2)),
 			},
 			{
 				Config: HostParamsChangeInitiatorRemove,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName4),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "1"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID)),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1)),
 			},
 		},
 	})
@@ -152,14 +156,14 @@ func TestAccHost_UpdateHostAddInitiatorsAndNameChange(t *testing.T) {
 				Config: HostParamsForUpdate,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName5),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "1"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 				),
 			},
 			{
 				Config: HostParamsChangeAddInitiatorAndNameChange,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName4),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "2"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.1", InitiatorID2)),
 			},
 		},
@@ -179,7 +183,7 @@ func TestAccHost_UpdateHostFlags(t *testing.T) {
 				Config: HostParamsForUpdate,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName5),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "1"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.enabled", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.override", "true")),
 			},
@@ -187,7 +191,7 @@ func TestAccHost_UpdateHostFlags(t *testing.T) {
 				Config: HostParamsChangeForUpdateFlags,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName5),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "1"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.enabled", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.override", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.avoid_reset_broadcast.enabled", "true"),
@@ -210,7 +214,7 @@ func TestAccHost_UpdateHostFlagsInitiatorAndName(t *testing.T) {
 				Config: HostParams,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName4),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "2"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.1", InitiatorID2),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.enabled", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.override", "true"),
@@ -221,7 +225,7 @@ func TestAccHost_UpdateHostFlagsInitiatorAndName(t *testing.T) {
 				Config: HostParamsChangeForUpdateFlagsInitiatorAndName,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName5),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "1"),
-					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID),
+					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.enabled", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.volume_set_addressing.override", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.avoid_reset_broadcast.enabled", "true"),
@@ -230,6 +234,61 @@ func TestAccHost_UpdateHostFlagsInitiatorAndName(t *testing.T) {
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.openvms.override", "true"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.scsi_3.enabled", "false"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "host_flags.scsi_3.override", "true")),
+			},
+		},
+	})
+}
+
+func TestAccStorageGroup_ImportHostSuccess(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Dont run with units tests because it will try to create the context")
+	}
+
+	assertTFImportState := func(s []*terraform.InstanceState) error {
+		assert.Equal(t, ImportHostID, s[0].Attributes["name"])
+		assert.Equal(t, "1", s[0].Attributes["initiators.#"])
+		assert.Equal(t, ImportHostInitiatorID, s[0].Attributes["initiators.0"])
+		assert.Equal(t, "true", s[0].Attributes["host_flags.volume_set_addressing.enabled"])
+		assert.Equal(t, "true", s[0].Attributes["host_flags.volume_set_addressing.override"])
+		assert.Equal(t, "false", s[0].Attributes["host_flags.openvms.enabled"])
+		assert.Equal(t, "true", s[0].Attributes["host_flags.openvms.override"])
+		assert.Equal(t, "1", s[0].Attributes["numofinitiators"])
+		assert.Equal(t, "0", s[0].Attributes["numofmaskingviews"])
+		assert.Equal(t, 1, len(s))
+		return nil
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testProviderFactory,
+		Steps: []resource.TestStep{
+			{
+				Config:           ImportHostSuccess,
+				ResourceName:     ImportHostResourceName1,
+				ImportState:      true,
+				ImportStateCheck: assertTFImportState,
+				ExpectError:      nil,
+				ImportStateId:    ImportHostID,
+			},
+		},
+	})
+}
+
+func TestAccStorageGroup_ImportHostFailure(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Dont run with units tests because it will try to create the context")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testProviderFactory,
+		Steps: []resource.TestStep{
+			{
+				Config:        ImportHostFailure,
+				ResourceName:  ImportHostResourceName2,
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(ImportHostDetailsErrorMsg),
+				ImportStateId: "TestInvalidHost",
 			},
 		},
 	})
@@ -291,7 +350,7 @@ resource "powermax_host" "host_create_test" {
 		}
 		consistent_lun = false
 	}
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 }
 `
 
@@ -341,7 +400,7 @@ resource "powermax_host" "host_create_test" {
 		}
 		consistent_lun = true
 	}
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 }
 `
 
@@ -391,7 +450,7 @@ resource "powermax_host" "host_create_test" {
 		}
 		consistent_lun = true
 	}
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 }
 `
 
@@ -455,7 +514,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName4 + `"
-	initiators = ["` + InitiatorID + `","` + InitiatorID2 + `"]
+	initiators = ["` + InitiatorID1 + `","` + InitiatorID2 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -480,7 +539,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName5 + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -505,7 +564,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName4 + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -530,7 +589,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName5 + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -555,7 +614,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName4 + `"
-	initiators = ["` + InitiatorID + `","` + InitiatorID2 + `"]
+	initiators = ["` + InitiatorID1 + `","` + InitiatorID2 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -580,7 +639,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName5 + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -609,7 +668,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName5 + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true
@@ -628,5 +687,31 @@ resource "powermax_host" "host_create_rename_test" {
 			override = true
 		}
 	}
+}
+`
+
+var ImportHostSuccess = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_host" "import_host_success" {
+}
+`
+
+var ImportHostFailure = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_host" "import_host_failure" {
 }
 `

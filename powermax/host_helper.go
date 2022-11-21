@@ -13,22 +13,22 @@ import (
 )
 
 func updateHostState(hostState *models.Host, planInitiators []string, hostResponse *pmaxTypes.Host) {
-	hostState.ID.Value = hostResponse.HostID
-	hostState.Name.Value = hostResponse.HostID
-	hostState.NumOfHostGroups.Value = int64(hostResponse.NumberHostGroups)
-	hostState.NumOfInitiators.Value = int64(hostResponse.NumberInitiators)
-	hostState.NumOfMaskingViews.Value = int64(hostResponse.NumberMaskingViews)
-	hostState.NumOfPowerpathHosts.Value = int64(hostResponse.NumPowerPathHosts)
-	hostState.BWLimit.Value = int64(hostResponse.BWLimit)
-	hostState.Type.Value = hostResponse.HostType
-	hostState.PortFlagsOverride.Value = hostResponse.PortFlagsOverride
-	hostState.HostFlags.ConsistentLun.Value = hostResponse.ConsistentLun
+	hostState.ID = types.String{Value: hostResponse.HostID}
+	hostState.Name = types.String{Value: hostResponse.HostID}
+	hostState.NumOfHostGroups = types.Int64{Value: hostResponse.NumberHostGroups}
+	hostState.NumOfInitiators = types.Int64{Value: hostResponse.NumberInitiators}
+	hostState.NumOfMaskingViews = types.Int64{Value: hostResponse.NumberMaskingViews}
+	hostState.NumOfPowerpathHosts = types.Int64{Value: hostResponse.NumPowerPathHosts}
+	hostState.BWLimit = types.Int64{Value: int64(hostResponse.BWLimit)}
+	hostState.Type = types.String{Value: hostResponse.HostType}
+	hostState.PortFlagsOverride = types.Bool{Value: hostResponse.PortFlagsOverride}
+	hostState.HostFlags.ConsistentLun = types.Bool{Value: hostResponse.ConsistentLun}
 
 	initiators := matchPlanAndResponseInitiators(planInitiators, hostResponse.Initiators)
 	saveListAttribute(hostState, initiators, "initiator")
 	saveListAttribute(hostState, hostResponse.MaskingviewIDs, "maskingView")
 	saveListAttribute(hostState, hostResponse.PowerPathHosts, "powerpathHost")
-	updateHostFlags(hostState, hostResponse)
+	setDefaultHostFlags(hostState)
 	setHostFlags(hostResponse.EnabledFlags, true, hostState)
 	setHostFlags(hostResponse.DisabledFlags, false, hostState)
 }
@@ -67,7 +67,7 @@ func setHostFlags(flags string, isEnabled bool, hostState *models.Host) {
 	}
 }
 
-func updateHostFlags(hostState *models.Host, hostResponse *pmaxTypes.Host) {
+func setDefaultHostFlags(hostState *models.Host) {
 	hostState.HostFlags.VolumeSetAddressing.Enabled = types.Bool{Value: false}
 	hostState.HostFlags.VolumeSetAddressing.Override = types.Bool{Value: false}
 	hostState.HostFlags.DisableQResetOnUa.Enabled = types.Bool{Value: false}
@@ -114,11 +114,23 @@ func saveListAttribute(hostState *models.Host, listAttribute []string, attribute
 
 func matchPlanAndResponseInitiators(planInitiators, responseInitiators []string) []string {
 	stateInitiators := []string{}
+	respInitiatorsMap := make(map[string]int)
+	for _, initiator := range responseInitiators {
+		if _, ok := respInitiatorsMap[initiator]; !ok {
+			respInitiatorsMap[initiator] = 1
+		}
+	}
 	for _, initiator := range planInitiators {
 		if containsIgnoreCase(initiator, responseInitiators) {
 			stateInitiators = append(stateInitiators, initiator)
+			delete(respInitiatorsMap, strings.ToLower(initiator))
 		}
 	}
+
+	for initiator := range respInitiatorsMap {
+		stateInitiators = append(stateInitiators, initiator)
+	}
+
 	return stateInitiators
 }
 
