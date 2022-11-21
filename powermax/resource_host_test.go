@@ -239,7 +239,7 @@ func TestAccHost_UpdateHostFlagsInitiatorAndName(t *testing.T) {
 	})
 }
 
-func TestAccStorageGroup_ImportHostSuccess(t *testing.T) {
+func TestAccHost_ImportHostSuccess(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
@@ -274,7 +274,7 @@ func TestAccStorageGroup_ImportHostSuccess(t *testing.T) {
 	})
 }
 
-func TestAccStorageGroup_ImportHostFailure(t *testing.T) {
+func TestAccHost_ImportHostFailure(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}

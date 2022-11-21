@@ -94,6 +94,9 @@ const (
 	// DeleteMVDetailsErrorMsg specifies error details occurred while deleting maskingview
 	DeleteMVDetailsErrorMsg = "Could not delete maskingview "
 
+	// ImportMVDetailsErrorMsg specifies error details occurred while importing masking view
+	ImportMVDetailsErrorMsg = "Could not import masking view "
+
 	// UpdateStorageGroupDetailsErrorMsg specifies error details occurred while updating storage group
 	UpdateStorageGroupDetailsErrorMsg = "Unable to update all changes to StorageGroup"
 

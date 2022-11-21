@@ -247,3 +247,34 @@ func (r resourceMaskingView) Delete(ctx context.Context, req tfsdk.DeleteResourc
 	resp.State.RemoveResource(ctx)
 	tflog.Debug(ctx, "deleting masking view completed")
 }
+
+func (r resourceMaskingView) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
+	tflog.Debug(ctx, "importing masking view")
+	var stateMaskingView models.MaskingView
+	mvID := req.ID
+	tflog.Debug(ctx, "calling get masking view by ID on pmax client", map[string]interface{}{
+		"symmetrixID":   r.p.client.SymmetrixID,
+		"maskingViewID": mvID,
+	})
+	mvResponse, err := r.p.client.PmaxClient.GetMaskingViewByID(ctx, r.p.client.SymmetrixID, mvID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error importing maskingview",
+			fmt.Sprintf("%s with masking view id %s with error: %s", ImportMVDetailsErrorMsg, mvID, err.Error()),
+		)
+		return
+	}
+
+	tflog.Debug(ctx, "Get masking view by ID response", map[string]interface{}{
+		"mvResponse": mvResponse,
+	})
+
+	tflog.Debug(ctx, "updating masking view state after import")
+	updateMaskingViewState(&stateMaskingView, mvResponse)
+	diags := resp.State.Set(ctx, stateMaskingView)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "completed import masking view")
+}
