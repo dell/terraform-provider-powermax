@@ -6,19 +6,33 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	TestAccPGForMaskingView   = "test_acc_pg_maskingview"
-	TestAccVolForMaskingView  = "test_acc_vol_maskingview"
-	TestAccHostForMaskingView = "test_acc_host_maskingview"
-	TestAccCreateMaskingView  = "test_acc_create_maskingview"
-	TestAccUpdateMaskingView  = "test_acc_update_maskingview"
+	TestAccPGForMaskingView        = "test_acc_pg_maskingview"
+	TestAccVolForMaskingView       = "test_acc_vol_maskingview"
+	TestAccHostForMaskingView      = "test_acc_host_maskingview"
+	TestAccCreateMaskingView       = "test_acc_create_maskingview"
+	TestAccUpdateMaskingView       = "test_acc_update_maskingview"
+	ImportMaskingViewResourceName1 = "powermax_masking_view.import_masking_view_success"
+	ImportMaskingViewResourceName2 = "powermax_masking_view.import_masking_view_failure"
 )
 
 func TestAccMaskingView_CreateUpdateMaskingView(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
+	}
+
+	assertTFImportState := func(s []*terraform.InstanceState) error {
+		assert.Equal(t, TestAccUpdateMaskingView, s[0].Attributes["name"])
+		assert.Equal(t, StorageGroupForMV2, s[0].Attributes["storage_group_id"])
+		assert.Equal(t, TestAccPGForMaskingView, s[0].Attributes["port_group_id"])
+		assert.Equal(t, TestAccHostForMaskingView, s[0].Attributes["host_id"])
+		assert.Equal(t, "", s[0].Attributes["host_group_id"])
+		assert.Equal(t, 1, len(s))
+		return nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -32,6 +46,21 @@ func TestAccMaskingView_CreateUpdateMaskingView(t *testing.T) {
 			{
 				Config: RenameMaskingViewSuccess,
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_masking_view.create_update_maskingview", "id", TestAccUpdateMaskingView)),
+			},
+			{
+				Config:           ImportMaskingViewSuccess,
+				ResourceName:     ImportMaskingViewResourceName1,
+				ImportState:      true,
+				ImportStateCheck: assertTFImportState,
+				ExpectError:      nil,
+				ImportStateId:    TestAccUpdateMaskingView,
+			},
+			{
+				Config:        ImportMaskingViewFailure,
+				ResourceName:  ImportMaskingViewResourceName2,
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(ImportMVDetailsErrorMsg),
+				ImportStateId: "TestInvalidMaskingView",
 			},
 		},
 	})
@@ -303,5 +332,31 @@ resource "powermax_masking_view" "create_maskingview" {
 	name = "` + TestAccCreateMaskingView + `"
 	storage_group_id = "test_storage_group"
 	port_group_id = "test_port_group"
+}
+`
+
+var ImportMaskingViewSuccess = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_masking_view" "import_masking_view_success" {
+}
+`
+
+var ImportMaskingViewFailure = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_masking_view" "import_masking_view_failure" {
 }
 `
