@@ -177,6 +177,7 @@ func (r resourceMaskingView) Read(ctx context.Context, req tfsdk.ReadResourceReq
 }
 
 // Update Maskingview
+// Supported updates: name
 func (r resourceMaskingView) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
 	tflog.Debug(ctx, "updating masking view")
 	var planMaskingView models.MaskingView

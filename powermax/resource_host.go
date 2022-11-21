@@ -350,6 +350,7 @@ func (r resourceHost) Read(ctx context.Context, req tfsdk.ReadResourceRequest, r
 }
 
 // Update Host
+// Supported updates: name, initiators, host flags
 func (r resourceHost) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
 	tflog.Debug(ctx, "updating host")
 	var plan models.Host

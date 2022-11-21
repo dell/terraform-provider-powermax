@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -21,6 +22,15 @@ func TestAccPortGroup_CreatePortGroup(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
+	assertTFImportState := func(s []*terraform.InstanceState) error {
+		assert.Equal(t, "test_acc_create_pg", s[0].Attributes["id"])
+		assert.Equal(t, "test_acc_create_pg", s[0].Attributes["name"])
+		assert.Equal(t, "SCSI_FC", s[0].Attributes["protocol"])
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.#", "1")
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.0.port_id", "1")
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.0.director_id", "1")
+		return nil
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -29,6 +39,14 @@ func TestAccPortGroup_CreatePortGroup(t *testing.T) {
 			{
 				Config: CreatePortGroupParams,
 				Check:  resource.ComposeTestCheckFunc(checkCreatePortGroup(t, testProvider, "test_acc_create_pg")),
+			},
+			{
+				Config:           ImportPortGroup,
+				ResourceName:     "powermax_port_group.import_pg",
+				ImportState:      true,
+				ImportStateCheck: assertTFImportState,
+				ExpectError:      nil,
+				ImportStateId:    "test_acc_create_pg",
 			},
 		},
 	})
@@ -72,6 +90,17 @@ func TestAccPortGroup_UpdatePortGroupSuccess(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
+	assertTFImportState := func(s []*terraform.InstanceState) error {
+		assert.Equal(t, TestAccCreatePGNameUpdated, s[0].Attributes["id"])
+		assert.Equal(t, TestAccCreatePGNameUpdated, s[0].Attributes["name"])
+		assert.Equal(t, "SCSI_FC", s[0].Attributes["protocol"])
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.#", "2")
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.0.port_id", "0")
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.0.director_id", DirectorID1)
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.1.port_id", "2")
+		resource.TestCheckResourceAttr("powermax_port_group.import_pg", "ports.1.director_id", DirectorID2)
+		return nil
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -81,19 +110,27 @@ func TestAccPortGroup_UpdatePortGroupSuccess(t *testing.T) {
 				Config: CreatePortGroupMultiplePorts,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_port_group.create_pg", "id", TestAccCreatePGName),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.#", "2"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", "OR-1C"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "1"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", "OR-1C"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", DirectorID1),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "0"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", DirectorID1),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.port_id", "2")),
 			},
 			{
 				Config: UpdatePortGroupParams,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_port_group.create_pg", "id", TestAccCreatePGNameUpdated),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.#", "2"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", "OR-1C"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "1"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", "OR-2C"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", DirectorID1),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "0"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", DirectorID2),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.port_id", "2")),
+			},
+			{
+				Config:           ImportPortGroup,
+				ResourceName:     "powermax_port_group.import_pg",
+				ImportState:      true,
+				ImportStateCheck: assertTFImportState,
+				ExpectError:      nil,
+				ImportStateId:    TestAccCreatePGNameUpdated,
 			},
 		},
 	})
@@ -113,9 +150,9 @@ func TestAccPortGroup_UpdatePortGroupFailure1(t *testing.T) {
 				Config: CreatePortGroupMultiplePorts,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_port_group.create_pg", "id", TestAccCreatePGName),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.#", "2"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", "OR-1C"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", DirectorID1),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "1"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", "OR-1C"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", DirectorID1),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.port_id", "2")),
 			},
 			{
@@ -140,7 +177,7 @@ func TestAccPortGroup_UpdatePortGroupFailure2(t *testing.T) {
 				Config: CreatePortGroupParams,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_port_group.create_pg", "id", TestAccCreatePGName),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.#", "1"),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", "OR-1C"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", DirectorID1),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "2")),
 			},
 			{
@@ -188,6 +225,20 @@ resource "powermax_port_group" "create_pg" {
 			port_id = "2"
 		}
 	]
+}
+`
+
+var ImportPortGroup = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	timeout = "20m"
+	insecure = true
+}
+
+resource "powermax_port_group" "import_pg" {
 }
 `
 
@@ -248,7 +299,7 @@ resource "powermax_port_group" "create_pg" {
 	ports = [
 		{
 			director_id = "` + DirectorID1 + `"
-			port_id = "1"
+			port_id = "0"
 		},
 		{
 			director_id = "` + DirectorID1 + `"
@@ -274,7 +325,7 @@ resource "powermax_port_group" "create_pg" {
 	ports = [
 		{
 			director_id = "` + DirectorID1 + `"
-			port_id = "1"
+			port_id = "0"
 		},
 		{
 			director_id = "` + DirectorID2 + `"

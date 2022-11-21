@@ -76,6 +76,9 @@ const (
 	// ReadPGDetailsErrorMsg specifies error details occurred while reading portgroup
 	ReadPGDetailsErrorMsg = "Could not read portgroup "
 
+	// ImportPGDetailsErrorMsg specifies error details occurred while importing portgroup
+	ImportPGDetailsErrorMsg = "Could not import portgroup "
+
 	// UpdatePGDetailsErrMsg specifies error details occurred while updating portgroup
 	UpdatePGDetailsErrMsg = "Could not update portgroup "
 

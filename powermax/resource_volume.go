@@ -342,6 +342,7 @@ func (r resourceVolume) Read(ctx context.Context, req tfsdk.ReadResourceRequest,
 }
 
 // Update Volume
+// Supported updates: name, mobilityID, size
 func (r resourceVolume) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
 	tflog.Debug(ctx, "updating volume")
 	var planVol models.Volume
