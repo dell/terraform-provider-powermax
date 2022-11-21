@@ -140,7 +140,7 @@ resource "powermax_port_group" "pg_for_maskingview" {
 
 resource "powermax_host" "host_for_maskingview" {
 	name = "` + TestAccHostForMaskingView + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {}
 
 }
@@ -216,7 +216,7 @@ resource "powermax_port_group" "pg_for_maskingview" {
 
 resource "powermax_host" "host_for_maskingview" {
 	name = "` + TestAccHostForMaskingView + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {}
 
 }
@@ -258,7 +258,7 @@ resource "powermax_port_group" "pg_for_maskingview" {
 
 resource "powermax_host" "host_for_maskingview" {
 	name = "` + TestAccHostForMaskingView + `"
-	initiators = ["` + InitiatorID + `"]
+	initiators = ["` + InitiatorID1 + `"]
 	host_flags = {}
 
 }

@@ -37,6 +37,9 @@ const (
 	// DeleteHostDetailsErrorMsg specifies error details occurred while deleting host
 	DeleteHostDetailsErrorMsg = "Could not delete host "
 
+	// ImportHostDetailsErrorMsg specifies error details occurred while importing host
+	ImportHostDetailsErrorMsg = "Could not import host "
+
 	// DeleteVolumeDetailsErrorMsg specifies error details occurred while deleting volume
 	DeleteVolumeDetailsErrorMsg = "Could not delete volume "
 

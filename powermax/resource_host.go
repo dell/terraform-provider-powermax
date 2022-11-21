@@ -448,3 +448,34 @@ func (r resourceHost) Delete(ctx context.Context, req tfsdk.DeleteResourceReques
 	resp.State.RemoveResource(ctx)
 	tflog.Debug(ctx, "deleting host complete")
 }
+
+func (r resourceHost) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
+	tflog.Debug(ctx, "importing host state")
+	var hostState models.Host
+	hostID := req.ID
+	tflog.Debug(ctx, "fetching host by ID", map[string]interface{}{
+		"symmetrixID": r.p.client.SymmetrixID,
+		"hostID":      hostID,
+	})
+	hostResponse, err := r.p.client.PmaxClient.GetHostByID(ctx, r.p.client.SymmetrixID, hostID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error reading host",
+			ImportHostDetailsErrorMsg+hostID+" with error: "+err.Error(),
+		)
+		return
+	}
+	tflog.Debug(ctx, "Get Host By ID response", map[string]interface{}{
+		"Host Response": hostResponse,
+	})
+
+	tflog.Debug(ctx, "updating host state after import")
+	updateHostState(&hostState, hostResponse.Initiators, hostResponse)
+	diags := resp.State.Set(ctx, hostState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "completed import host")
+
+}
