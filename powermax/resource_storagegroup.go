@@ -445,6 +445,7 @@ func (r resourceStorageGroup) Read(ctx context.Context, req tfsdk.ReadResourceRe
 }
 
 // Update StorageGroup
+// Supported updates: name, service_level, SRP, snapshot policies, compression, volume IDs, host IO limits
 func (r resourceStorageGroup) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
 	tflog.Debug(ctx, "updating storage group")
 	var planStorageGroup models.StorageGroup

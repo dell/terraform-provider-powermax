@@ -305,7 +305,7 @@ func TestAccVolume_ImportVolumeSuccess(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:           VolumeImportSuccess,
-				ResourceName:     ImportResourceName1,
+				ResourceName:     ImportHostResourceName1,
 				ImportState:      true,
 				ImportStateCheck: assertTFImportState,
 				ExpectError:      nil,
@@ -326,7 +326,7 @@ func TestAccVolume_ImportStorageGroupFailure(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:        VolumeImportFailure,
-				ResourceName:  ImportResourceName2,
+				ResourceName:  ImportHostResourceName2,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(ImportVolDetailsErrorMsg),
 				ImportStateId: "testVolumeImport",

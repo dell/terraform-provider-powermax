@@ -37,6 +37,9 @@ const (
 	// DeleteHostDetailsErrorMsg specifies error details occurred while deleting host
 	DeleteHostDetailsErrorMsg = "Could not delete host "
 
+	// ImportHostDetailsErrorMsg specifies error details occurred while importing host
+	ImportHostDetailsErrorMsg = "Could not import host "
+
 	// DeleteVolumeDetailsErrorMsg specifies error details occurred while deleting volume
 	DeleteVolumeDetailsErrorMsg = "Could not delete volume "
 
@@ -73,6 +76,9 @@ const (
 	// ReadPGDetailsErrorMsg specifies error details occurred while reading portgroup
 	ReadPGDetailsErrorMsg = "Could not read portgroup "
 
+	// ImportPGDetailsErrorMsg specifies error details occurred while importing portgroup
+	ImportPGDetailsErrorMsg = "Could not import portgroup "
+
 	// UpdatePGDetailsErrMsg specifies error details occurred while updating portgroup
 	UpdatePGDetailsErrMsg = "Could not update portgroup "
 
@@ -90,6 +96,9 @@ const (
 
 	// DeleteMVDetailsErrorMsg specifies error details occurred while deleting maskingview
 	DeleteMVDetailsErrorMsg = "Could not delete maskingview "
+
+	// ImportMVDetailsErrorMsg specifies error details occurred while importing masking view
+	ImportMVDetailsErrorMsg = "Could not import masking view "
 
 	// UpdateStorageGroupDetailsErrorMsg specifies error details occurred while updating storage group
 	UpdateStorageGroupDetailsErrorMsg = "Unable to update all changes to StorageGroup"
