@@ -17,5 +17,3 @@ You may obtain a copy of the License at
 
 ## Deprecation
 * Terraform Provider For Powermax's deprecation cycle is aligned with [Terraform](https://developer.hashicorp.com/terraform/plugin/framework/schemas#deprecationmessage).
-
-## PowerMax
