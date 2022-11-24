@@ -212,6 +212,7 @@ func (r resourcePortGroup) Read(ctx context.Context, req tfsdk.ReadResourceReque
 }
 
 // Update PortGroup
+// Supported updates: name, ports
 func (r resourcePortGroup) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
 	tflog.Debug(ctx, "updating portgroup")
 	var pgPlan, pgState models.PortGroup
@@ -276,4 +277,49 @@ func (r resourcePortGroup) Delete(ctx context.Context, req tfsdk.DeleteResourceR
 		)
 	}
 	tflog.Debug(ctx, "deleting portgroup completed")
+}
+
+// Import resource
+func (r resourcePortGroup) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
+	tflog.Debug(ctx, "importing port group state")
+	var pgState models.PortGroup
+	pgState.ID = types.String{Value: req.ID}
+
+	// Get portgroup ID from API and then update what is in state from what the API returns
+	pgID := pgState.ID.Value
+	tflog.Debug(ctx, "getting portgroup by ID", map[string]interface{}{
+		"symmetrixID": r.p.client.SymmetrixID,
+		"portGroupID": pgID,
+	})
+	pgResponse, err := r.p.client.PmaxClient.GetPortGroupByID(ctx, r.p.client.SymmetrixID, pgID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error importing portgroup",
+			ImportPGDetailsErrorMsg+pgID+" with error: "+err.Error(),
+		)
+		return
+	}
+	tflog.Debug(ctx, "get port group by ID response", map[string]interface{}{
+		"pgResponse": pgResponse,
+	})
+
+	tflog.Debug(ctx, "updating portgroup state", map[string]interface{}{
+		"pgState":    pgState,
+		"pgResponse": pgResponse,
+	})
+	updatePGState(&pgState, &pgState, pgResponse)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error importing portgroup to terraform state, this can lead to a mismatch between infra and state ",
+			ImportPGDetailsErrorMsg+pgState.Name.Value+" with error: "+err.Error(),
+		)
+		return
+	}
+
+	diags := resp.State.Set(ctx, pgState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "done importing port group state")
 }
