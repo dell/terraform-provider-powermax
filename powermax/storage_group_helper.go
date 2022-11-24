@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
-	"strconv"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/models"
 
@@ -84,8 +83,7 @@ func updateState(sgState, sgPlan *models.StorageGroup, sgWithData models.Storage
 	}
 
 	sgState.CapGB = types.Number{Value: big.NewFloat(sgResponse.CapacityGB)}
-	capGBInFloat, _ := strconv.ParseFloat(sgResponse.CompressionRatio, 64)
-	sgState.CompressionRatio = types.Number{Value: big.NewFloat(capGBInFloat)}
+	sgState.CompressionRatio = types.String{Value: sgResponse.CompressionRatio}
 	sgState.CompressionRatioToOne = types.Number{Value: big.NewFloat(sgResponse.CompressionRatioToOne)}
 	sgState.DeviceEmulation.Value = sgResponse.DeviceEmulation
 	sgState.EnableCompression.Value = sgResponse.Compression

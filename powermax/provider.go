@@ -173,7 +173,7 @@ func (p *provider) GetDataSources(ctx context.Context) (map[string]tfsdk.DataSou
 func (p *provider) GetSchema(ctx context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
 
-		MarkdownDescription: "The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of Powermax Storage arrays.",
+		MarkdownDescription: "The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of PowerMax Storage arrays.",
 		Attributes: map[string]tfsdk.Attribute{
 			"endpoint": {
 				MarkdownDescription: "Endpoint to connect to the Unisphere host",

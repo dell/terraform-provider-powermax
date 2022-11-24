@@ -8,7 +8,7 @@ description: |-
 
 # powermax_storage_group (Resource)
 
-Resource for managing StorageGroups in PowerMax array.Updates are supported for the following parameters: 'name', 'srp', 'enable_compression', 'service_level', 'host_io_limits', 'volume_ids', 'snapshot_policies'.
+Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: 'name', 'srp', 'enable_compression', 'service_level', 'host_io_limits', 'volume_ids', 'snapshot_policies'.
 
 ## Example Usage
 
@@ -39,7 +39,7 @@ resource "powermax_storage_group" "storage_group_1" {
 ### Read-Only
 
 - `cap_gb` (Number) The capacity of the storage group in GB.
-- `compression_ratio` (Number) Compression ratio of the storage group.
+- `compression_ratio` (String) Compression ratio of the storage group.
 - `compression_ratio_to_one` (Number) Compression ratio numeric value of the storage group.
 - `device_emulation` (String) The emulation of the volumes in the storage group.
 - `id` (String) The ID of the storage group.

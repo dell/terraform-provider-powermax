@@ -2,7 +2,7 @@
 
 ## Release Summary
 
-The release supports a terraform client to query Unisphere and the resources to manage StorageGroups,Volumes,Hosts,PortGroups and MaskingViews in PowerMax.
+The release supports a terraform plugin to manage StorageGroups,Volumes,Hosts,PortGroups and MaskingViews in PowerMax.
 
 ## Features
 
