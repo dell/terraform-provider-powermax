@@ -65,7 +65,7 @@ func TestAccVolume_CreateVolumeWithTBInFloat(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithTBInFloat,
-				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroup1, "test_acc_cvol_tb_float", "2.45", "TB")),
+				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvol_tb_float", "2.45", "TB")),
 			},
 		},
 	})
@@ -82,7 +82,7 @@ func TestAccVolume_CreateVolumeWithTBInInt(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithTBInInt,
-				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroup1, "test_acc_cvol_tb", "2", "TB")),
+				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvol_tb", "2", "TB")),
 			},
 		},
 	})
