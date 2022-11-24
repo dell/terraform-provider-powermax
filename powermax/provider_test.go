@@ -81,8 +81,8 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("POWERMAX_SERIALNO must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("HOST_INITIATOR_ID"); v == "" {
-		t.Fatal("HOST_INITIATOR_ID must be set for acceptance tests")
+	if v := os.Getenv("HOST_INITIATOR_ID1"); v == "" {
+		t.Fatal("HOST_INITIATOR_ID1 must be set for acceptance tests")
 	}
 
 	if v := os.Getenv("HOST_INITIATOR_ID2"); v == "" {
