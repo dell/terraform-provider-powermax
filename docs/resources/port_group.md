@@ -3,12 +3,12 @@
 page_title: "powermax_port_group Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource to manage PortGroups in PowerMax array.
+  Resource to manage PortGroups in PowerMax array. Updates are supported for the following parameters: 'name', 'ports'.
 ---
 
 # powermax_port_group (Resource)
 
-Resource to manage PortGroups in PowerMax array.
+Resource to manage PortGroups in PowerMax array. Updates are supported for the following parameters: 'name', 'ports'.
 
 ## Example Usage
 

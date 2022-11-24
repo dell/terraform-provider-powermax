@@ -3,12 +3,12 @@
 page_title: "powermax_masking_view Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource to manage Maskingview in PowerMax array.
+  Resource to manage Maskingview in PowerMax array. Updates are supported for the following parameters: 'name'.
 ---
 
 # powermax_masking_view (Resource)
 
-Resource to manage Maskingview in PowerMax array.
+Resource to manage Maskingview in PowerMax array. Updates are supported for the following parameters: 'name'.
 
 ## Example Usage
 

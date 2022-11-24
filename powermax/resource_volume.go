@@ -18,7 +18,7 @@ type resourceVolumeType struct{}
 // Volume Resource schema
 func (r resourceVolumeType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource to manage Volumes in PowerMax Array.",
+		MarkdownDescription: "Resource to manage Volumes in PowerMax Array. Updates are supported for the following parameters: 'name', 'enable_mobility_id', 'size', 'cap_unit'.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,

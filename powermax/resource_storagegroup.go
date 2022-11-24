@@ -18,7 +18,7 @@ type resourceStorageGroupType struct{}
 // StorageGroup Resource schema
 func (r resourceStorageGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array.",
+		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array.Updates are supported for the following parameters: 'name', 'srp', 'enable_compression', 'service_level', 'host_io_limits', 'volume_ids', 'snapshot_policies'.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,
