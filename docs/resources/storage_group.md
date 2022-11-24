@@ -3,12 +3,12 @@
 page_title: "powermax_storage_group Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: 'name', 'srp', 'enablecompression', 'servicelevel', 'hostiolimits', 'volumeids', 'snapshotpolicies'.
+  Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: name, srp, enable_compression, service_level, host_io_limits, volume_ids, snapshot_policies.
 ---
 
 # powermax_storage_group (Resource)
 
-Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: 'name', 'srp', 'enable_compression', 'service_level', 'host_io_limits', 'volume_ids', 'snapshot_policies'.
+Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: `name`, `srp`, `enable_compression`, `service_level`, `host_io_limits`, `volume_ids`, `snapshot_policies`.
 
 ## Example Usage
 

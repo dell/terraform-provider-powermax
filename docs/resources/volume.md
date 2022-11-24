@@ -3,12 +3,12 @@
 page_title: "powermax_volume Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource to manage Volumes in PowerMax Array. Updates are supported for the following parameters: 'name', 'enablemobilityid', 'size', 'cap_unit'.
+  Resource to manage Volumes in PowerMax Array. Updates are supported for the following parameters: name, enable_mobility_id, size, cap_unit.
 ---
 
 # powermax_volume (Resource)
 
-Resource to manage Volumes in PowerMax Array. Updates are supported for the following parameters: 'name', 'enable_mobility_id', 'size', 'cap_unit'.
+Resource to manage Volumes in PowerMax Array. Updates are supported for the following parameters: `name`, `enable_mobility_id`, `size`, `cap_unit`.
 
 ## Example Usage
 

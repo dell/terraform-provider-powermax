@@ -17,7 +17,7 @@ type resourcePortGroupType struct{}
 // PortGroup Resource schema
 func (r resourcePortGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource to manage PortGroups in PowerMax array. Updates are supported for the following parameters: 'name', 'ports'.",
+		MarkdownDescription: "Resource to manage PortGroups in PowerMax array. Updates are supported for the following parameters: `name`, `ports`.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,

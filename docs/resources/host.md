@@ -3,12 +3,12 @@
 page_title: "powermax_host Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource to manage hosts in PowerMax array. Updates are supported for the following parameters: 'name', 'initiators', 'host_flags'.
+  Resource to manage hosts in PowerMax array. Updates are supported for the following parameters: name, initiators, host_flags.
 ---
 
 # powermax_host (Resource)
 
-Resource to manage hosts in PowerMax array. Updates are supported for the following parameters: 'name', 'initiators', 'host_flags'.
+Resource to manage hosts in PowerMax array. Updates are supported for the following parameters: `name`, `initiators`, `host_flags`.
 
 ## Example Usage
 
