@@ -44,7 +44,7 @@ type StorageGroup struct {
 	//Unprotected - States whether the storage group is protected
 	Unprotected types.Bool `tfsdk:"unprotected"`
 	// CompressionRatio - Compression ratio of the storage group
-	CompressionRatio types.Number `tfsdk:"compression_ratio"`
+	CompressionRatio types.String `tfsdk:"compression_ratio"`
 	// CompressionRatioToOne - Compression ratio numeric value of the storage group
 	CompressionRatioToOne types.Number `tfsdk:"compression_ratio_to_one"`
 	// VPsavedPercent - VP saved percentage figure

@@ -49,7 +49,7 @@ func (r resourceHostType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagn
 		},
 	})
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource to manage hosts in PowerMax array.",
+		MarkdownDescription: "Resource to manage hosts in PowerMax array. Updates are supported for the following parameters: `name`, `initiators`, `host_flags`.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,

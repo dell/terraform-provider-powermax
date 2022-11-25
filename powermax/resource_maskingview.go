@@ -16,7 +16,7 @@ type resourceMaskingViewType struct{}
 // MaskingView Resource schema
 func (r resourceMaskingViewType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource to manage Maskingview in PowerMax array.",
+		MarkdownDescription: "Resource to manage Maskingview in PowerMax array. Updates are supported for the following parameters: `name`.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,

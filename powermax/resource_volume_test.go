@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	ImportResourceName1 = "powermax_volume.volume_import_success"
-	ImportResourceName2 = "powermax_volume.volume_import_failure"
+	ImportVolumeResourceName1 = "powermax_volume.volume_import_success"
+	ImportVolumeResourceName2 = "powermax_volume.volume_import_failure"
 )
 
 func TestAccVolume_CreateVolume(t *testing.T) {
@@ -65,7 +65,7 @@ func TestAccVolume_CreateVolumeWithTBInFloat(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithTBInFloat,
-				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroup1, "test_acc_cvol_tb_float", "2.45", "TB")),
+				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvol_tb_float", "2.45", "TB")),
 			},
 		},
 	})
@@ -82,7 +82,7 @@ func TestAccVolume_CreateVolumeWithTBInInt(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithTBInInt,
-				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroup1, "test_acc_cvol_tb", "2", "TB")),
+				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvol_tb", "2", "TB")),
 			},
 		},
 	})
@@ -305,7 +305,7 @@ func TestAccVolume_ImportVolumeSuccess(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:           VolumeImportSuccess,
-				ResourceName:     ImportHostResourceName1,
+				ResourceName:     ImportVolumeResourceName1,
 				ImportState:      true,
 				ImportStateCheck: assertTFImportState,
 				ExpectError:      nil,
@@ -315,7 +315,7 @@ func TestAccVolume_ImportVolumeSuccess(t *testing.T) {
 	})
 }
 
-func TestAccVolume_ImportStorageGroupFailure(t *testing.T) {
+func TestAccVolume_ImportVolumeFailure(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
@@ -326,7 +326,7 @@ func TestAccVolume_ImportStorageGroupFailure(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:        VolumeImportFailure,
-				ResourceName:  ImportHostResourceName2,
+				ResourceName:  ImportVolumeResourceName2,
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(ImportVolDetailsErrorMsg),
 				ImportStateId: "testVolumeImport",

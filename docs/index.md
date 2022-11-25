@@ -3,12 +3,12 @@
 page_title: "powermax Provider"
 subcategory: ""
 description: |-
-  The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of Powermax Storage arrays.
+  The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of PowerMax Storage arrays.
 ---
 
 # powermax Provider
 
-The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of Powermax Storage arrays.
+The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of PowerMax Storage arrays.
 
 ## Example Usage
 
