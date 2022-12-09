@@ -29,7 +29,7 @@ func TestAccVolume_CreateVolume(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParams,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvol"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvolume"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "size", "2.32"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "cap_unit", "GB")),
 			},
@@ -65,7 +65,7 @@ func TestAccVolume_CreateVolumeWithTBInFloat(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithTBInFloat,
-				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvol_tb_float", "2.45", "TB")),
+				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvolume_tb_float", "2.45", "TB")),
 			},
 		},
 	})
@@ -82,7 +82,7 @@ func TestAccVolume_CreateVolumeWithTBInInt(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithTBInInt,
-				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvol_tb", "2", "TB")),
+				Check:  resource.ComposeTestCheckFunc(checkCreateVolume(t, testProvider, StorageGroupForVol1, "test_acc_cvolume_tb", "2", "TB")),
 			},
 		},
 	})
@@ -99,7 +99,7 @@ func TestAccVolume_CreateVolumeWithCYL(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParamsWithCYL,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test_cyl", "name", "test_acc_cvol_cyl"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test_cyl", "name", "test_acc_cvolume_cyl"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test_cyl", "size", "547"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test_cyl", "cap_unit", "CYL")),
 			},
@@ -135,12 +135,12 @@ func TestAccVolume_UpdateVolumeCyl(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeCreateForUpdateCyl,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "name", "test_acc_uvol_cyl"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "name", "test_acc_uvolume_cyl"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "size", "500")),
 			},
 			{
 				Config: VolumeUpdateCyl,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "name", "test_acc_uvol_cyl_updated"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "name", "test_acc_uvolume_cyl_updated"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "size", "550"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "enable_mobility_id", "true")),
 			},
@@ -159,13 +159,13 @@ func TestAccVolume_UpdateVolumeRename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParams,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvol"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvolume"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "size", "2.32"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "cap_unit", "GB")),
 			},
 			{
 				Config: VolumeParamsRename,
-				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvol_updated")),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvolume_updated")),
 			},
 		},
 	})
@@ -182,7 +182,7 @@ func TestAccVolume_UpdateVolumeCylError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeCreateForUpdateCyl,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "name", "test_acc_uvol_cyl"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "name", "test_acc_uvolume_cyl"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_cyl", "size", "500")),
 			},
 			{
@@ -204,12 +204,12 @@ func TestAccVolume_UpdateVolumeGb(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeCreateForUpdateGb,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "name", "test_acc_uvol_gb"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "name", "test_acc_uvolume_gb"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "size", "2")),
 			},
 			{
 				Config: VolumeUpdateGb,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "name", "test_acc_uvol_gb_updated"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "name", "test_acc_uvolume_gb_updated"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "size", "2.5"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "enable_mobility_id", "false")),
 			},
@@ -228,7 +228,7 @@ func TestAccVolume_UpdateVolumeGbError1(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeCreateForUpdateGb,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "name", "test_acc_uvol_gb"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "name", "test_acc_uvolume_gb"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb", "size", "2")),
 			},
 			{
@@ -250,7 +250,7 @@ func TestAccVolume_UpdateVolumeGbError2(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeCreateForUpdateInMaskingView,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb_mv", "name", "test_acc_uvol_gb_mv"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb_mv", "name", "test_acc_uvolume_gb_mv"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_update_test_gb_mv", "size", "2")),
 			},
 			{
@@ -272,13 +272,18 @@ func TestAccVolume_UpdateVolumeSizeGbToTb(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: VolumeParams,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvol"),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "name", "test_acc_cvolume"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "size", "2.32"),
 					resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "cap_unit", "GB")),
 			},
 			{
-				Config: VolumeUpdateGbToTb,
-				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "size", "0.5"),
+				Config: VolumeUpdateGbToTbCapUnit,
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "size", "2.32"),
+					(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "cap_unit", "TB"))),
+			},
+			{
+				Config: VolumeUpdateGbToTbSize,
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "size", "2.5"),
 					(resource.TestCheckResourceAttr("powermax_volume.volume_create_test", "cap_unit", "TB"))),
 			},
 		},
@@ -363,7 +368,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test" {
-	name = "test_acc_cvol"
+	name = "test_acc_cvolume"
 	size = 2.32
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -380,7 +385,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test" {
-	name = "test_acc_cvol_updated"
+	name = "test_acc_cvolume_updated"
 	size = 2.32
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -397,7 +402,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test_mb" {
-	name = "test_acc_cvol_mb"
+	name = "test_acc_cvolume_mb"
 	size = 800
 	cap_unit = "MB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -414,7 +419,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test_tb_float" {
-	name = "test_acc_cvol_tb_float"
+	name = "test_acc_cvolume_tb_float"
 	size = 2.45
 	cap_unit = "TB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -431,7 +436,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test_tb" {
-	name = "test_acc_cvol_tb"
+	name = "test_acc_cvolume_tb"
 	size = 2
 	cap_unit = "TB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -448,7 +453,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test_cyl" {
-	name = "test_acc_cvol_cyl"
+	name = "test_acc_cvolume_cyl"
 	size = 547
 	cap_unit = "CYL"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -465,7 +470,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test" {
-	name = "test_acc_cvol"
+	name = "test_acc_cvolume"
 	size = 3
 	cap_unit = "PB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -482,7 +487,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_cyl" {
-	name = "test_acc_uvol_cyl"
+	name = "test_acc_uvolume_cyl"
 	size = 500
 	cap_unit = "CYL"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -499,7 +504,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_cyl" {
-	name = "test_acc_uvol_cyl_updated"
+	name = "test_acc_uvolume_cyl_updated"
 	size = 550
 	cap_unit = "CYL"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -507,7 +512,7 @@ resource "powermax_volume" "volume_update_test_cyl" {
 }
 `
 
-var VolumeUpdateGbToTb = `
+var VolumeUpdateGbToTbCapUnit = `
 provider "powermax" {
 	username = "` + username + `"
 	password = "` + password + `"
@@ -517,8 +522,25 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_create_test" {
-	name = "test_acc_cvol"
-	size = 0.5
+	name = "test_acc_cvolume"
+	size = 2.32
+	cap_unit = "TB"
+	sg_name = "` + StorageGroupForVol1 + `"
+}
+`
+
+var VolumeUpdateGbToTbSize = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_volume" "volume_create_test" {
+	name = "test_acc_cvolume"
+	size = 2.5
 	cap_unit = "TB"
 	sg_name = "` + StorageGroupForVol1 + `"
 }
@@ -535,11 +557,10 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_cyl" {
-	name = "test_acc_uvol_cyl_updated"
+	name = "test_acc_uvolume_cyl_updated"
 	size = 500.5
 	cap_unit = "CYL"
 	sg_name = "` + StorageGroupForVol1 + `"
-	enable_mobility_id = true
 }
 `
 
@@ -553,7 +574,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_gb" {
-	name = "test_acc_uvol_gb"
+	name = "test_acc_uvolume_gb"
 	size = 2
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -571,7 +592,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_gb" {
-	name = "test_acc_uvol_gb_updated"
+	name = "test_acc_uvolume_gb_updated"
 	size = 2.5
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -591,7 +612,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_gb" {
-	name = "test_acc_uvol_gb"
+	name = "test_acc_uvolume_gb"
 	size = 1
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForVol1 + `"
@@ -610,7 +631,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_gb_mv" {
-	name = "test_acc_uvol_gb_mv"
+	name = "test_acc_uvolume_gb_mv"
 	size = 2
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForMV1 + `"
@@ -628,7 +649,7 @@ provider "powermax" {
 }
 
 resource "powermax_volume" "volume_update_test_gb_mv" {
-	name = "test_acc_uvol_gb_mv"
+	name = "test_acc_uvolume_gb_mv"
 	size = 2
 	cap_unit = "GB"
 	sg_name = "` + StorageGroupForMV1 + `"

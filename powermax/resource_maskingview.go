@@ -48,6 +48,9 @@ func (r resourceMaskingViewType) GetSchema(_ context.Context) (tfsdk.Schema, dia
 				Computed:            true,
 				Description:         "The ID of the host associated with maskingview.",
 				MarkdownDescription: "The ID of the host associated with maskingview.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					DefaultAttribute(types.String{Value: ""}),
+				},
 			},
 			"host_group_id": {
 				Type:                types.StringType,
@@ -55,6 +58,9 @@ func (r resourceMaskingViewType) GetSchema(_ context.Context) (tfsdk.Schema, dia
 				Computed:            true,
 				Description:         "The ID of the hostgroup associated with maskingview. Either of host_id/host_group_id is expected but not both",
 				MarkdownDescription: "The ID of the hostgroup associated with maskingview. Either of host_id/host_group_id is expected but not both",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					DefaultAttribute(types.String{Value: ""}),
+				},
 			},
 		},
 	}, nil
@@ -73,7 +79,7 @@ type resourceMaskingView struct {
 
 // Create Maskingview
 func (r resourceMaskingView) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
-	tflog.Debug(ctx, "creating masking view")
+	tflog.Info(ctx, "creating masking view")
 	if !r.p.configured {
 		resp.Diagnostics.AddError(
 			"Provider not configured",
@@ -129,18 +135,18 @@ func (r resourceMaskingView) Create(ctx context.Context, req tfsdk.CreateResourc
 		"stateMaskingView": stateMaskingView,
 		"mvResponse":       mvResponse,
 	})
-	updateMaskingViewState(&stateMaskingView, mvResponse)
+	updateMaskingViewState(&stateMaskingView, mvResponse, &planMaskingView, "create")
 	diags = resp.State.Set(ctx, stateMaskingView)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "create masking view completed")
+	tflog.Info(ctx, "create masking view completed")
 }
 
 // Read Maskingview
 func (r resourceMaskingView) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
-	tflog.Debug(ctx, "reading masking view")
+	tflog.Info(ctx, "reading masking view")
 	var stateMaskingView models.MaskingView
 	diags := req.State.Get(ctx, &stateMaskingView)
 	resp.Diagnostics.Append(diags...)
@@ -167,19 +173,19 @@ func (r resourceMaskingView) Read(ctx context.Context, req tfsdk.ReadResourceReq
 		"stateMaskingView": stateMaskingView,
 		"mvResponse":       mvResponse,
 	})
-	updateMaskingViewState(&stateMaskingView, mvResponse)
+	updateMaskingViewState(&stateMaskingView, mvResponse, nil, "read")
 	diags = resp.State.Set(ctx, stateMaskingView)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "reading masking view completed")
+	tflog.Info(ctx, "read masking view completed")
 }
 
 // Update Maskingview
 // Supported updates: name
 func (r resourceMaskingView) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
-	tflog.Debug(ctx, "updating masking view")
+	tflog.Info(ctx, "updating masking view")
 	var planMaskingView models.MaskingView
 	diags := req.Plan.Get(ctx, &planMaskingView)
 	resp.Diagnostics.Append(diags...)
@@ -199,6 +205,15 @@ func (r resourceMaskingView) Update(ctx context.Context, req tfsdk.UpdateResourc
 		"maskingViewID": stateMaskingView.ID.Value,
 		"newName":       planMaskingView.Name.Value,
 	})
+
+	if planMaskingView.Name.Value == stateMaskingView.Name.Value {
+		resp.Diagnostics.AddError(
+			"Error updating maskingview",
+			"supported updates - name",
+		)
+		return
+	}
+
 	mvResponse, err := r.p.client.PmaxClient.RenameMaskingView(ctx, r.p.client.SymmetrixID, stateMaskingView.ID.Value, planMaskingView.Name.Value)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -215,18 +230,18 @@ func (r resourceMaskingView) Update(ctx context.Context, req tfsdk.UpdateResourc
 		"stateMaskingView": stateMaskingView,
 		"mvResponse":       mvResponse,
 	})
-	updateMaskingViewState(&stateMaskingView, mvResponse)
+	updateMaskingViewState(&stateMaskingView, mvResponse, &planMaskingView, "update")
 	diags = resp.State.Set(ctx, stateMaskingView)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "update masking view completed")
+	tflog.Info(ctx, "update masking view completed")
 }
 
 // Delete Maskingview
 func (r resourceMaskingView) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
-	tflog.Debug(ctx, "deleting masking view")
+	tflog.Info(ctx, "deleting masking view")
 	var stateMaskingView models.MaskingView
 	diags := req.State.Get(ctx, &stateMaskingView)
 	resp.Diagnostics.Append(diags...)
@@ -246,11 +261,11 @@ func (r resourceMaskingView) Delete(ctx context.Context, req tfsdk.DeleteResourc
 		)
 	}
 	resp.State.RemoveResource(ctx)
-	tflog.Debug(ctx, "deleting masking view completed")
+	tflog.Info(ctx, "delete masking view completed")
 }
 
 func (r resourceMaskingView) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
-	tflog.Debug(ctx, "importing masking view")
+	tflog.Info(ctx, "importing masking view state")
 	var stateMaskingView models.MaskingView
 	mvID := req.ID
 	tflog.Debug(ctx, "calling get masking view by ID on pmax client", map[string]interface{}{
@@ -271,11 +286,11 @@ func (r resourceMaskingView) ImportState(ctx context.Context, req tfsdk.ImportRe
 	})
 
 	tflog.Debug(ctx, "updating masking view state after import")
-	updateMaskingViewState(&stateMaskingView, mvResponse)
+	updateMaskingViewState(&stateMaskingView, mvResponse, nil, "import")
 	diags := resp.State.Set(ctx, stateMaskingView)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "completed import masking view")
+	tflog.Info(ctx, "import masking view state completed")
 }

@@ -131,6 +131,9 @@ func (r resourceVolumeType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Dia
 				Computed:            true,
 				Description:         "List of storage groups which are associated with the volume.",
 				MarkdownDescription: "List of storage groups which are associated with the volume.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"symmetrix_port_keys": {
 				Computed: true,
@@ -144,6 +147,9 @@ func (r resourceVolumeType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Dia
 				},
 				Description:         "The symmetrix ports associated with the volume.",
 				MarkdownDescription: "The symmetrix ports associated with the volume.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"rdf_group_ids": {
 				Computed: true,
@@ -187,12 +193,18 @@ func (r resourceVolumeType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Dia
 				Computed:            true,
 				Description:         "Encapsulated  WWN of the volume.",
 				MarkdownDescription: "Encapsulated  WWN of the volume.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"oracle_instance_name": {
 				Type:                types.StringType,
 				Computed:            true,
 				Description:         "Oracle instance name associated with the volume.",
 				MarkdownDescription: "Oracle instance name associated with the volume.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"enable_mobility_id": {
 				Type:                types.BoolType,
@@ -230,7 +242,7 @@ type resourceVolume struct {
 
 // Create Volume
 func (r resourceVolume) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
-	tflog.Debug(ctx, "creating volume")
+	tflog.Info(ctx, "creating volume")
 	if !r.p.configured {
 		resp.Diagnostics.AddError(
 			"Provider not configured",
@@ -298,12 +310,12 @@ func (r resourceVolume) Create(ctx context.Context, req tfsdk.CreateResourceRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "create volume completed")
+	tflog.Info(ctx, "create volume completed")
 }
 
 // Read Volume
 func (r resourceVolume) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
-	tflog.Debug(ctx, "reading volume")
+	tflog.Info(ctx, "reading volume")
 	var volState models.Volume
 	diags := req.State.Get(ctx, &volState)
 	resp.Diagnostics.Append(diags...)
@@ -338,13 +350,13 @@ func (r resourceVolume) Read(ctx context.Context, req tfsdk.ReadResourceRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "read volume completed")
+	tflog.Info(ctx, "read volume completed")
 }
 
 // Update Volume
 // Supported updates: name, mobilityID, size
 func (r resourceVolume) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
-	tflog.Debug(ctx, "updating volume")
+	tflog.Info(ctx, "updating volume")
 	var planVol models.Volume
 	diags := req.Plan.Get(ctx, &planVol)
 	resp.Diagnostics.Append(diags...)
@@ -398,12 +410,12 @@ func (r resourceVolume) Update(ctx context.Context, req tfsdk.UpdateResourceRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "update volume completed")
+	tflog.Info(ctx, "update volume completed")
 }
 
 // Delete Volume
 func (r resourceVolume) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
-	tflog.Debug(ctx, "deleting volume")
+	tflog.Info(ctx, "deleting volume")
 	var volumeState models.Volume
 	diags := req.State.Get(ctx, &volumeState)
 	resp.Diagnostics.Append(diags...)
@@ -455,12 +467,12 @@ func (r resourceVolume) Delete(ctx context.Context, req tfsdk.DeleteResourceRequ
 		)
 	}
 	resp.State.RemoveResource(ctx)
-	tflog.Debug(ctx, "delete volume completed")
+	tflog.Info(ctx, "delete volume completed")
 }
 
 // Import resource
 func (r resourceVolume) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
-	tflog.Debug(ctx, "importing volume state")
+	tflog.Info(ctx, "importing volume state")
 	var stateVol models.Volume
 	volID := req.ID
 	tflog.Debug(ctx, "calling get volume by ID on pmax client", map[string]interface{}{
@@ -489,5 +501,5 @@ func (r resourceVolume) ImportState(ctx context.Context, req tfsdk.ImportResourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "import volume state completed")
+	tflog.Info(ctx, "import volume state completed")
 }

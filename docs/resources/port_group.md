@@ -35,7 +35,7 @@ resource "powermax_port_group" "portgroup_1" {
 ### Required
 
 - `name` (String) The name of the portgroup.
-- `ports` (Attributes List) The ports associated with the portgroup. (see [below for nested schema](#nestedatt--ports))
+- `ports` (Attributes Set) The ports associated with the portgroup. (see [below for nested schema](#nestedatt--ports))
 - `protocol` (String) The portgroup protocol.
 
 ### Read-Only

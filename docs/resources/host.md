@@ -36,7 +36,7 @@ resource "powermax_host" "host_1" {
 ### Required
 
 - `host_flags` (Attributes) Flags set for the host. (see [below for nested schema](#nestedatt--host_flags))
-- `initiators` (List of String) The initiators associated with the host.
+- `initiators` (Set of String) The initiators associated with the host.
 - `name` (String) The name of the host.
 
 ### Read-Only

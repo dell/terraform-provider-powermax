@@ -25,6 +25,7 @@ For general information about Terraform, visit the [official website][tf-website
   * [Maintainers](https://github.com/dell/terraform-provider-powermax/blob/main/about/MAINTAINERS.md)
   * [Support](https://github.com/dell/terraform-provider-powermax/blob/main/about/SUPPORT.md)
   * [Security](https://github.com/dell/terraform-provider-powermax/blob/main/about/SECURITY.md)
+  * [Attribution](https://github.com/dell/terraform-provider-powermax/blob/main/about/ATTRIBUTION.md)
   * [Additional Information](https://github.com/dell/terraform-provider-powermax/blob/main/about/ADDITIONAL_INFORMATION.md)
 
 ## Supported Platforms

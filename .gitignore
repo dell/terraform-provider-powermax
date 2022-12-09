@@ -4,6 +4,7 @@
 example.tf
 terraform.tfplan
 terraform.tfstate
+demo/
 bin/
 dist/
 out/

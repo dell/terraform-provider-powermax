@@ -10,8 +10,8 @@ type Host struct {
 	Name types.String `tfsdk:"name"`
 	// HostFlags - Specifies the flags set for a host
 	HostFlags HostFlags `tfsdk:"host_flags"`
-	// Initiators - Specifies the list of initiators for a host
-	Initiators types.List `tfsdk:"initiators"`
+	// Initiators - (Set of String) Specifies the list of initiators for a host
+	Initiators types.Set `tfsdk:"initiators"`
 	// NumOfMaskingViews - Specifies the number of masking views for a host
 	NumOfMaskingViews types.Int64 `tfsdk:"numofmaskingviews"`
 	// NumOfInitiators - Specifies the number of initiators for a host

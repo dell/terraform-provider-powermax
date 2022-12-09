@@ -33,8 +33,8 @@ resource "powermax_storage_group" "storage_group_1" {
 
 - `enable_compression` (Boolean) Enable compression on the storage group. By default, value is set to true.
 - `host_io_limits` (Map of String) The host Limits for the storageGroup. Currently the supported host limit parameters are ['host_io_limit_mb_sec','host_io_limit_io_sec','dynamicdistribution'].
-- `snapshot_policies` (List of Object) The snapshot policies to be associated with the storageGroup. The 'is_active' field in the nested schema indicates whether the snapshot policy is in resumed/suspended state (see [below for nested schema](#nestedatt--snapshot_policies))
-- `volume_ids` (List of String) The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.
+- `snapshot_policies` (Set of Object) The snapshot policies to be associated with the storageGroup. The 'is_active' field in the nested schema indicates whether the snapshot policy is in resumed/suspended state (see [below for nested schema](#nestedatt--snapshot_policies))
+- `volume_ids` (Set of String) The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.
 
 ### Read-Only
 

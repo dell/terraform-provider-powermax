@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
+	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/models"
 
@@ -29,7 +30,6 @@ func buildHostLimits(planHostLimitDetails map[string]string) *pmaxTypes.SetHostI
 
 func buildSnapshotPolicy(ctx context.Context, plan models.StorageGroup, resp *tfsdk.CreateResourceResponse) []string {
 	planSnapShotPolicies := &[]types.Object{}
-	snapShotPolicyObjects := []*models.SnapshotPolicy{}
 	pmaxSnapShotPolicies := []string{}
 
 	diags := plan.SnapshotPolicies.ElementsAs(ctx, planSnapShotPolicies, true)
@@ -45,10 +45,13 @@ func buildSnapshotPolicy(ctx context.Context, plan models.StorageGroup, resp *tf
 			resp.Diagnostics.Append(diags...)
 			return nil
 		}
-		snapShotPolicyObjects = append(snapShotPolicyObjects, snapshotpolicy)
-	}
-
-	for _, snapshotpolicy := range snapShotPolicyObjects {
+		if !snapshotpolicy.IsActive.Value {
+			resp.Diagnostics.AddError(
+				"Error creating storage group",
+				CreateSGDetailErrorMsg+plan.Name.Value+" with error: cannot create storage group with suspended snapshot policy",
+			)
+			return nil
+		}
 		pmaxSnapShotPolicies = append(pmaxSnapShotPolicies, snapshotpolicy.PolicyName.Value)
 	}
 
@@ -77,7 +80,14 @@ func updateState(sgState, sgPlan *models.StorageGroup, sgWithData models.Storage
 		sgState.SRPID.Value = "none"
 	}
 
-	sgState.ServiceLevel.Value = sgResponse.ServiceLevel
+	if sgPlan != nil {
+		sgState.ServiceLevel.Value = sgPlan.ServiceLevel.Value
+
+	} else {
+		if !strings.EqualFold(sgState.ServiceLevel.Value, sgResponse.ServiceLevel) {
+			sgState.ServiceLevel.Value = sgResponse.ServiceLevel
+		}
+	}
 	if sgState.ServiceLevel.Value == "" {
 		sgState.ServiceLevel.Value = "none"
 	}
@@ -116,7 +126,7 @@ func updateState(sgState, sgPlan *models.StorageGroup, sgWithData models.Storage
 	maskingViews.Elems = tfsdkmaskingViews
 	sgState.MaskingView = maskingViews
 
-	snapshotPoliciesTfsdk := types.List{
+	snapshotPoliciesTfsdk := types.Set{
 		ElemType: types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"policy_name": types.StringType,
@@ -206,7 +216,7 @@ func updateState(sgState, sgPlan *models.StorageGroup, sgWithData models.Storage
 	snapshotPoliciesTfsdk.Elems = snapshotPolicyObjects
 	sgState.SnapshotPolicies = snapshotPoliciesTfsdk
 
-	sgVolumes := types.List{
+	sgVolumes := types.Set{
 		ElemType: types.StringType,
 	}
 	tfsdkSgVols := []attr.Value{}
@@ -284,7 +294,7 @@ func UpdateSg(ctx context.Context, client client.Client, sgID string, planSg, st
 
 	}
 
-	if planSg.ServiceLevel.Value != stateSg.ServiceLevel.Value {
+	if !strings.EqualFold(planSg.ServiceLevel.Value, stateSg.ServiceLevel.Value) {
 		err := updateServiceLevel(ctx, client, sgID, planSg.ServiceLevel.Value)
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "service_level")
@@ -591,4 +601,15 @@ func containsString(checkList []string, checkElement string) bool {
 		}
 	}
 	return false
+}
+
+func isParamUpdated(updatedParams []string, paramName string) bool {
+	isParamUpdate := false
+	for _, updatedParam := range updatedParams {
+		if updatedParam == paramName {
+			isParamUpdate = true
+			break
+		}
+	}
+	return isParamUpdate
 }

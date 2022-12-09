@@ -24,11 +24,12 @@ const (
 	TestAccSGName9        = "test_acc_srp_slo_none"
 	TestAccSGName10       = "test_acc_sg_with_already_attached_volume_id"
 	TestAccSGName12       = "test_acc_import_sg_failure"
+	TestAccSGName13       = "test_acc_valid_sg_with_vol"
 	ResourceName1         = "powermax_storage_group.sg_import_success"
 	ResourceName2         = "powermax_storage_group.sg_import_failure"
 )
 
-func TestAccStorageGroup_CreateWithoutOptionalParam(t *testing.T) {
+func TestAccStorageGroup_CreateWithoutOptionalParamAndUpdateNameWithExistingSG(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
@@ -40,6 +41,10 @@ func TestAccStorageGroup_CreateWithoutOptionalParam(t *testing.T) {
 			{
 				Config: StorageGroupNoOptionalParam,
 				Check:  resource.ComposeTestCheckFunc(checkCreateStorageGroup(t, testProvider, TestAccSGName1)),
+			},
+			{
+				Config:      StorageGroupUpdateNameWithExistingSG,
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 		},
 	})
@@ -71,6 +76,23 @@ func TestAccStorageGroup_CreateSGWithVolumeIdAttachedToAnotherSGSuccess(t *testi
 	})
 }
 
+func TestAccStorageGroup_CreateSGWithSuspendedSnapshotPolicy(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Dont run with units tests because it will try to create the context")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testProviderFactory,
+		Steps: []resource.TestStep{
+			{
+				Config:      CreateSGWithSuspendedSnapshotPolicyFailure,
+				ExpectError: regexp.MustCompile(CreateSGDetailErrorMsg),
+			},
+		},
+	})
+}
+
 func TestAccStorageGroup_UpdateSuccess(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
@@ -84,7 +106,7 @@ func TestAccStorageGroup_UpdateSuccess(t *testing.T) {
 				// Test SG creation with snapshot policies, volume ids, service level and host_io_limits
 				Config: StorageGroupOptionalParam,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "id", TestAccSGName2),
-					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "service_level", "Diamond"),
+					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "service_level", "DiamoND"),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "volume_ids.0", VolumeID2),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "snapshot_policies.0.policy_name", SnapshotPolicy1),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "snapshot_policies.0.is_active", "true"),
@@ -92,7 +114,7 @@ func TestAccStorageGroup_UpdateSuccess(t *testing.T) {
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "host_io_limits.dynamicdistribution", "Always")),
 			},
 			{
-				// Test to verify SG update with snapshot policies, volume ids, service level, compressioion, host io limits, name,
+				// Test to verify SG update with snapshot policies(duplicates), volume ids(duplicates), service level, compressioion, host io limits, name,
 				Config: StorageGroupUpdate,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "id", TestAccSGName2Updated),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "service_level", "Platinum"),
@@ -146,33 +168,33 @@ func TestAccStorageGroup_UpdateSG_ExpectErr(t *testing.T) {
 			},
 			{
 				Config:      StorageGroupWithInvalidServiceLevel,
-				ExpectError: regexp.MustCompile(UpdateStorageGroupDetailsErrorMsg),
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 			{
 				// when: srpId = "none"
 				// expected: service_level cannot be modified
 				Config:      StorageGroupWithServiceLevelErr,
-				ExpectError: regexp.MustCompile(UpdateStorageGroupDetailsErrorMsg),
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 			{
 				// when: srpId = "none", service_level = "none"
 				// expected: enable_compression = false
 				Config:      StorageGroupWithSrpCompressionErr,
-				ExpectError: regexp.MustCompile(UpdateStorageGroupDetailsErrorMsg),
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 			{
 				// scenario: update SG
 				// when: attaching a volume id to multiple SG
 				// expected: error
 				Config:      UpdateStorageGroupAttachVolumeIDToMultipleSGErr,
-				ExpectError: regexp.MustCompile(UpdateStorageGroupDetailsErrorMsg),
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 			{
 				// scenario: update SG
 				// when: associating a suspended snapshot policy to SG
 				// expected: error
 				Config:      UpdateStorageGroupAssociateSuspendedSnapshotPolicyErr,
-				ExpectError: regexp.MustCompile(UpdateStorageGroupDetailsErrorMsg),
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 		},
 	})
@@ -351,6 +373,23 @@ resource "powermax_storage_group" "sg_wo_optional_param" {
 }
 `
 
+var StorageGroupUpdateNameWithExistingSG = `
+
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_storage_group" "sg_wo_optional_param" {
+	name = "` + StorageGroupID1 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+}
+`
+
 var StorageGroupOptionalParam = `
 
 provider "powermax" {
@@ -364,7 +403,7 @@ provider "powermax" {
 resource "powermax_storage_group" "sg_with_optional_param" {
 	name = "` + TestAccSGName2 + `"
 	srpid = "` + ValidSrpID1 + `"
-	service_level = "Diamond"
+	service_level = "DiamoND"
 	volume_ids = ["` + VolumeID2 + `"]
 	host_io_limits = {
 		host_io_limit_mb_sec = "1"
@@ -396,7 +435,7 @@ resource "powermax_storage_group" "sg_with_optional_param" {
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Platinum"
 	enable_compression = false
-	volume_ids = ["` + VolumeID2 + `", "` + VolumeID3 + `"]
+	volume_ids = ["` + VolumeID2 + `", "` + VolumeID2 + `", "` + VolumeID3 + `"]
 	host_io_limits = {
 		host_io_limit_mb_sec = "1"
 		host_io_limit_io_sec = "100"
@@ -406,11 +445,15 @@ resource "powermax_storage_group" "sg_with_optional_param" {
 		{
 			is_active = false
 			policy_name = "` + SnapshotPolicy1 + `"
-		  },
-		  {
+		},
+		{
 			is_active = true
 			policy_name = "` + SnapshotPolicy2 + `"
-		  }
+		},
+		{
+			is_active = true
+			policy_name = "` + SnapshotPolicy2 + `"
+		}
   ]
 }
 `
@@ -449,13 +492,7 @@ provider "powermax" {
 }
 
 resource "powermax_storage_group" "sg_existing_create1" {
-	name = "` + StorageGroup2 + `"
-	srpid = "` + ValidSrpID1 + `"
-	service_level = "Diamond"
-}
-
-resource "powermax_storage_group" "sg_existing_create2" {
-	name = "` + StorageGroup2 + `"
+	name = "` + StorageGroupForVol1 + `"
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Diamond"
 }
@@ -532,6 +569,13 @@ resource "powermax_storage_group" "sg_with_invalid_update" {
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Diamond"
 }
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
+}
 `
 
 var CreateValidSGWithSRPServiceLevelNone = `
@@ -571,6 +615,28 @@ resource "powermax_storage_group" "sg_with_already_attached_volume_id" {
 }
 `
 
+var CreateSGWithSuspendedSnapshotPolicyFailure = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_storage_group" "storage_group_suspended_snapshot_policy" {
+	name = "` + TestAccSGName2 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	snapshot_policies = [
+		{
+			is_active = false
+			policy_name = "` + SnapshotPolicy1 + `"
+		}
+	]
+}
+`
+
 var StorageGroupWithInvalidServiceLevel = `
 
 provider "powermax" {
@@ -585,6 +651,13 @@ resource "powermax_storage_group" "sg_with_invalid_update" {
 	name = "` + TestAccSGName5 + `"
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "InvalidServiceLevel"
+}
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
 }
 `
 
@@ -602,6 +675,13 @@ resource "powermax_storage_group" "sg_with_invalid_update" {
 	name = "` + TestAccSGName5 + `"
 	srpid = "none"
 	service_level = "Platinum"
+}
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
 }
 `
 
@@ -621,6 +701,13 @@ resource "powermax_storage_group" "sg_with_invalid_update" {
 	service_level = "none"
 	enable_compression = true
 }
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
+}
 `
 
 var StorageGroupWithExistingSGNameErr = `
@@ -634,9 +721,16 @@ provider "powermax" {
 }
 
 resource "powermax_storage_group" "sg_update_with_existing_name" {
-	name = "` + StorageGroup1 + `"
+	name = "` + StorageGroupForVol1 + `"
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Diamond"
+}
+
+resource "powermax_storage_group" "sg_with_valid_volume" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
 }
 `
 
@@ -656,6 +750,13 @@ resource "powermax_storage_group" "sg_create_with_volume_id_err" {
 	service_level = "Diamond"
 	volume_ids = ["` + VolumeID4 + `"]
 }
+
+resource "powermax_storage_group" "sg_with_valid_volume" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
+}
 `
 
 var UpdateStorageGroupAttachVolumeIDToMultipleSGErr = `
@@ -670,6 +771,14 @@ provider "powermax" {
 
 resource "powermax_storage_group" "sg_with_invalid_update" {
 	name = "` + TestAccSGName5 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
+}
+
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Diamond"
 	volume_ids = ["` + VolumeID4 + `"]
@@ -696,5 +805,12 @@ resource "powermax_storage_group" "sg_with_invalid_update" {
 			policy_name = "` + SnapshotPolicy1 + `"
 		},
   ]
+}
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
 }
 `
