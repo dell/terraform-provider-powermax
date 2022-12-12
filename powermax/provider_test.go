@@ -35,11 +35,10 @@ var DirectorID1 = os.Getenv("DIRECTOR_ID1")
 var DirectorID2 = os.Getenv("DIRECTOR_ID2")
 var StorageGroupForVol1 = os.Getenv("STORAGE_GROUP_VOL1")
 var StorageGroupForMV1 = os.Getenv("STORAGE_GROUP_MV1")
-var StorageGroupForMV2 = os.Getenv("STORAGE_GROUP_MV2")
-var StorageGroup1 = os.Getenv("STORAGE_GROUP1")
-var StorageGroup2 = os.Getenv("STORAGE_GROUP2")
 var HostGroupID1 = os.Getenv("HOST_GROUP_ID1")
 var ImportHostInitiatorID = os.Getenv("HOST_INITIATOR_ID3")
+var HostID1 = os.Getenv("HOST_ID1")
+var PortGroupID1 = os.Getenv("PORTGROUP_ID1")
 
 func init() {
 	testProvider = New("test")()
@@ -141,20 +140,16 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("STORAGE_GROUP_MV1 must be set for acceptance tests")
 	}
 
-	if v := os.Getenv("STORAGE_GROUP_MV2"); v == "" {
-		t.Fatal("STORAGE_GROUP_MV2 must be set for acceptance tests")
-	}
-
-	if v := os.Getenv("STORAGE_GROUP1"); v == "" {
-		t.Fatal("STORAGE_GROUP1 must be set for acceptance tests")
-	}
-
-	if v := os.Getenv("STORAGE_GROUP2"); v == "" {
-		t.Fatal("STORAGE_GROUP2 must be set for acceptance tests")
-	}
-
 	if v := os.Getenv("HOST_GROUP_ID1"); v == "" {
 		t.Fatal("HOST_GROUP_ID1 must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("HOST_ID1"); v == "" {
+		t.Fatal("HOST_ID1 must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("PORTGROUP_ID1"); v == "" {
+		t.Fatal("PORTGROUP_ID1 must be set for acceptance tests")
 	}
 }
 

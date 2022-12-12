@@ -15,14 +15,14 @@ type StorageGroup struct {
 	SRPID types.String `tfsdk:"srpid"`
 	// ServiceLevel - The service level associated with the storage group
 	ServiceLevel types.String `tfsdk:"service_level"`
-	// SnapshotPolicies - The snapshot policies associated with the storage group
-	SnapshotPolicies types.List `tfsdk:"snapshot_policies"`
+	// SnapshotPolicies - (Set of Snapshot Policy Objects) The snapshot policies associated with the storage group
+	SnapshotPolicies types.Set `tfsdk:"snapshot_policies"`
 	// EnableCompression - States whether compression is enabled on storage group
 	EnableCompression types.Bool `tfsdk:"enable_compression"`
 	// Workload - The workload associated with the storage group
 	Workload types.String `tfsdk:"workload"`
-	// VolumeIDs - The IDs of the volumes associated with this storagegroup
-	VolumeIDs types.List `tfsdk:"volume_ids"`
+	// VolumeIDs - (Set of String) The IDs of the volumes associated with this storagegroup
+	VolumeIDs types.Set `tfsdk:"volume_ids"`
 	// NumOfVols - The number of volumes associated with the storage group
 	NumOfVols types.Int64 `tfsdk:"numofvols"`
 	// NumOfChildSgs - The number of child storage groups associated with the storage group

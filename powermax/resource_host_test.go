@@ -20,23 +20,26 @@ const (
 	TestAccHostName4        = "test_acc_chost3"
 	TestAccHostName5        = "test_acc_chost4"
 	InvalidInitiatorID      = "0000000000000000"
-	ImportHostID            = "TestAccHost_DoNotModify"
 	ImportHostResourceName1 = "powermax_host.import_host_success"
 	ImportHostResourceName2 = "powermax_host.import_host_failure"
 )
 
-func TestAccHost_CreateHost(t *testing.T) {
+func TestAccHost_CreateHostUpdateExistingName(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testProviderFactory,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: CreateHostParams,
 				Check:  resource.ComposeTestCheckFunc(checkCreateHost(t, testProvider, TestAccHostName1)),
+			},
+			{
+				Config:      UpdateHostExistingName,
+				ExpectError: regexp.MustCompile(UpdateHostDetailsErrorMsg),
 			},
 		},
 	})
@@ -138,6 +141,10 @@ func TestAccHost_UpdateHostInitiatorsRemove(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "name", TestAccHostName4),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.#", "1"),
 					resource.TestCheckResourceAttr("powermax_host.host_create_rename_test", "initiators.0", InitiatorID1)),
+			},
+			{
+				Config:      UpdateHostWithEmptyInitiatorFailure,
+				ExpectError: regexp.MustCompile("Error updating host"),
 			},
 		},
 	})
@@ -245,7 +252,7 @@ func TestAccHost_ImportHostSuccess(t *testing.T) {
 	}
 
 	assertTFImportState := func(s []*terraform.InstanceState) error {
-		assert.Equal(t, ImportHostID, s[0].Attributes["name"])
+		assert.Equal(t, HostID1, s[0].Attributes["name"])
 		assert.Equal(t, "1", s[0].Attributes["initiators.#"])
 		assert.Equal(t, ImportHostInitiatorID, s[0].Attributes["initiators.0"])
 		assert.Equal(t, "true", s[0].Attributes["host_flags.volume_set_addressing.enabled"])
@@ -253,7 +260,7 @@ func TestAccHost_ImportHostSuccess(t *testing.T) {
 		assert.Equal(t, "false", s[0].Attributes["host_flags.openvms.enabled"])
 		assert.Equal(t, "true", s[0].Attributes["host_flags.openvms.override"])
 		assert.Equal(t, "1", s[0].Attributes["numofinitiators"])
-		assert.Equal(t, "0", s[0].Attributes["numofmaskingviews"])
+		assert.Equal(t, "1", s[0].Attributes["numofmaskingviews"])
 		assert.Equal(t, 1, len(s))
 		return nil
 	}
@@ -268,7 +275,7 @@ func TestAccHost_ImportHostSuccess(t *testing.T) {
 				ImportState:      true,
 				ImportStateCheck: assertTFImportState,
 				ExpectError:      nil,
-				ImportStateId:    ImportHostID,
+				ImportStateId:    HostID1,
 			},
 		},
 	})
@@ -354,6 +361,48 @@ resource "powermax_host" "host_create_test" {
 }
 `
 
+var UpdateHostExistingName = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_host" "host_create_test" {
+	name = "` + HostID1 + `"
+	host_flags = {
+		volume_set_addressing = {
+			override = true
+			enabled = true
+		}
+		openvms = {
+			override = true
+			enabled = false
+		}
+		avoid_reset_broadcast = {
+			enabled = true
+			override = true
+		}
+		scsi_3 = {
+			enabled = true
+			override = true
+		}
+		spc2_protocol_version = {
+			enabled = false
+			override = true
+		}
+		scsi_support1 = {
+			enabled = false
+			override = true
+		}
+		consistent_lun = false
+	}
+	initiators = ["` + InitiatorID1 + `"]
+}
+`
+
 var CreateHostParamsWithOptionalFlags = `
 provider "powermax" {
 	username = "` + username + `"
@@ -400,7 +449,7 @@ resource "powermax_host" "host_create_test" {
 		}
 		consistent_lun = true
 	}
-	initiators = ["` + InitiatorID1 + `"]
+	initiators = []
 }
 `
 
@@ -578,6 +627,31 @@ resource "powermax_host" "host_create_rename_test" {
 }
 `
 
+var UpdateHostWithEmptyInitiatorFailure = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	insecure = true
+}
+
+resource "powermax_host" "host_create_rename_test" {
+	name = "` + TestAccHostName4 + `"
+	initiators = [""]
+	host_flags = {
+		volume_set_addressing = {
+			override = true
+			enabled = true
+		}
+		openvms = {
+			override = true
+			enabled = false
+		}
+	}
+}
+`
+
 var HostParamsForUpdate = `
 provider "powermax" {
 	username = "` + username + `"
@@ -603,6 +677,7 @@ resource "powermax_host" "host_create_rename_test" {
 }
 `
 
+// Test duplicate initiators update along with host flags update
 var HostParamsChangeAddInitiatorAndNameChange = `
 provider "powermax" {
 	username = "` + username + `"
@@ -614,7 +689,7 @@ provider "powermax" {
 
 resource "powermax_host" "host_create_rename_test" {
 	name = "` + TestAccHostName4 + `"
-	initiators = ["` + InitiatorID1 + `","` + InitiatorID2 + `"]
+	initiators = ["` + InitiatorID1 + `", "` + InitiatorID1 + `", "` + InitiatorID2 + `", "` + InitiatorID2 + `"]
 	host_flags = {
 		volume_set_addressing = {
 			override = true

@@ -126,7 +126,7 @@ func (r resourceHostType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagn
 				MarkdownDescription: "Flags set for the host.",
 			},
 			"initiators": {
-				Type: types.ListType{
+				Type: types.SetType{
 					ElemType: types.StringType,
 				},
 				Required:            true,
@@ -208,7 +208,7 @@ type resourceHost struct {
 
 // Create Host
 func (r resourceHost) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
-	tflog.Debug(ctx, "creating host")
+	tflog.Info(ctx, "creating host")
 	if !r.p.configured {
 		resp.Diagnostics.AddError(
 			"Provider not configured",
@@ -278,10 +278,21 @@ func (r resourceHost) Create(ctx context.Context, req tfsdk.CreateResourceReques
 	})
 	hostResponse, err := r.p.client.PmaxClient.CreateHost(ctx, r.p.client.SymmetrixID, planHost.Name.Value, initiators, &hostFlags)
 	if err != nil {
+		hostID := planHost.Name.Value
 		resp.Diagnostics.AddError(
 			"Error creating host",
-			CreateHostDetailErrorMsg+planHost.Name.Value+"with error: "+err.Error(),
+			CreateHostDetailErrorMsg+hostID+"with error: "+err.Error(),
 		)
+		hostResponse, getHostErr := r.p.client.PmaxClient.GetHostByID(ctx, r.p.client.SymmetrixID, hostID)
+		if hostResponse != nil || getHostErr == nil {
+			err := r.p.client.PmaxClient.DeleteHost(ctx, r.p.client.SymmetrixID, hostID)
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"Error deleting the invalid host, This may be a dangling resource and needs to be deleted manually",
+					CreateHostDetailErrorMsg+hostID+"with error: "+err.Error(),
+				)
+			}
+		}
 		return
 	}
 	tflog.Debug(ctx, "create host response", map[string]interface{}{
@@ -300,12 +311,12 @@ func (r resourceHost) Create(ctx context.Context, req tfsdk.CreateResourceReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "completed create host")
+	tflog.Info(ctx, "create host completed")
 }
 
 // Read Host
 func (r resourceHost) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
-	tflog.Debug(ctx, "reading host")
+	tflog.Info(ctx, "reading host")
 	var hostState models.Host
 	diags := req.State.Get(ctx, &hostState)
 	resp.Diagnostics.Append(diags...)
@@ -346,13 +357,13 @@ func (r resourceHost) Read(ctx context.Context, req tfsdk.ReadResourceRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "completed read host")
+	tflog.Info(ctx, "read host completed")
 }
 
 // Update Host
 // Supported updates: name, initiators, host flags
 func (r resourceHost) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
-	tflog.Debug(ctx, "updating host")
+	tflog.Info(ctx, "updating host")
 	var plan models.Host
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -376,7 +387,7 @@ func (r resourceHost) Update(ctx context.Context, req tfsdk.UpdateResourceReques
 	if len(errMessages) > 0 || len(updateFailedParameters) > 0 {
 		errMessage := strings.Join(errMessages, ",\n")
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to update all parameters of Host, updated parameters are %v and parameters failed to update are %v", updatedParams, updateFailedParameters),
+			fmt.Sprintf("%s, updated parameters are %v and parameters failed to update are %v", UpdateHostDetailsErrorMsg, updatedParams, updateFailedParameters),
 			errMessage)
 	}
 	tflog.Debug(ctx, "update host response", map[string]interface{}{
@@ -385,7 +396,11 @@ func (r resourceHost) Update(ctx context.Context, req tfsdk.UpdateResourceReques
 		"error messages":         errMessages,
 	})
 
-	hostID := plan.Name.Value
+	hostID := state.ID.Value
+	if isParamUpdated(updatedParams, "name") {
+		hostID = plan.Name.Value
+	}
+
 	tflog.Debug(ctx, "calling get host by ID on pmax client", map[string]interface{}{
 		"SymmetrixID": r.p.client.SymmetrixID,
 		"hostID":      hostID,
@@ -405,7 +420,15 @@ func (r resourceHost) Update(ctx context.Context, req tfsdk.UpdateResourceReques
 	initiators := make([]string, len(plan.Initiators.Elems))
 	if len(plan.Initiators.Elems) > 0 {
 		for index, initiator := range plan.Initiators.Elems {
-			initiators[index] = strings.Trim(initiator.String(), "\"")
+			initiatorVal := strings.TrimSpace(strings.Trim(initiator.String(), "\""))
+			if initiatorVal == "" {
+				resp.Diagnostics.AddError(
+					"Error updating host",
+					"Empty initiator values are not allowed",
+				)
+				return
+			}
+			initiators[index] = initiatorVal
 		}
 	}
 
@@ -420,12 +443,12 @@ func (r resourceHost) Update(ctx context.Context, req tfsdk.UpdateResourceReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "update host completed")
+	tflog.Info(ctx, "update host completed")
 }
 
 // Delete Host
 func (r resourceHost) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
-	tflog.Debug(ctx, "deleting host")
+	tflog.Info(ctx, "deleting host")
 	var hostState models.Host
 	diags := req.State.Get(ctx, &hostState)
 	resp.Diagnostics.Append(diags...)
@@ -447,11 +470,11 @@ func (r resourceHost) Delete(ctx context.Context, req tfsdk.DeleteResourceReques
 
 	// Remove resource from state
 	resp.State.RemoveResource(ctx)
-	tflog.Debug(ctx, "deleting host complete")
+	tflog.Info(ctx, "delete host complete")
 }
 
 func (r resourceHost) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
-	tflog.Debug(ctx, "importing host state")
+	tflog.Info(ctx, "importing host state")
 	var hostState models.Host
 	hostID := req.ID
 	tflog.Debug(ctx, "fetching host by ID", map[string]interface{}{
@@ -477,6 +500,6 @@ func (r resourceHost) ImportState(ctx context.Context, req tfsdk.ImportResourceS
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "completed import host")
+	tflog.Info(ctx, "import host state completed")
 
 }

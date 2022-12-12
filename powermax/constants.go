@@ -34,6 +34,9 @@ const (
 	// ReadHostDetailsErrorMsg specifies error details occurred while reading host
 	ReadHostDetailsErrorMsg = "Could not read host "
 
+	// UpdateHostDetailsErrorMsg specifies error details occurred while updating host
+	UpdateHostDetailsErrorMsg = "Could not update host "
+
 	// DeleteHostDetailsErrorMsg specifies error details occurred while deleting host
 	DeleteHostDetailsErrorMsg = "Could not delete host "
 
@@ -99,9 +102,6 @@ const (
 
 	// ImportMVDetailsErrorMsg specifies error details occurred while importing masking view
 	ImportMVDetailsErrorMsg = "Could not import masking view "
-
-	// UpdateStorageGroupDetailsErrorMsg specifies error details occurred while updating storage group
-	UpdateStorageGroupDetailsErrorMsg = "Unable to update all changes to StorageGroup"
 
 	// CreateSgErrorMsg specifies error details occurred while creating storage group
 	CreateSgErrorMsg = "Error creating storage group"

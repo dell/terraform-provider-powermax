@@ -59,9 +59,12 @@ func (r resourceStorageGroupType) GetSchema(_ context.Context) (tfsdk.Schema, di
 				Computed:            true,
 				Description:         "The workload associated with the storage group.",
 				MarkdownDescription: "The workload associated with the storage group.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"volume_ids": {
-				Type: types.ListType{
+				Type: types.SetType{
 					ElemType: types.StringType,
 				},
 				Optional:            true,
@@ -113,12 +116,18 @@ func (r resourceStorageGroupType) GetSchema(_ context.Context) (tfsdk.Schema, di
 				Computed:            true,
 				Description:         "The service level compliance status of the storage group.",
 				MarkdownDescription: "The service level compliance status of the storage group.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"device_emulation": {
 				Type:                types.StringType,
 				Computed:            true,
 				Description:         "The emulation of the volumes in the storage group.",
 				MarkdownDescription: "The emulation of the volumes in the storage group.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"type": {
 				Type:                types.StringType,
@@ -137,6 +146,9 @@ func (r resourceStorageGroupType) GetSchema(_ context.Context) (tfsdk.Schema, di
 				Computed:            true,
 				Description:         "Compression ratio of the storage group.",
 				MarkdownDescription: "Compression ratio of the storage group.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"compression_ratio_to_one": {
 				Type:                types.NumberType,
@@ -204,7 +216,7 @@ func (r resourceStorageGroupType) GetSchema(_ context.Context) (tfsdk.Schema, di
 			"snapshot_policies": {
 				Computed: true,
 				Optional: true,
-				Type: types.ListType{
+				Type: types.SetType{
 					ElemType: types.ObjectType{
 						AttrTypes: map[string]attr.Type{
 							"policy_name": types.StringType,
@@ -235,7 +247,7 @@ type resourceStorageGroup struct {
 
 // Create StorageGroup
 func (r resourceStorageGroup) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
-	tflog.Debug(ctx, "creating storage group")
+	tflog.Info(ctx, "creating storage group")
 	if !r.p.configured {
 		resp.Diagnostics.AddError(
 			"Provider not configured",
@@ -273,6 +285,9 @@ func (r resourceStorageGroup) Create(ctx context.Context, req tfsdk.CreateResour
 		"resp":   resp,
 	})
 	snapshotPolicyPayload := buildSnapshotPolicy(ctx, sgPlan, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	if snapshotPolicyPayload != nil {
 		optionalPayloadParams["snapshotPolicies"] = snapshotPolicyPayload
 	}
@@ -366,12 +381,12 @@ func (r resourceStorageGroup) Create(ctx context.Context, req tfsdk.CreateResour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "create storage group completed")
+	tflog.Info(ctx, "create storage group completed")
 }
 
 // Read StorageGroup
 func (r resourceStorageGroup) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
-	tflog.Debug(ctx, "reading storage group")
+	tflog.Info(ctx, "reading storage group")
 	var sgState models.StorageGroup
 	diags := req.State.Get(ctx, &sgState)
 	resp.Diagnostics.Append(diags...)
@@ -441,13 +456,13 @@ func (r resourceStorageGroup) Read(ctx context.Context, req tfsdk.ReadResourceRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "read storage group completed")
+	tflog.Info(ctx, "read storage group completed")
 }
 
 // Update StorageGroup
 // Supported updates: name, service_level, SRP, snapshot policies, compression, volume IDs, host IO limits
 func (r resourceStorageGroup) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
-	tflog.Debug(ctx, "updating storage group")
+	tflog.Info(ctx, "updating storage group")
 	var planStorageGroup models.StorageGroup
 	diags := req.Plan.Get(ctx, &planStorageGroup)
 	resp.Diagnostics.Append(diags...)
@@ -473,7 +488,7 @@ func (r resourceStorageGroup) Update(ctx context.Context, req tfsdk.UpdateResour
 	if len(updateFailedParameters) > 0 {
 		errorMessage := strings.Join(errMsgs, ",\n ")
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Unable to update all changes to StorageGroup, The updated parameters are %v and the parameters failed to update are %v", updatedParameters, updateFailedParameters),
+			fmt.Sprintf("%s, The updated parameters are %v and the parameters failed to update are %v", UpdateSGDetailsErrorMsg, updatedParameters, updateFailedParameters),
 			errorMessage)
 	}
 	tflog.Debug(ctx, "update storage group response", map[string]interface{}{
@@ -486,13 +501,18 @@ func (r resourceStorageGroup) Update(ctx context.Context, req tfsdk.UpdateResour
 		"symmetrixID":  symmID,
 		"storageGroup": planStorageGroup.Name.Value,
 	})
-	pmaxSgResponse, err := r.p.client.PmaxClient.GetStorageGroup(ctx, symmID, planStorageGroup.Name.Value)
 
+	if isParamUpdated(updatedParameters, "name") {
+		storageGroupID = planStorageGroup.Name.Value
+	}
+
+	pmaxSgResponse, err := r.p.client.PmaxClient.GetStorageGroup(ctx, symmID, storageGroupID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Error reading storagegroup: %s post update", storageGroupID), err.Error())
 		return
 	}
+
 	tflog.Debug(ctx, "get storage group response", map[string]interface{}{
 		"pmaxSgResponse": pmaxSgResponse,
 	})
@@ -546,12 +566,12 @@ func (r resourceStorageGroup) Update(ctx context.Context, req tfsdk.UpdateResour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "updating storage group completed")
+	tflog.Info(ctx, "update storage group completed")
 }
 
 // Delete StorageGroup
 func (r resourceStorageGroup) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
-	tflog.Debug(ctx, "deleting storage group")
+	tflog.Info(ctx, "deleting storage group")
 	var sgState models.StorageGroup
 	diags := req.State.Get(ctx, &sgState)
 	resp.Diagnostics.Append(diags...)
@@ -570,12 +590,12 @@ func (r resourceStorageGroup) Delete(ctx context.Context, req tfsdk.DeleteResour
 
 	// Remove resource from state
 	resp.State.RemoveResource(ctx)
-	tflog.Debug(ctx, "delete storage group completed")
+	tflog.Info(ctx, "delete storage group completed")
 }
 
 // Import resource
 func (r resourceStorageGroup) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
-	tflog.Debug(ctx, "importing storage group state")
+	tflog.Info(ctx, "importing storage group state")
 	var sgState models.StorageGroup
 	sgState.ID = types.String{Value: req.ID}
 	sgID := sgState.ID.Value
@@ -643,5 +663,5 @@ func (r resourceStorageGroup) ImportState(ctx context.Context, req tfsdk.ImportR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "import storage group state completed")
+	tflog.Info(ctx, "import storage group state completed")
 }

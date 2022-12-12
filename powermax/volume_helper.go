@@ -149,8 +149,7 @@ func updateVol(ctx context.Context, client client.Client, planVol, stateVol mode
 		}
 	}
 
-	// TODO: check for capacity unit along with capacity size
-	if planVol.Size.Value.String() != stateVol.Size.Value.String() {
+	if planVol.Size.Value.String() != stateVol.Size.Value.String() || planVol.CapUnit.Value != stateVol.CapUnit.Value {
 		size, err := getVolumeSize(planVol)
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "size")
@@ -165,6 +164,7 @@ func updateVol(ctx context.Context, client client.Client, planVol, stateVol mode
 			updatedParameters = append(updatedParameters, "size")
 		}
 	}
+
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 

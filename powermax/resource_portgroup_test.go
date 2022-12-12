@@ -18,7 +18,7 @@ const (
 	TestAccCreatePGNameUpdated = "test_acc_create_pg_updated"
 )
 
-func TestAccPortGroup_CreatePortGroup(t *testing.T) {
+func TestAccPortGroup_CreatePortGroupUpdateExistingName(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
@@ -41,12 +41,16 @@ func TestAccPortGroup_CreatePortGroup(t *testing.T) {
 				Check:  resource.ComposeTestCheckFunc(checkCreatePortGroup(t, testProvider, "test_acc_create_pg")),
 			},
 			{
+				Config:      UpdatePortGroupParamsExistingName,
+				ExpectError: regexp.MustCompile(UpdatePGDetailsErrMsg),
+			},
+			{
 				Config:           ImportPortGroup,
 				ResourceName:     "powermax_port_group.import_pg",
 				ImportState:      true,
 				ImportStateCheck: assertTFImportState,
 				ExpectError:      nil,
-				ImportStateId:    "test_acc_create_pg",
+				ImportStateId:    TestAccCreatePGName,
 			},
 		},
 	})
@@ -151,7 +155,7 @@ func TestAccPortGroup_UpdatePortGroupFailure1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_port_group.create_pg", "id", TestAccCreatePGName),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.#", "2"),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", DirectorID1),
-					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "1"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "0"),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.director_id", DirectorID1),
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.1.port_id", "2")),
 			},
@@ -163,7 +167,7 @@ func TestAccPortGroup_UpdatePortGroupFailure1(t *testing.T) {
 	})
 }
 
-// Failure scenario : Failing to add ports- Duplicate port, API layer ignores duplicate ports and considers only 1 port. Hence it will cause plan inconsistency
+// Update with duplicate ports
 func TestAccPortGroup_UpdatePortGroupFailure2(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
@@ -181,8 +185,12 @@ func TestAccPortGroup_UpdatePortGroupFailure2(t *testing.T) {
 					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "2")),
 			},
 			{
-				Config:      UpdatePortGroupParamsFailure2,
-				ExpectError: regexp.MustCompile("Provider produced inconsistent result after apply"),
+				Config:      UpdateDuplicatePortGroup,
+				ExpectError: nil,
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_port_group.create_pg", "id", TestAccCreatePGNameUpdated),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.#", "1"),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.director_id", DirectorID1),
+					resource.TestCheckResourceAttr("powermax_port_group.create_pg", "ports.0.port_id", "2")),
 			},
 		},
 	})
@@ -218,6 +226,27 @@ provider "powermax" {
 
 resource "powermax_port_group" "create_pg" {
 	name = "test_acc_create_pg"
+	protocol = "SCSI_FC"
+	ports = [
+		{
+			director_id = "` + DirectorID1 + `"
+			port_id = "2"
+		}
+	]
+}
+`
+var UpdatePortGroupParamsExistingName = `
+provider "powermax" {
+	username = "` + username + `"
+	password = "` + password + `"
+	endpoint = "` + endpoint + `"
+	serial_number = "` + serialno + `"
+	timeout = "20m"
+	insecure = true
+}
+
+resource "powermax_port_group" "create_pg" {
+	name = "` + PortGroupID1 + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
@@ -360,7 +389,7 @@ resource "powermax_port_group" "create_pg" {
 	]
 }
 `
-var UpdatePortGroupParamsFailure2 = `
+var UpdateDuplicatePortGroup = `
 provider "powermax" {
 	username = "` + username + `"
 	password = "` + password + `"

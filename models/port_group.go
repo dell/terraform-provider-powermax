@@ -8,7 +8,7 @@ type PortGroup struct {
 	ID types.String `tfsdk:"id"`
 	// Name - The name of the portgroup
 	Name types.String `tfsdk:"name"`
-	// Ports - The ports associated with the portgroup
+	// Ports - (Set of Ports) The ports associated with the portgroup
 	Ports []PortKey `tfsdk:"ports"`
 	// Protocol - The portgroup protocol
 	Protocol types.String `tfsdk:"protocol"`

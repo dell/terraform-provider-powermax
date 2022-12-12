@@ -25,7 +25,7 @@ func updateHostState(hostState *models.Host, planInitiators []string, hostRespon
 	hostState.HostFlags.ConsistentLun = types.Bool{Value: hostResponse.ConsistentLun}
 
 	initiators := matchPlanAndResponseInitiators(planInitiators, hostResponse.Initiators)
-	saveListAttribute(hostState, initiators, "initiator")
+	saveInitiatorsSetAttr(hostState, initiators)
 	saveListAttribute(hostState, hostResponse.MaskingviewIDs, "maskingView")
 	saveListAttribute(hostState, hostResponse.PowerPathHosts, "powerpathHost")
 	setDefaultHostFlags(hostState)
@@ -103,13 +103,31 @@ func saveListAttribute(hostState *models.Host, listAttribute []string, attribute
 			Elems:    []attr.Value{},
 		}
 	}
-	if attributeName == "initiator" {
-		hostState.Initiators = attributeListType
-	} else if attributeName == "maskingView" {
+	if attributeName == "maskingView" {
 		hostState.Maskingview = attributeListType
 	} else if attributeName == "powerpathHost" {
 		hostState.PowerpathHosts = attributeListType
 	}
+}
+
+func saveInitiatorsSetAttr(hostState *models.Host, listAttribute []string) {
+	var attributeSetType types.Set
+	if len(listAttribute) > 0 {
+		var attributeList []attr.Value
+		for _, attribute := range listAttribute {
+			attributeList = append(attributeList, types.String{Value: attribute})
+		}
+		attributeSetType = types.Set{
+			ElemType: types.StringType,
+			Elems:    attributeList,
+		}
+	} else {
+		attributeSetType = types.Set{
+			ElemType: types.StringType,
+			Elems:    []attr.Value{},
+		}
+	}
+	hostState.Initiators = attributeSetType
 }
 
 func matchPlanAndResponseInitiators(planInitiators, responseInitiators []string) []string {
@@ -178,7 +196,7 @@ func updateHost(ctx context.Context, client client.Client, plan, state models.Ho
 			updateFailedParameters = append(updateFailedParameters, "initiators")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s", "couldn't get the host data"))
 		}
-		// confirm the lower case logic of initiators
+		// TBD :confirm the lower case logic of initiators
 		var planInitiatorsLowerCase []string
 		for _, planInitiator := range planInitiators {
 			planInitiatorsLowerCase = append(planInitiatorsLowerCase, strings.ToLower(planInitiator))

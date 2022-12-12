@@ -33,7 +33,7 @@ func (r resourcePortGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 			},
 			"ports": {
 				Required: true,
-				Attributes: tfsdk.ListNestedAttributes(map[string]tfsdk.Attribute{
+				Attributes: tfsdk.SetNestedAttributes(map[string]tfsdk.Attribute{
 					"director_id": {
 						Type:     types.StringType,
 						Required: true,
@@ -83,6 +83,9 @@ func (r resourcePortGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 				Computed:            true,
 				Description:         "The test ID of the portgroup.",
 				MarkdownDescription: "The test ID of the portgroup.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 		},
 	}, nil
@@ -101,7 +104,7 @@ type resourcePortGroup struct {
 
 // Create PortGroup
 func (r resourcePortGroup) Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
-	tflog.Debug(ctx, "creating port group")
+	tflog.Info(ctx, "creating port group")
 	if !r.p.configured {
 		resp.Diagnostics.AddError(
 			"Provider not configured",
@@ -159,12 +162,12 @@ func (r resourcePortGroup) Create(ctx context.Context, req tfsdk.CreateResourceR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "create portgroup completed")
+	tflog.Info(ctx, "create portgroup completed")
 }
 
 // Read PortGroup
 func (r resourcePortGroup) Read(ctx context.Context, req tfsdk.ReadResourceRequest, resp *tfsdk.ReadResourceResponse) {
-	tflog.Debug(ctx, "reading portgroup")
+	tflog.Info(ctx, "reading portgroup")
 	var pgState models.PortGroup
 	diags := req.State.Get(ctx, &pgState)
 	resp.Diagnostics.Append(diags...)
@@ -208,13 +211,13 @@ func (r resourcePortGroup) Read(ctx context.Context, req tfsdk.ReadResourceReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "reading portgroup completed")
+	tflog.Info(ctx, "read portgroup completed")
 }
 
 // Update PortGroup
 // Supported updates: name, ports
 func (r resourcePortGroup) Update(ctx context.Context, req tfsdk.UpdateResourceRequest, resp *tfsdk.UpdateResourceResponse) {
-	tflog.Debug(ctx, "updating portgroup")
+	tflog.Info(ctx, "updating portgroup")
 	var pgPlan, pgState models.PortGroup
 	diags := req.State.Get(ctx, &pgState)
 	resp.Diagnostics.Append(diags...)
@@ -227,15 +230,21 @@ func (r resourcePortGroup) Update(ctx context.Context, req tfsdk.UpdateResourceR
 		return
 	}
 
-	updatedParams, updateFailedParams, errorMessages := updatePortGroup(ctx, r.p.client, pgPlan, pgState)
-	if len(errorMessages) > 0 || len(updateFailedParams) > 0 {
+	updatedParams, updateFailedParameters, errorMessages := updatePortGroup(ctx, r.p.client, pgPlan, pgState)
+	if len(errorMessages) > 0 || len(updateFailedParameters) > 0 {
 		errMessage := strings.Join(errorMessages, ",\n")
 		resp.Diagnostics.AddError(
-			fmt.Sprintf("Failed to update all parameters of PortGroup, updated parameters are %v and parameters failed to update are %v", updatedParams, updateFailedParams),
+			fmt.Sprintf("%s, updated parameters are %v and parameters failed to update are %v", UpdatePGDetailsErrMsg, updatedParams, updateFailedParameters),
 			errMessage)
 	}
 
-	pgResponse, err := r.p.client.PmaxClient.GetPortGroupByID(ctx, r.p.client.SymmetrixID, pgPlan.Name.Value)
+	portGroupID := pgState.ID.Value
+
+	if isParamUpdated(updatedParams, "name") {
+		portGroupID = pgPlan.Name.Value
+	}
+
+	pgResponse, err := r.p.client.PmaxClient.GetPortGroupByID(ctx, r.p.client.SymmetrixID, portGroupID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading portgroup",
@@ -252,12 +261,12 @@ func (r resourcePortGroup) Update(ctx context.Context, req tfsdk.UpdateResourceR
 		return
 	}
 
-	tflog.Debug(ctx, "update portgroup completed")
+	tflog.Info(ctx, "update portgroup completed")
 }
 
 // Delete PortGroup
 func (r resourcePortGroup) Delete(ctx context.Context, req tfsdk.DeleteResourceRequest, resp *tfsdk.DeleteResourceResponse) {
-	tflog.Debug(ctx, "deleting portgroup")
+	tflog.Info(ctx, "deleting portgroup")
 	var pgState models.PortGroup
 	diags := req.State.Get(ctx, &pgState)
 	resp.Diagnostics.Append(diags...)
@@ -276,12 +285,12 @@ func (r resourcePortGroup) Delete(ctx context.Context, req tfsdk.DeleteResourceR
 			DeletePGDetailsErrorMsg+pgID+" with error: "+err.Error(),
 		)
 	}
-	tflog.Debug(ctx, "deleting portgroup completed")
+	tflog.Info(ctx, "delete portgroup completed")
 }
 
 // Import resource
 func (r resourcePortGroup) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
-	tflog.Debug(ctx, "importing port group state")
+	tflog.Info(ctx, "importing port group state")
 	var pgState models.PortGroup
 	pgState.ID = types.String{Value: req.ID}
 
@@ -321,5 +330,5 @@ func (r resourcePortGroup) ImportState(ctx context.Context, req tfsdk.ImportReso
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "done importing port group state")
+	tflog.Info(ctx, "import port group state completed")
 }
