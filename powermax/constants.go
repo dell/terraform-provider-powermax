@@ -43,6 +43,21 @@ const (
 	// ImportHostDetailsErrorMsg specifies error details occurred while importing host
 	ImportHostDetailsErrorMsg = "Could not import host "
 
+	// CreateHostGroupDetailErrorMsg specifies error details occurred while creating hostgroup
+	CreateHostGroupDetailErrorMsg = "Could not create hostgroup "
+
+	// ReadHostGroupDetailsErrorMsg specifies error details occurred while reading hostgroup
+	ReadHostGroupDetailsErrorMsg = "Could not read hostgroup "
+
+	// UpdateHostGroupDetailsErrorMsg specifies error details occurred while updating hostgroup
+	UpdateHostGroupDetailsErrorMsg = "Could not update hostgroup "
+
+	// DeleteHostGroupDetailsErrorMsg specifies error details occurred while deleting hostgroup
+	DeleteHostGroupDetailsErrorMsg = "Could not delete hostgroup "
+
+	// ImportHostGroupDetailsErrorMsg specifies error details occurred while importing hostgroup
+	ImportHostGroupDetailsErrorMsg = "Could not import hostgroup "
+
 	// DeleteVolumeDetailsErrorMsg specifies error details occurred while deleting volume
 	DeleteVolumeDetailsErrorMsg = "Could not delete volume "
 

@@ -166,16 +166,6 @@ func updateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	updateFailedParameters := []string{}
 	errorMessages := []string{}
 
-	if plan.Name.Value != state.Name.Value {
-		_, err := client.PmaxClient.UpdateHostName(ctx, client.SymmetrixID, state.ID.Value, plan.Name.Value)
-		if err != nil {
-			updateFailedParameters = append(updateFailedParameters, "name")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename host: %s", err.Error()))
-		} else {
-			updatedParameters = append(updatedParameters, "name")
-		}
-	}
-
 	var planInitiators []string
 	diags := plan.Initiators.ElementsAs(ctx, &planInitiators, true)
 	if diags.HasError() {
@@ -191,7 +181,7 @@ func updateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	}
 
 	if !compareStringSlice(planInitiators, stateInitiators) {
-		hostResponse, err := client.PmaxClient.GetHostByID(ctx, client.SymmetrixID, plan.Name.Value)
+		hostResponse, err := client.PmaxClient.GetHostByID(ctx, client.SymmetrixID, state.ID.Value)
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "initiators")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s", "couldn't get the host data"))
@@ -246,14 +236,25 @@ func updateHost(ctx context.Context, client client.Client, plan, state models.Ho
 			},
 			ConsistentLUN: plan.HostFlags.ConsistentLun.Value,
 		}
-		_, err := client.PmaxClient.UpdateHostFlags(ctx, client.SymmetrixID, plan.Name.Value, &hostFlags)
+		_, err := client.PmaxClient.UpdateHostFlags(ctx, client.SymmetrixID, state.ID.Value, &hostFlags)
 		if err != nil {
-			updateFailedParameters = append(updateFailedParameters, "host flags")
+			updateFailedParameters = append(updateFailedParameters, "host_flags")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", err.Error()))
 		} else {
-			updatedParameters = append(updatedParameters, "host flags")
+			updatedParameters = append(updatedParameters, "host_flags")
 		}
 	}
+
+	if plan.Name.Value != state.Name.Value {
+		_, err := client.PmaxClient.UpdateHostName(ctx, client.SymmetrixID, state.ID.Value, plan.Name.Value)
+		if err != nil {
+			updateFailedParameters = append(updateFailedParameters, "name")
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename host: %s", err.Error()))
+		} else {
+			updatedParameters = append(updatedParameters, "name")
+		}
+	}
+
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 

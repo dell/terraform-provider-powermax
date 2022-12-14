@@ -272,17 +272,6 @@ func UpdateSg(ctx context.Context, client client.Client, sgID string, planSg, st
 		}
 	}
 
-	if planSg.Name.Value != stateSg.Name.Value {
-		err := updateSgName(ctx, client, sgID, planSg.Name.Value)
-		if err != nil {
-			updateFailedParameters = append(updateFailedParameters, "name")
-			updateErrorMsgs = append(updateErrorMsgs, fmt.Sprintf("Failed to rename storageGroup: %s", err.Error()))
-		} else {
-			updatedParameters = append(updatedParameters, "name")
-			sgID = planSg.Name.Value
-		}
-	}
-
 	if planSg.EnableCompression.Value != stateSg.EnableCompression.Value {
 		err := updateSgCompression(ctx, client, sgID, planSg.EnableCompression.Value)
 		if err != nil {
@@ -337,6 +326,15 @@ func UpdateSg(ctx context.Context, client client.Client, sgID string, planSg, st
 
 	}
 
+	if planSg.Name.Value != stateSg.Name.Value {
+		err := updateSgName(ctx, client, sgID, planSg.Name.Value)
+		if err != nil {
+			updateFailedParameters = append(updateFailedParameters, "name")
+			updateErrorMsgs = append(updateErrorMsgs, fmt.Sprintf("Failed to rename storageGroup: %s", err.Error()))
+		} else {
+			updatedParameters = append(updatedParameters, "name")
+		}
+	}
 	return updatedParameters, updateFailedParameters, updateErrorMsgs
 }
 

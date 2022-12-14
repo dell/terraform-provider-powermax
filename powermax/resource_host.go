@@ -324,7 +324,6 @@ func (r resourceHost) Read(ctx context.Context, req tfsdk.ReadResourceRequest, r
 		return
 	}
 
-	// Get order from API and then update what is in state from what the API returns
 	hostID := hostState.ID.Value
 	tflog.Debug(ctx, "fetching host by ID", map[string]interface{}{
 		"symmetrixID": r.p.client.SymmetrixID,
@@ -468,8 +467,6 @@ func (r resourceHost) Delete(ctx context.Context, req tfsdk.DeleteResourceReques
 		)
 	}
 
-	// Remove resource from state
-	resp.State.RemoveResource(ctx)
 	tflog.Info(ctx, "delete host complete")
 }
 
