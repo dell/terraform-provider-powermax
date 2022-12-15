@@ -49,7 +49,7 @@ func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 		},
 	})
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource to manage hostgroups in PowerMax array. Updates are supported for the following parameters: `name`, `host_ids`, `host_flags`.",
+		MarkdownDescription: "Resource to manage hostgroup in PowerMax array. Updates are supported for the following parameters: `name`, `host_ids`, `host_flags`.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,
@@ -70,6 +70,9 @@ func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 				Required:            true,
 				Description:         "A list of host ids associated with the hostgroup.",
 				MarkdownDescription: "The masking views associated with the hostgroup.",
+				Validators: []tfsdk.AttributeValidator{
+					SizeAtLeast(1),
+				},
 			},
 			"host_flags": {
 				Required: true,
@@ -206,6 +209,12 @@ func (r resourceHostGroup) Create(ctx context.Context, req tfsdk.CreateResourceR
 
 	hostIDs := make([]string, len(planHostGroup.HostIDs.Elems))
 
+	diags = planHostGroup.HostIDs.ElementsAs(ctx, &hostIDs, true)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	tflog.Debug(ctx, "preparing hostgroup host flags")
 	hostFlags := pmaxTypes.HostFlags{
 		VolumeSetAddressing: &pmaxTypes.HostFlag{
@@ -243,12 +252,13 @@ func (r resourceHostGroup) Create(ctx context.Context, req tfsdk.CreateResourceR
 		ConsistentLUN: planHostGroup.HostFlags.ConsistentLun.Value,
 	}
 
-	tflog.Debug(ctx, "calling create hostgroup pmax client", map[string]interface{}{
+	tflog.Info(ctx, "calling create hostgroup pmax client", map[string]interface{}{
 		"symmetrixID": r.p.client.SymmetrixID,
 		"host":        planHostGroup.Name.Value,
 		"hostIDS":     hostIDs,
 		"hostFlags":   hostFlags,
 	})
+
 	hostGroupResponse, err := r.p.client.PmaxClient.CreateHostGroup(ctx, r.p.client.SymmetrixID, planHostGroup.Name.Value, hostIDs, &hostFlags)
 	if err != nil {
 		hostgroupID := planHostGroup.Name.Value
@@ -421,32 +431,32 @@ func (r resourceHostGroup) Delete(ctx context.Context, req tfsdk.DeleteResourceR
 }
 
 func (r resourceHostGroup) ImportState(ctx context.Context, req tfsdk.ImportResourceStateRequest, resp *tfsdk.ImportResourceStateResponse) {
-	tflog.Info(ctx, "importing host state")
-	var hostState models.Host
-	hostID := req.ID
-	tflog.Debug(ctx, "fetching host by ID", map[string]interface{}{
+	tflog.Info(ctx, "importing hostgroup state")
+	var hostGroupState models.HostGroup
+	hostGroupID := req.ID
+	tflog.Debug(ctx, "fetching hostgroup by ID", map[string]interface{}{
 		"symmetrixID": r.p.client.SymmetrixID,
-		"hostID":      hostID,
+		"hostID":      hostGroupID,
 	})
-	hostResponse, err := r.p.client.PmaxClient.GetHostByID(ctx, r.p.client.SymmetrixID, hostID)
+	hostGroupResponse, err := r.p.client.PmaxClient.GetHostGroupByID(ctx, r.p.client.SymmetrixID, hostGroupID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error reading host",
-			ImportHostDetailsErrorMsg+hostID+" with error: "+err.Error(),
+			"Error reading hostgroup",
+			ImportHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
 		)
 		return
 	}
-	tflog.Debug(ctx, "Get Host By ID response", map[string]interface{}{
-		"Host Response": hostResponse,
+	tflog.Debug(ctx, "Get HostGroup By ID response", map[string]interface{}{
+		"HostGroup Response": hostGroupResponse,
 	})
 
-	tflog.Debug(ctx, "updating host state after import")
-	updateHostState(&hostState, hostResponse.Initiators, hostResponse)
-	diags := resp.State.Set(ctx, hostState)
+	tflog.Debug(ctx, "updating hostgroup state after import")
+	updateHostGroupState(&hostGroupState, hostGroupResponse)
+	diags := resp.State.Set(ctx, hostGroupState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "import host state completed")
+	tflog.Info(ctx, "import hostgroup state completed")
 
 }

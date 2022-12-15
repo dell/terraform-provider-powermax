@@ -112,7 +112,7 @@ func TestAccMaskingView_CreateMaskingViewWithHostGroupID(t *testing.T) {
 	}
 	assertTFImportState := func(s []*terraform.InstanceState) error {
 		assert.Equal(t, TestAccCreateMaskingView, s[0].Attributes["name"])
-		assert.Equal(t, HostGroupID1, s[0].Attributes["host_group_id"])
+		assert.Equal(t, TestAccHostGroupName1, s[0].Attributes["host_group_id"])
 		assert.Equal(t, 1, len(s))
 		return nil
 	}
@@ -245,39 +245,29 @@ resource "powermax_port_group" "pg_for_maskingview" {
 	]
 }
 
+resource "powermax_host" "host_create_test_1" {
+	name = "` + TestAccHostForHG1 + `"
+	host_flags = {
+	}
+	initiators = ["` + InitiatorID1 + `"]
+}
+
+resource "powermax_host_group" "hg_for_maskingview" {
+	name = "` + TestAccHostGroupName1 + `"
+	host_flags = {
+		spc2_protocol_version = {
+			enabled = false
+			override = true
+		}
+	}
+	host_ids = [powermax_host.host_create_test_1.id]
+}
+
 resource "powermax_masking_view" "create_maskingview_with_host_group" {
 	name = "` + TestAccCreateMaskingView + `"
 	storage_group_id = "` + StorageGroupForMV1 + `"
 	port_group_id = powermax_port_group.pg_for_maskingview.id
-	host_group_id = "` + HostGroupID1 + `"
-}
-`
-
-var UpdateMaskingViewWithHostGroupSuccess = `
-provider "powermax" {
-	username = "` + username + `"
-	password = "` + password + `"
-	endpoint = "` + endpoint + `"
-	serial_number = "` + serialno + `"
-	insecure = true
-}
-
-resource "powermax_port_group" "pg_for_maskingview" {
-	name = "` + TestAccPGForMaskingView + `"
-	protocol = "SCSI_FC"
-	ports = [
-		{
-			director_id = "` + DirectorID1 + `"
-			port_id = "2"
-		}
-	]
-}
-
-resource "powermax_masking_view" "create_maskingview_with_host_group" {
-	name = "` + TestAccUpdateMaskingView + `"
-	storage_group_id = "` + StorageGroupForMV1 + `"
-	port_group_id = powermax_port_group.pg_for_maskingview.id
-	host_group_id = "` + HostGroupID1 + `"
+	host_group_id = powermax_host_group.hg_for_maskingview.id
 }
 `
 

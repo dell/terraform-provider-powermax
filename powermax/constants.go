@@ -129,4 +129,6 @@ const (
 
 	// SweepTestsTemplateIdentifier specifies the string match for all the dangling resources for sweepers
 	SweepTestsTemplateIdentifier = "test_acc_"
+	// MinimumSizeValidationError specifies error details returned if the length of the collection is lesser than the specified min size
+	MinimumSizeValidationError = "Required size of the parameter is less than the minimum size: "
 )
