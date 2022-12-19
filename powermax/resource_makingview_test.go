@@ -1,6 +1,8 @@
 package powermax
 
 import (
+	"context"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -11,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccPGForMaskingView        = "test_acc_pg_maskingview"
 	TestAccVolForMaskingView       = "test_acc_vol_maskingview"
@@ -21,6 +24,37 @@ const (
 	ImportMaskingViewResourceName1 = "powermax_masking_view.import_masking_view_success"
 	ImportMaskingViewResourceName2 = "powermax_masking_view.import_masking_view_failure"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_masking_view", &resource.Sweeper{
+		Name: "powermax_masking_view",
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+
+			maskingViews, err := powermaxClient.PmaxClient.GetMaskingViewList(ctx, serialno)
+			if err != nil {
+				log.Println("Error getting masking view list: " + err.Error())
+				return nil
+			}
+
+			for _, maskingView := range maskingViews.MaskingViewIDs {
+				if strings.Contains(maskingView, SweepTestsTemplateIdentifier) {
+					err := powermaxClient.PmaxClient.DeleteMaskingView(ctx, serialno, maskingView)
+					if err != nil {
+						log.Println("Error deleting maskingview: " + maskingView + "with error: " + err.Error())
+					}
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccMaskingView_CreateUpdateMaskingView(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {

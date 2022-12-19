@@ -3,6 +3,7 @@ package powermax
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"testing"
@@ -13,10 +14,54 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	ImportVolumeResourceName1 = "powermax_volume.volume_import_success"
 	ImportVolumeResourceName2 = "powermax_volume.volume_import_failure"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_volume", &resource.Sweeper{
+		Name:         "powermax_volume",
+		Dependencies: []string{"powermax_masking_view"},
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+
+			volumeIDsForSG1, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, StorageGroupForVol1)
+			if err != nil {
+				log.Println("Error getting volume list: " + err.Error())
+				return nil
+			}
+
+			volumeIDsForSG2, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, StorageGroupForMV1)
+			if err != nil {
+				log.Println("Error getting volume list: " + err.Error())
+				return nil
+			}
+
+			for _, volumeID := range volumeIDsForSG1.ResultList.VolumeList {
+				err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID.VolumeIDs)
+				if err != nil {
+					log.Println("Error deleting volume: " + volumeID.VolumeIDs + "with error: " + err.Error())
+				}
+			}
+
+			for _, volumeID := range volumeIDsForSG2.ResultList.VolumeList {
+				err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID.VolumeIDs)
+				if err != nil {
+					log.Println("Error deleting volume: " + volumeID.VolumeIDs + "with error: " + err.Error())
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccVolume_CreateVolume(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {

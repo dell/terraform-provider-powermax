@@ -111,4 +111,7 @@ const (
 
 	// CreateSGAddVolumeErrMsg specifies error details during create SG with volume id already attached to another storage group
 	CreateSGAddVolumeErrMsg = "could not add volumes to storageGroup"
+
+	// SweepTestsTemplateIdentifier specifies the string match for all the dangling resources for sweepers
+	SweepTestsTemplateIdentifier = "test_acc_"
 )

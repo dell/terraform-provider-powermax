@@ -3,8 +3,10 @@ package powermax
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -13,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccHostName1        = "test_acc_chost11"
 	TestAccHostName2        = "test_acc_chost1"
@@ -23,6 +26,38 @@ const (
 	ImportHostResourceName1 = "powermax_host.import_host_success"
 	ImportHostResourceName2 = "powermax_host.import_host_failure"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_host", &resource.Sweeper{
+		Name:         "powermax_host",
+		Dependencies: []string{"powermax_masking_view"},
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+
+			hosts, err := powermaxClient.PmaxClient.GetHostList(ctx, serialno)
+			if err != nil {
+				log.Println("Error getting host list: " + err.Error())
+				return nil
+			}
+
+			for _, host := range hosts.HostIDs {
+				if strings.Contains(host, SweepTestsTemplateIdentifier) {
+					err := powermaxClient.PmaxClient.DeleteHost(ctx, serialno, host)
+					if err != nil {
+						log.Println("Error deleting host: " + host + "with error: " + err.Error())
+					}
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccHost_CreateHostUpdateExistingName(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {

@@ -3,8 +3,10 @@ package powermax
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -13,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccSGName1        = "test_acc_csg_with_no_option_1"
 	TestAccSGName2        = "test_acc_csg_1"
@@ -28,6 +31,38 @@ const (
 	ResourceName1         = "powermax_storage_group.sg_import_success"
 	ResourceName2         = "powermax_storage_group.sg_import_failure"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_storage_group", &resource.Sweeper{
+		Name:         "powermax_storage_group",
+		Dependencies: []string{"powermax_masking_view"},
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+
+			storageGroups, err := powermaxClient.PmaxClient.GetStorageGroupIDList(ctx, serialno)
+			if err != nil {
+				log.Println("Error getting storage group list: " + err.Error())
+				return nil
+			}
+
+			for _, storageGroup := range storageGroups.StorageGroupIDs {
+				if strings.Contains(storageGroup, SweepTestsTemplateIdentifier) {
+					err := powermaxClient.PmaxClient.DeleteStorageGroup(ctx, serialno, storageGroup)
+					if err != nil {
+						log.Println("Error deleting storage group: " + storageGroup + "with error: " + err.Error())
+					}
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccStorageGroup_CreateWithoutOptionalParamAndUpdateNameWithExistingSG(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {

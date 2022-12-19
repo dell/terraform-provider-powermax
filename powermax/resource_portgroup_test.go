@@ -3,8 +3,10 @@ package powermax
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -13,10 +15,43 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccCreatePGName        = "test_acc_create_pg"
 	TestAccCreatePGNameUpdated = "test_acc_create_pg_updated"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_port_group", &resource.Sweeper{
+		Name:         "powermax_port_group",
+		Dependencies: []string{"powermax_masking_view"},
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+
+			portGroups, err := powermaxClient.PmaxClient.GetPortGroupList(ctx, serialno, "")
+			if err != nil {
+				log.Println("Error getting portgroup list: " + err.Error())
+				return nil
+			}
+
+			for _, portGroup := range portGroups.PortGroupIDs {
+				if strings.Contains(portGroup, SweepTestsTemplateIdentifier) {
+					err := powermaxClient.PmaxClient.DeletePortGroup(ctx, serialno, portGroup)
+					if err != nil {
+						log.Println("Error deleting portgroup: " + portGroup + "with error: " + err.Error())
+					}
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccPortGroup_CreatePortGroupUpdateExistingName(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
@@ -225,7 +260,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg"
+	name = "` + TestAccCreatePGName + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
@@ -281,7 +316,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg"
+	name = "` + TestAccCreatePGName + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
@@ -302,7 +337,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg"
+	name = "` + TestAccCreatePGName + `"
 	protocol = "iSCSI"
 	ports = [
 		{
@@ -323,7 +358,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg"
+	name = "` + TestAccCreatePGName + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
@@ -349,7 +384,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg_updated"
+	name = "` + TestAccCreatePGNameUpdated + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
@@ -375,7 +410,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg_updated"
+	name = "` + TestAccCreatePGNameUpdated + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
@@ -400,7 +435,7 @@ provider "powermax" {
 }
 
 resource "powermax_port_group" "create_pg" {
-	name = "test_acc_create_pg_updated"
+	name = "` + TestAccCreatePGNameUpdated + `"
 	protocol = "SCSI_FC"
 	ports = [
 		{
