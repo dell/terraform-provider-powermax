@@ -34,5 +34,8 @@ build: download
 	mkdir -p out
 	go build -v -o ./out
 
+sweep:
+	go test -v ./powermax -timeout 5h -sweep=all
+
 all: download code-check test compile
 	
