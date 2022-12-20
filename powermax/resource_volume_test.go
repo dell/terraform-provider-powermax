@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
+	"terraform-provider-powermax/client"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -32,35 +34,43 @@ func init() {
 			}
 
 			ctx := context.Background()
+			deleteVolumeForSG(ctx, powermaxClient, StorageGroupForMV1)
+			deleteVolumeForSG(ctx, powermaxClient, StorageGroupForVol1)
 
-			volumeIDsForSG1, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, StorageGroupForVol1)
-			if err != nil {
-				log.Println("Error getting volume list: " + err.Error())
-				return nil
-			}
-
-			volumeIDsForSG2, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, StorageGroupForMV1)
-			if err != nil {
-				log.Println("Error getting volume list: " + err.Error())
-				return nil
-			}
-
-			for _, volumeID := range volumeIDsForSG1.ResultList.VolumeList {
-				err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID.VolumeIDs)
-				if err != nil {
-					log.Println("Error deleting volume: " + volumeID.VolumeIDs + "with error: " + err.Error())
-				}
-			}
-
-			for _, volumeID := range volumeIDsForSG2.ResultList.VolumeList {
-				err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID.VolumeIDs)
-				if err != nil {
-					log.Println("Error deleting volume: " + volumeID.VolumeIDs + "with error: " + err.Error())
-				}
-			}
 			return nil
 		},
 	})
+}
+
+func deleteVolumeForSG(ctx context.Context, powermaxClient *client.Client, storageGroup string) {
+	volumeIDsForSG, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, storageGroup)
+	if err != nil {
+		log.Println("Error getting volume list: " + err.Error())
+	}
+
+	var volumeIDs []string
+	for _, volumeIDList := range volumeIDsForSG.ResultList.VolumeList {
+		volume, err := powermaxClient.PmaxClient.GetVolumeByID(ctx, serialno, volumeIDList.VolumeIDs)
+		if err != nil {
+			log.Println("Error getting volume: " + volumeIDList.VolumeIDs + "with error: " + err.Error())
+			continue
+		}
+		if strings.Contains(volume.VolumeIdentifier, SweepTestsTemplateIdentifier) {
+			volumeIDs = append(volumeIDs, volumeIDList.VolumeIDs)
+		}
+	}
+
+	_, err = powermaxClient.PmaxClient.RemoveVolumesFromStorageGroup(ctx, serialno, storageGroup, true, volumeIDs...)
+	if err != nil {
+		log.Println("Error removing volume from storage group with error: " + err.Error())
+	}
+
+	for _, volumeID := range volumeIDs {
+		err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID)
+		if err != nil {
+			log.Println("Error deleting volume: " + volumeID + "with error: " + err.Error())
+		}
+	}
 }
 
 func TestAccVolume_CreateVolume(t *testing.T) {

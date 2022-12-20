@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -35,7 +36,7 @@ const (
 func init() {
 	resource.AddTestSweepers("powermax_storage_group", &resource.Sweeper{
 		Name:         "powermax_storage_group",
-		Dependencies: []string{"powermax_masking_view"},
+		Dependencies: []string{"powermax_masking_view", "powermax_volume"},
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
@@ -51,11 +52,36 @@ func init() {
 				return nil
 			}
 
-			for _, storageGroup := range storageGroups.StorageGroupIDs {
-				if strings.Contains(storageGroup, SweepTestsTemplateIdentifier) {
-					err := powermaxClient.PmaxClient.DeleteStorageGroup(ctx, serialno, storageGroup)
+			for _, storageGroupID := range storageGroups.StorageGroupIDs {
+				if strings.Contains(storageGroupID, SweepTestsTemplateIdentifier) {
+					storageGroup, err := powermaxClient.PmaxClient.GetStorageGroup(ctx, serialno, storageGroupID)
 					if err != nil {
-						log.Println("Error deleting storage group: " + storageGroup + "with error: " + err.Error())
+						log.Println("Error getting storage group list: " + err.Error())
+						return nil
+					}
+
+					if len(storageGroup.SnapshotPolicies) > 0 {
+						payload := pmaxTypes.UpdateStorageGroupPayload{
+							ExecutionOption: pmaxTypes.ExecutionOptionSynchronous,
+							EditStorageGroupActionParam: pmaxTypes.EditStorageGroupActionParam{
+								EditSnapshotPoliciesParam: &pmaxTypes.EditSnapshotPoliciesParam{
+									DisassociateSnapshotPolicyParam: &pmaxTypes.SnapshotPolicies{
+										SnapshotPolicies: storageGroup.SnapshotPolicies,
+									},
+								},
+							},
+						}
+
+						err := powermaxClient.PmaxClient.UpdateStorageGroupS(ctx, serialno, storageGroupID, payload)
+						if err != nil {
+							log.Println("Error removing snapshot policies from storage group: " + storageGroupID + "with error: " + err.Error())
+							return nil
+						}
+					}
+
+					err = powermaxClient.PmaxClient.DeleteStorageGroup(ctx, serialno, storageGroupID)
+					if err != nil {
+						log.Println("Error deleting storage group: " + storageGroupID + "with error: " + err.Error())
 					}
 				}
 			}
