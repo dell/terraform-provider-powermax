@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"terraform-provider-powermax/models"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -455,6 +456,7 @@ func (r resourceVolume) Delete(ctx context.Context, req tfsdk.DeleteResourceRequ
 		}
 	}
 
+	time.Sleep(2 * time.Second)
 	tflog.Debug(ctx, "calling delete volume on pmax client", map[string]interface{}{
 		"symmetrixID": r.p.client.SymmetrixID,
 		"volumeID":    volumeID,
