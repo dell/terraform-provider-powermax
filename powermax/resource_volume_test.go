@@ -3,8 +3,11 @@ package powermax
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
+	"strings"
+	"terraform-provider-powermax/client"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -13,10 +16,62 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	ImportVolumeResourceName1 = "powermax_volume.volume_import_success"
 	ImportVolumeResourceName2 = "powermax_volume.volume_import_failure"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_volume", &resource.Sweeper{
+		Name:         "powermax_volume",
+		Dependencies: []string{"powermax_masking_view"},
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+			deleteVolumeForSG(ctx, powermaxClient, StorageGroupForMV1)
+			deleteVolumeForSG(ctx, powermaxClient, StorageGroupForVol1)
+
+			return nil
+		},
+	})
+}
+
+func deleteVolumeForSG(ctx context.Context, powermaxClient *client.Client, storageGroup string) {
+	volumeIDsForSG, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, storageGroup)
+	if err != nil {
+		log.Println("Error getting volume list: " + err.Error())
+	}
+
+	var volumeIDs []string
+	for _, volumeIDList := range volumeIDsForSG.ResultList.VolumeList {
+		volume, err := powermaxClient.PmaxClient.GetVolumeByID(ctx, serialno, volumeIDList.VolumeIDs)
+		if err != nil {
+			log.Println("Error getting volume: " + volumeIDList.VolumeIDs + "with error: " + err.Error())
+			continue
+		}
+		if strings.Contains(volume.VolumeIdentifier, SweepTestsTemplateIdentifier) {
+			volumeIDs = append(volumeIDs, volumeIDList.VolumeIDs)
+		}
+	}
+
+	_, err = powermaxClient.PmaxClient.RemoveVolumesFromStorageGroup(ctx, serialno, storageGroup, true, volumeIDs...)
+	if err != nil {
+		log.Println("Error removing volume from storage group with error: " + err.Error())
+	}
+
+	for _, volumeID := range volumeIDs {
+		err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID)
+		if err != nil {
+			log.Println("Error deleting volume: " + volumeID + "with error: " + err.Error())
+		}
+	}
+}
 
 func TestAccVolume_CreateVolume(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
