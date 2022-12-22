@@ -31,7 +31,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -39,7 +39,7 @@ func init() {
 
 			hosts, err := powermaxClient.PmaxClient.GetHostList(ctx, serialno)
 			if err != nil {
-				log.Println("Error getting host list: " + err.Error())
+				log.Println("Error getting host list")
 				return nil
 			}
 
@@ -47,7 +47,7 @@ func init() {
 				if strings.Contains(host, SweepTestsTemplateIdentifier) {
 					err := powermaxClient.PmaxClient.DeleteHost(ctx, serialno, host)
 					if err != nil {
-						log.Println("Error deleting host: " + host + "with error: " + err.Error())
+						log.Println("Error deleting host")
 					}
 				}
 			}

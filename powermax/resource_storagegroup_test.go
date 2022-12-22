@@ -36,7 +36,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -44,7 +44,7 @@ func init() {
 
 			storageGroups, err := powermaxClient.PmaxClient.GetStorageGroupIDList(ctx, serialno)
 			if err != nil {
-				log.Println("Error getting storage group list: " + err.Error())
+				log.Println("Error getting storage group list")
 				return nil
 			}
 
@@ -52,7 +52,7 @@ func init() {
 				if strings.Contains(storageGroupID, SweepTestsTemplateIdentifier) {
 					storageGroup, err := powermaxClient.PmaxClient.GetStorageGroup(ctx, serialno, storageGroupID)
 					if err != nil {
-						log.Println("Error getting storage group list: " + err.Error())
+						log.Println("Error getting storage group list")
 						return nil
 					}
 
@@ -70,14 +70,14 @@ func init() {
 
 						err := powermaxClient.PmaxClient.UpdateStorageGroupS(ctx, serialno, storageGroupID, payload)
 						if err != nil {
-							log.Println("Error removing snapshot policies from storage group: " + storageGroupID + "with error: " + err.Error())
+							log.Println("Error removing snapshot policies from storage group")
 							return nil
 						}
 					}
 
 					err = powermaxClient.PmaxClient.DeleteStorageGroup(ctx, serialno, storageGroupID)
 					if err != nil {
-						log.Println("Error deleting storage group: " + storageGroupID + "with error: " + err.Error())
+						log.Println("Error deleting storage group")
 					}
 				}
 			}

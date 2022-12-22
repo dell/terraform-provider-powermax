@@ -37,7 +37,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -53,14 +53,14 @@ func init() {
 func deleteVolumeForSG(ctx context.Context, powermaxClient *client.Client, storageGroup string) {
 	volumeIDsForSG, err := powermaxClient.PmaxClient.GetVolumesInStorageGroupIterator(ctx, serialno, storageGroup)
 	if err != nil {
-		log.Println("Error getting volume list: " + err.Error())
+		log.Println("Error getting volume list")
 	}
 
 	var volumeIDs []string
 	for _, volumeIDList := range volumeIDsForSG.ResultList.VolumeList {
 		volume, err := powermaxClient.PmaxClient.GetVolumeByID(ctx, serialno, volumeIDList.VolumeIDs)
 		if err != nil {
-			log.Println("Error getting volume: " + volumeIDList.VolumeIDs + "with error: " + err.Error())
+			log.Println("Error getting volume")
 			continue
 		}
 		if strings.Contains(volume.VolumeIdentifier, SweepTestsTemplateIdentifier) {
@@ -70,13 +70,13 @@ func deleteVolumeForSG(ctx context.Context, powermaxClient *client.Client, stora
 
 	_, err = powermaxClient.PmaxClient.RemoveVolumesFromStorageGroup(ctx, serialno, storageGroup, true, volumeIDs...)
 	if err != nil {
-		log.Println("Error removing volume from storage group with error: " + err.Error())
+		log.Println("Error removing volume from storage group")
 	}
 
 	for _, volumeID := range volumeIDs {
 		err := powermaxClient.PmaxClient.DeleteVolume(ctx, serialno, volumeID)
 		if err != nil {
-			log.Println("Error deleting volume: " + volumeID + "with error: " + err.Error())
+			log.Println("Error deleting volume")
 		}
 	}
 }

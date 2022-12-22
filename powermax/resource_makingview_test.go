@@ -30,7 +30,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -38,7 +38,7 @@ func init() {
 
 			maskingViews, err := powermaxClient.PmaxClient.GetMaskingViewList(ctx, serialno)
 			if err != nil {
-				log.Println("Error getting masking view list: " + err.Error())
+				log.Println("Error getting masking view list")
 				return nil
 			}
 
@@ -46,7 +46,7 @@ func init() {
 				if strings.Contains(maskingView, SweepTestsTemplateIdentifier) {
 					err := powermaxClient.PmaxClient.DeleteMaskingView(ctx, serialno, maskingView)
 					if err != nil {
-						log.Println("Error deleting maskingview: " + maskingView + "with error: " + err.Error())
+						log.Println("Error deleting maskingview")
 					}
 				}
 			}

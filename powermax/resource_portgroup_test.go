@@ -26,7 +26,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -34,7 +34,7 @@ func init() {
 
 			portGroups, err := powermaxClient.PmaxClient.GetPortGroupList(ctx, serialno, "")
 			if err != nil {
-				log.Println("Error getting portgroup list: " + err.Error())
+				log.Println("Error getting portgroup list")
 				return nil
 			}
 
@@ -42,7 +42,7 @@ func init() {
 				if strings.Contains(portGroup, SweepTestsTemplateIdentifier) {
 					err := powermaxClient.PmaxClient.DeletePortGroup(ctx, serialno, portGroup)
 					if err != nil {
-						log.Println("Error deleting portgroup: " + portGroup + "with error: " + err.Error())
+						log.Println("Error deleting portgroup")
 					}
 				}
 			}
