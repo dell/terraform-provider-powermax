@@ -2,7 +2,6 @@ package powermax
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -10,7 +9,6 @@ import (
 	"testing"
 
 	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
@@ -23,11 +21,9 @@ const (
 	TestAccSGName2Updated = "test_acc_csg_1_updated"
 	TestAccSGName4        = "test_acc_sg_srp_id"
 	TestAccSGName5        = "test_acc_sg_err"
-	TestAccSGName7        = "test_acc_sg_volume_id"
 	TestAccSGName8        = "test_acc_sg_volume_id_err"
 	TestAccSGName9        = "test_acc_srp_slo_none"
 	TestAccSGName10       = "test_acc_sg_with_already_attached_volume_id"
-	TestAccSGName12       = "test_acc_import_sg_failure"
 	TestAccSGName13       = "test_acc_valid_sg_with_vol"
 	ResourceName1         = "powermax_storage_group.sg_import_success"
 	ResourceName2         = "powermax_storage_group.sg_import_failure"
@@ -40,7 +36,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -48,7 +44,7 @@ func init() {
 
 			storageGroups, err := powermaxClient.PmaxClient.GetStorageGroupIDList(ctx, serialno)
 			if err != nil {
-				log.Println("Error getting storage group list: " + err.Error())
+				log.Println("Error getting storage group list")
 				return nil
 			}
 
@@ -56,7 +52,7 @@ func init() {
 				if strings.Contains(storageGroupID, SweepTestsTemplateIdentifier) {
 					storageGroup, err := powermaxClient.PmaxClient.GetStorageGroup(ctx, serialno, storageGroupID)
 					if err != nil {
-						log.Println("Error getting storage group list: " + err.Error())
+						log.Println("Error getting storage group list")
 						return nil
 					}
 
@@ -74,39 +70,18 @@ func init() {
 
 						err := powermaxClient.PmaxClient.UpdateStorageGroupS(ctx, serialno, storageGroupID, payload)
 						if err != nil {
-							log.Println("Error removing snapshot policies from storage group: " + storageGroupID + "with error: " + err.Error())
+							log.Println("Error removing snapshot policies from storage group")
 							return nil
 						}
 					}
 
 					err = powermaxClient.PmaxClient.DeleteStorageGroup(ctx, serialno, storageGroupID)
 					if err != nil {
-						log.Println("Error deleting storage group: " + storageGroupID + "with error: " + err.Error())
+						log.Println("Error deleting storage group")
 					}
 				}
 			}
 			return nil
-		},
-	})
-}
-
-func TestAccStorageGroup_CreateWithoutOptionalParamAndUpdateNameWithExistingSG(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
-			{
-				Config: StorageGroupNoOptionalParam,
-				Check:  resource.ComposeTestCheckFunc(checkCreateStorageGroup(t, testProvider, TestAccSGName1)),
-			},
-			{
-				Config:      StorageGroupUpdateNameWithExistingSG,
-				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
-			},
 		},
 	})
 }
@@ -137,7 +112,7 @@ func TestAccStorageGroup_CreateSGWithVolumeIdAttachedToAnotherSGSuccess(t *testi
 	})
 }
 
-func TestAccStorageGroup_CreateSGWithSuspendedSnapshotPolicy(t *testing.T) {
+func TestAccStorageGroup_CreateSG_ExpectErr(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
 	}
@@ -147,16 +122,50 @@ func TestAccStorageGroup_CreateSGWithSuspendedSnapshotPolicy(t *testing.T) {
 		ProtoV6ProviderFactories: testProviderFactory,
 		Steps: []resource.TestStep{
 			{
+				Config:      StorageGroupWithExistingSGNameErr,
+				ExpectError: regexp.MustCompile(CreateSgErrorMsg),
+			},
+			{
+				// scenario: create SG
+				// when: attaching a volume id to multiple SG
+				// expected: error
+				Config:      CreateStorageGroupAttachVolumeIDToMultipleSGErr,
+				ExpectError: regexp.MustCompile(CreateSGAddVolumeErrMsg),
+			},
+			{
 				Config:      CreateSGWithSuspendedSnapshotPolicyFailure,
+				ExpectError: regexp.MustCompile(CreateSGDetailErrorMsg),
+			},
+			{
+				Config:      StorageGroupExistingParam,
+				ExpectError: regexp.MustCompile(CreateSGDetailErrorMsg),
+			},
+			{
+				Config:      StorageGroupWithInvalidSRPID,
 				ExpectError: regexp.MustCompile(CreateSGDetailErrorMsg),
 			},
 		},
 	})
 }
 
-func TestAccStorageGroup_UpdateSuccess(t *testing.T) {
+func TestAccStorageGroup_CRUD(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Dont run with units tests because it will try to create the context")
+	}
+
+	assertTFImportState := func(s []*terraform.InstanceState) error {
+		assert.Equal(t, TestAccSGName2Updated, s[0].Attributes["name"])
+		assert.Equal(t, "false", s[0].Attributes["enable_compression"])
+		assert.Equal(t, "Platinum", s[0].Attributes["service_level"])
+		assert.Equal(t, ValidSrpID1, s[0].Attributes["srpid"])
+		assert.Equal(t, SnapshotPolicy1, s[0].Attributes["snapshot_policies.0.policy_name"])
+		assert.Equal(t, SnapshotPolicy2, s[0].Attributes["snapshot_policies.1.policy_name"])
+		assert.Equal(t, "false", s[0].Attributes["snapshot_policies.0.is_active"])
+		assert.Equal(t, "true", s[0].Attributes["snapshot_policies.1.is_active"])
+		assert.Equal(t, "2", s[0].Attributes["snapshot_policies.#"])
+		assert.Equal(t, "2", s[0].Attributes["volume_ids.#"])
+		assert.Equal(t, 1, len(s))
+		return nil
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -181,6 +190,7 @@ func TestAccStorageGroup_UpdateSuccess(t *testing.T) {
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "service_level", "Platinum"),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "volume_ids.1", VolumeID2),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "volume_ids.0", VolumeID3),
+					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "volume_ids.#", "2"),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "snapshot_policies.0.policy_name", SnapshotPolicy1),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "snapshot_policies.0.is_active", "false"),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "snapshot_policies.1.policy_name", SnapshotPolicy2),
@@ -189,27 +199,25 @@ func TestAccStorageGroup_UpdateSuccess(t *testing.T) {
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "host_io_limits.dynamicdistribution", "Never")),
 			},
 			{
-				// Test to verify deassociating snapshot policies from SG
+				Config:           testAccImportStorageGroupSuccess,
+				ResourceName:     ResourceName1,
+				ImportState:      true,
+				ImportStateCheck: assertTFImportState,
+				ExpectError:      nil,
+				ImportStateId:    TestAccSGName2Updated,
+			},
+			{
+				Config:        testAccImportStorageGroupFailure,
+				ResourceName:  ResourceName2,
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(ImportSGDetailsErrorMsg),
+				ImportStateId: "InvalidStorageGroup",
+			},
+			{
+				// Test to disassociate snapshot policies from SG so that it can be destroyed at end of test cycle
 				Config: SnapshotPolicyRemove,
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "id", TestAccSGName2Updated),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_with_optional_param", "snapshot_policies.#", "0")),
-			},
-		},
-	})
-}
-
-func TestAccStorageGroup_CreateWithExistingSG(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
-			{
-				Config:      StorageGroupExistingParam,
-				ExpectError: regexp.MustCompile(CreateSGDetailErrorMsg),
 			},
 		},
 	})
@@ -257,29 +265,9 @@ func TestAccStorageGroup_UpdateSG_ExpectErr(t *testing.T) {
 				Config:      UpdateStorageGroupAssociateSuspendedSnapshotPolicyErr,
 				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
-		},
-	})
-}
-
-func TestAccStorageGroup_CreateSG_ExpectErr(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
 			{
-				Config:      StorageGroupWithExistingSGNameErr,
-				ExpectError: regexp.MustCompile(CreateSgErrorMsg),
-			},
-			{
-				// scenario: create SG
-				// when: attaching a volume id to multiple SG
-				// expected: error
-				Config:      CreateStorageGroupAttachVolumeIDToMultipleSGErr,
-				ExpectError: regexp.MustCompile(CreateSGAddVolumeErrMsg),
+				Config:      StorageGroupUpdateNameWithExistingSG,
+				ExpectError: regexp.MustCompile(UpdateSGDetailsErrorMsg),
 			},
 		},
 	})
@@ -307,85 +295,8 @@ func TestAccStorageGroup_UpdateSrpID(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("powermax_storage_group.sg_wo_srp_id", "enable_compression", "true"),
 					resource.TestCheckResourceAttr("powermax_storage_group.sg_wo_srp_id", "srpid", ValidSrpID1)),
 			},
-			{
-				Config:      StorageGroupWithInvalidSRPID,
-				ExpectError: regexp.MustCompile(CreateSGDetailErrorMsg),
-			},
 		},
 	})
-}
-
-func TestAccStorageGroup_ImportStorageGroupSuccess(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	assertTFImportState := func(s []*terraform.InstanceState) error {
-		assert.Equal(t, StorageGroupID1, s[0].Attributes["name"])
-		assert.Equal(t, "true", s[0].Attributes["enable_compression"])
-		assert.Equal(t, "Diamond", s[0].Attributes["service_level"])
-		assert.Equal(t, ValidSrpID1, s[0].Attributes["srpid"])
-		assert.Equal(t, SnapshotPolicy2, s[0].Attributes["snapshot_policies.0.policy_name"])
-		assert.Equal(t, "true", s[0].Attributes["snapshot_policies.0.is_active"])
-		assert.Equal(t, "1", s[0].Attributes["snapshot_policies.#"])
-		assert.Equal(t, VolumeID1, s[0].Attributes["volume_ids.0"])
-		assert.Equal(t, "1", s[0].Attributes["volume_ids.#"])
-		assert.Equal(t, 1, len(s))
-		return nil
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
-			{
-				Config:           testAccImportStorageGroupSuccess,
-				ResourceName:     ResourceName1,
-				ImportState:      true,
-				ImportStateCheck: assertTFImportState,
-				ExpectError:      nil,
-				ImportStateId:    StorageGroupID1,
-			},
-		},
-	})
-}
-
-func TestAccStorageGroup_ImportStorageGroupFailure(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
-			{
-				Config:        testAccImportStorageGroupFailure,
-				ResourceName:  ResourceName2,
-				ImportState:   true,
-				ExpectError:   regexp.MustCompile(ImportSGDetailsErrorMsg),
-				ImportStateId: TestAccSGName12,
-			},
-		},
-	})
-}
-
-func checkCreateStorageGroup(t *testing.T, p tfsdk.Provider, sgID string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		providers := p.(*provider)
-		_, err := providers.client.PmaxClient.GetStorageGroup(context.Background(), serialno, sgID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch storage group")
-		}
-		if !providers.configured {
-			return fmt.Errorf("provider not configured")
-		}
-
-		if providers.client.PmaxClient == nil {
-			return fmt.Errorf("provider not configured")
-		}
-		return nil
-	}
 }
 
 var testAccImportStorageGroupFailure = `
@@ -417,23 +328,6 @@ var testAccImportStorageGroupSuccess = `
 	}
 `
 
-var StorageGroupNoOptionalParam = `
-
-provider "powermax" {
-	username = "` + username + `"
-	password = "` + password + `"
-	endpoint = "` + endpoint + `"
-	serial_number = "` + serialno + `"
-	insecure = true
-}
-
-resource "powermax_storage_group" "sg_wo_optional_param" {
-	name = "` + TestAccSGName1 + `"
-	srpid = "` + ValidSrpID1 + `"
-	service_level = "Diamond"
-}
-`
-
 var StorageGroupUpdateNameWithExistingSG = `
 
 provider "powermax" {
@@ -444,10 +338,17 @@ provider "powermax" {
 	insecure = true
 }
 
-resource "powermax_storage_group" "sg_wo_optional_param" {
+resource "powermax_storage_group" "sg_with_invalid_update" {
 	name = "` + StorageGroupID1 + `"
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Diamond"
+}
+
+resource "powermax_storage_group" "sg_with_invalid_update1" {
+	name = "` + TestAccSGName13 + `"
+	srpid = "` + ValidSrpID1 + `"
+	service_level = "Diamond"
+	volume_ids = ["` + VolumeID4 + `"]
 }
 `
 
@@ -553,7 +454,7 @@ provider "powermax" {
 }
 
 resource "powermax_storage_group" "sg_existing_create1" {
-	name = "` + StorageGroupForVol1 + `"
+	name = "` + StorageGroupID1 + `"
 	srpid = "` + ValidSrpID1 + `"
 	service_level = "Diamond"
 }

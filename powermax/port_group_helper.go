@@ -90,6 +90,19 @@ func updatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.Port
 }
 
 func updatePortGroup(ctx context.Context, client client.Client, planPg, statePg models.PortGroup) (updatedParams []string, updateFailedParams []string, errorMessages []string) {
+	planPorts := getPmaxPortsFromTfsdkPG(planPg)
+	statePorts := getPmaxPortsFromTfsdkPG(statePg)
+	if !(len(planPorts) == 0 && len(statePorts) == 0) && !reflect.DeepEqual(planPorts, statePorts) {
+		_, err := client.PmaxClient.UpdatePortGroup(ctx, client.SymmetrixID, statePg.Name.Value, planPorts)
+		if err != nil {
+			updateFailedParams = append(updateFailedParams, "ports")
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to update ports: %s", err.Error()))
+		} else {
+			updatedParams = append(updatedParams, "ports")
+		}
+
+	}
+
 	if planPg.Name.Value != statePg.Name.Value {
 		_, err := client.PmaxClient.RenamePortGroup(ctx, client.SymmetrixID, statePg.ID.Value, planPg.Name.Value)
 		if err != nil {
@@ -98,18 +111,6 @@ func updatePortGroup(ctx context.Context, client client.Client, planPg, statePg 
 		} else {
 			updatedParams = append(updatedParams, "name")
 		}
-	}
-	planPorts := getPmaxPortsFromTfsdkPG(planPg)
-	statePorts := getPmaxPortsFromTfsdkPG(statePg)
-	if !(len(planPorts) == 0 && len(statePorts) == 0) && !reflect.DeepEqual(planPorts, statePorts) {
-		_, err := client.PmaxClient.UpdatePortGroup(ctx, client.SymmetrixID, planPg.Name.Value, planPorts)
-		if err != nil {
-			updateFailedParams = append(updateFailedParams, "ports")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to update ports: %s", err.Error()))
-		} else {
-			updatedParams = append(updatedParams, "ports")
-		}
-
 	}
 	return updatedParams, updateFailedParams, errorMessages
 }
