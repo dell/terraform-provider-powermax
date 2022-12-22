@@ -22,7 +22,7 @@ func updateHostState(hostState *models.Host, planInitiators []string, hostRespon
 	hostState.BWLimit = types.Int64{Value: int64(hostResponse.BWLimit)}
 	hostState.Type = types.String{Value: hostResponse.HostType}
 	hostState.PortFlagsOverride = types.Bool{Value: hostResponse.PortFlagsOverride}
-	hostState.HostFlags.ConsistentLun = types.Bool{Value: hostResponse.ConsistentLun}
+	hostState.ConsistentLun = types.Bool{Value: hostResponse.ConsistentLun}
 
 	initiators := matchPlanAndResponseInitiators(planInitiators, hostResponse.Initiators)
 	saveInitiatorsSetAttr(hostState, initiators)
@@ -200,7 +200,7 @@ func updateHost(ctx context.Context, client client.Client, plan, state models.Ho
 		}
 	}
 
-	if plan.HostFlags != state.HostFlags {
+	if plan.HostFlags != state.HostFlags || plan.ConsistentLun.Value != state.ConsistentLun.Value {
 		hostFlags := pmaxTypes.HostFlags{
 			VolumeSetAddressing: &pmaxTypes.HostFlag{
 				Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.Value,
@@ -234,7 +234,7 @@ func updateHost(ctx context.Context, client client.Client, plan, state models.Ho
 				Enabled:  plan.HostFlags.ScsiSupport1.Enabled.Value,
 				Override: plan.HostFlags.ScsiSupport1.Override.Value,
 			},
-			ConsistentLUN: plan.HostFlags.ConsistentLun.Value,
+			ConsistentLUN: plan.ConsistentLun.Value,
 		}
 		_, err := client.PmaxClient.UpdateHostFlags(ctx, client.SymmetrixID, state.ID.Value, &hostFlags)
 		if err != nil {

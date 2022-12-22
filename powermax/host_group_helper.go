@@ -20,7 +20,7 @@ func updateHostGroupState(hostGroupState *models.HostGroup, hostGroupResponse *p
 	hostGroupState.NumOfMaskingViews = types.Int64{Value: hostGroupResponse.NumberMaskingViews}
 	hostGroupState.Type = types.String{Value: hostGroupResponse.HostGroupType}
 	hostGroupState.PortFlagsOverride = types.Bool{Value: hostGroupResponse.PortFlagsOverride}
-	hostGroupState.HostFlags.ConsistentLun = types.Bool{Value: hostGroupResponse.ConsistentLun}
+	hostGroupState.ConsistentLun = types.Bool{Value: hostGroupResponse.ConsistentLun}
 
 	responseHostIDs := []string{}
 	for _, hostSummary := range hostGroupResponse.Hosts {
@@ -141,7 +141,7 @@ func updateHostGroup(ctx context.Context, client client.Client, plan, state mode
 		}
 	}
 
-	if plan.HostFlags != state.HostFlags {
+	if plan.HostFlags != state.HostFlags || plan.ConsistentLun.Value != state.ConsistentLun.Value {
 		hostFlags := pmaxTypes.HostFlags{
 			VolumeSetAddressing: &pmaxTypes.HostFlag{
 				Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.Value,
@@ -175,7 +175,7 @@ func updateHostGroup(ctx context.Context, client client.Client, plan, state mode
 				Enabled:  plan.HostFlags.ScsiSupport1.Enabled.Value,
 				Override: plan.HostFlags.ScsiSupport1.Override.Value,
 			},
-			ConsistentLUN: plan.HostFlags.ConsistentLun.Value,
+			ConsistentLUN: plan.ConsistentLun.Value,
 		}
 		_, err := client.PmaxClient.UpdateHostGroupFlags(ctx, client.SymmetrixID, state.Name.Value, &hostFlags)
 		if err != nil {

@@ -1,8 +1,11 @@
 package powermax
 
 import (
+	"context"
+	"log"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -10,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccHostGroupName1        = "test_acc_hostgroup_1"
 	TestAccHostGroupName2        = "test_acc_hostgroup_2"
@@ -19,6 +23,38 @@ const (
 	ImportHostGroupResourceName1 = "powermax_host_group.import_host_group_success"
 	ImportHostGroupResourceName2 = "powermax_host_group.import_host_group_failure"
 )
+
+func init() {
+	resource.AddTestSweepers("powermax_host_group", &resource.Sweeper{
+		Name:         "powermax_host_group",
+		Dependencies: []string{"powermax_masking_view", "powermax_host"},
+		F: func(region string) error {
+			powermaxClient, err := getSweeperClient(region)
+			if err != nil {
+				log.Println("Error getting sweeper client: " + err.Error())
+				return nil
+			}
+
+			ctx := context.Background()
+
+			hostgroups, err := powermaxClient.PmaxClient.GetHostGroupList(ctx, serialno)
+			if err != nil {
+				log.Println("Error getting hostgroup list: " + err.Error())
+				return nil
+			}
+
+			for _, hostGroup := range hostgroups.HostGroupIDs {
+				if strings.Contains(hostGroup, SweepTestsTemplateIdentifier) {
+					err := powermaxClient.PmaxClient.DeleteHostGroup(ctx, serialno, hostGroup)
+					if err != nil {
+						log.Println("Error deleting hostgroup: " + hostGroup + "with error: " + err.Error())
+					}
+				}
+			}
+			return nil
+		},
+	})
+}
 
 func TestAccHostGroup_HostGroupCRUD(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
@@ -134,8 +170,6 @@ resource "powermax_host_group" "hostgroup_create_test_1" {
 	}
 	host_ids = [powermax_host.host_create_test_1.id]
 }
-
-
 `
 
 var UpdateHostGroupWithMixCaseHostIDFailure = `

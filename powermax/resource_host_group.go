@@ -20,6 +20,7 @@ type resourceHostGroupType struct{}
 // HostGroup Resource schema
 func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	hostFlagDefaultPlanModifier := tfsdk.AttributePlanModifiers{
+		tfsdk.UseStateForUnknown(),
 		DefaultAttribute(types.Object{
 			Attrs: map[string]attr.Value{
 				"override": types.Bool{Value: false},
@@ -32,6 +33,7 @@ func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 		}),
 	}
 	boolDefaultPlanModifier := tfsdk.AttributePlanModifiers{
+		tfsdk.UseStateForUnknown(),
 		DefaultAttribute(types.Bool{Value: false}),
 	}
 	hostFlagNestedAttr := tfsdk.SingleNestedAttributes(map[string]tfsdk.Attribute{
@@ -49,7 +51,7 @@ func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 		},
 	})
 	return tfsdk.Schema{
-		MarkdownDescription: "Resource to manage hostgroup in PowerMax array. Updates are supported for the following parameters: `name`, `host_ids`, `host_flags`.",
+		MarkdownDescription: "Resource to manage hostgroup in PowerMax array. Updates are supported for the following parameters: `name`, `host_ids`, `host_flags`, `consistent_lun`.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Type:                types.StringType,
@@ -78,62 +80,80 @@ func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 				Required: true,
 				Attributes: tfsdk.SingleNestedAttributes(map[string]tfsdk.Attribute{
 					"volume_set_addressing": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "It enables the volume set addressing mode.",
+						MarkdownDescription: "It enables the volume set addressing mode.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"disable_q_reset_on_ua": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
+						MarkdownDescription: "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"environ_set": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "It enables the environmental error reporting by the storage system to the host on the specific port.",
+						MarkdownDescription: "It enables the environmental error reporting by the storage system to the host on the specific port.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"openvms": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "This attribute enables an Open VMS fibre connection.",
+						MarkdownDescription: "This attribute enables an Open VMS fibre connection.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"avoid_reset_broadcast": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "It enables a SCSI bus reset to only occur to the port that received the reset.",
+						MarkdownDescription: "It enables a SCSI bus reset to only occur to the port that received the reset.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"scsi_3": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
+						MarkdownDescription: "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"spc2_protocol_version": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "When setting this flag, the port must be offline.",
+						MarkdownDescription: "When setting this flag, the port must be offline.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 					"scsi_support1": {
-						Optional:      true,
-						Computed:      true,
-						Attributes:    hostFlagNestedAttr,
-						PlanModifiers: hostFlagDefaultPlanModifier,
-					},
-					"consistent_lun": {
-						Type:          types.BoolType,
-						Optional:      true,
-						Computed:      true,
-						PlanModifiers: boolDefaultPlanModifier,
+						Optional:            true,
+						Computed:            true,
+						Attributes:          hostFlagNestedAttr,
+						Description:         "This attribute provides a stricter compliance with SCSI standards.",
+						MarkdownDescription: "This attribute provides a stricter compliance with SCSI standards.",
+						PlanModifiers:       hostFlagDefaultPlanModifier,
 					},
 				}),
-				Description:         "Host Flags set for the hostgroup.",
-				MarkdownDescription: "Host Flags set for the hostgroup.",
+				Description:         "Host Flags set for the hostgroup. When host_flags = {} then default flags will be considered.",
+				MarkdownDescription: "Host Flags set for the hostgroup. When host_flags = {} then default flags will be considered.",
+			},
+			"consistent_lun": {
+				Type:                types.BoolType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "It enables the rejection of any masking operation involving this hostgroup that would result in inconsistent LUN values.",
+				MarkdownDescription: "It enables the rejection of any masking operation involving this hostgroup that would result in inconsistent LUN values.",
+				PlanModifiers:       boolDefaultPlanModifier,
 			},
 			"numofmaskingviews": {
 				Type:                types.Int64Type,
@@ -166,6 +186,9 @@ func (r resourceHostGroupType) GetSchema(_ context.Context) (tfsdk.Schema, diag.
 				Computed:            true,
 				Description:         "The masking views associated with the hostgroup.",
 				MarkdownDescription: "The masking views associated with the hostgroup.",
+				PlanModifiers: tfsdk.AttributePlanModifiers{
+					tfsdk.UseStateForUnknown(),
+				},
 			},
 			"port_flags_override": {
 				Type:                types.BoolType,
@@ -249,7 +272,7 @@ func (r resourceHostGroup) Create(ctx context.Context, req tfsdk.CreateResourceR
 			Enabled:  planHostGroup.HostFlags.ScsiSupport1.Enabled.Value,
 			Override: planHostGroup.HostFlags.ScsiSupport1.Override.Value,
 		},
-		ConsistentLUN: planHostGroup.HostFlags.ConsistentLun.Value,
+		ConsistentLUN: planHostGroup.ConsistentLun.Value,
 	}
 
 	tflog.Info(ctx, "calling create hostgroup pmax client", map[string]interface{}{

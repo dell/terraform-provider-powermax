@@ -149,13 +149,6 @@ func (r resourcePortGroup) Create(ctx context.Context, req tfsdk.CreateResourceR
 		"pgState":    pgState,
 	})
 	updatePGState(&pgState, &plan, pgResponse)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error updating portgroup to terraform state, this can lead to a mismatch between infra and state ",
-			CreatePGDetailErrorMsg+plan.Name.Value+" with error: "+err.Error(),
-		)
-		return
-	}
 
 	diags = resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)
@@ -198,13 +191,6 @@ func (r resourcePortGroup) Read(ctx context.Context, req tfsdk.ReadResourceReque
 		"pgResponse": pgResponse,
 	})
 	updatePGState(&pgState, &pgState, pgResponse)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error updating portgroup to terraform state, this can lead to a mismatch between infra and state ",
-			ReadPGDetailsErrorMsg+pgState.Name.Value+" with error: "+err.Error(),
-		)
-		return
-	}
 
 	diags = resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)
@@ -317,13 +303,6 @@ func (r resourcePortGroup) ImportState(ctx context.Context, req tfsdk.ImportReso
 		"pgResponse": pgResponse,
 	})
 	updatePGState(&pgState, &pgState, pgResponse)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error importing portgroup to terraform state, this can lead to a mismatch between infra and state ",
-			ImportPGDetailsErrorMsg+pgState.Name.Value+" with error: "+err.Error(),
-		)
-		return
-	}
 
 	diags := resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)

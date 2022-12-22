@@ -46,9 +46,9 @@ func (v sizeAtLeastValidator) Validate(ctx context.Context, req tfsdk.ValidateAt
 }
 
 func validateSet(ctx context.Context, request tfsdk.ValidateAttributeRequest, response *tfsdk.ValidateAttributeResponse) ([]attr.Value, bool) {
-	var l types.Set
+	var set types.Set
 
-	diags := tfsdk.ValueAs(ctx, request.AttributeConfig, &l)
+	diags := tfsdk.ValueAs(ctx, request.AttributeConfig, &set)
 
 	if diags.HasError() {
 		response.Diagnostics.Append(diags...)
@@ -56,11 +56,11 @@ func validateSet(ctx context.Context, request tfsdk.ValidateAttributeRequest, re
 		return nil, false
 	}
 
-	if l.IsUnknown() || l.IsNull() {
+	if set.IsUnknown() || set.IsNull() {
 		return nil, false
 	}
 
-	return l.Elems, true
+	return set.Elems, true
 }
 
 // SizeAtLeast returns an AttributeValidator which ensures that any configured

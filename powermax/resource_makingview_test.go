@@ -16,7 +16,6 @@ import (
 // It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccPGForMaskingView        = "test_acc_pg_maskingview"
-	TestAccVolForMaskingView       = "test_acc_vol_maskingview"
 	TestAccHostForMaskingView      = "test_acc_host_maskingview"
 	TestAccCreateMaskingView       = "test_acc_create_maskingview"
 	TestAccUpdateMaskingView       = "test_acc_update_maskingview"
@@ -165,40 +164,17 @@ func TestAccMaskingView_CreateMaskingViewFailure(t *testing.T) {
 		ProtoV6ProviderFactories: testProviderFactory,
 		Steps: []resource.TestStep{
 			{
+				// Failure scenario -  Create masking view fails when storageGroup does not have any volumes associated with it.
 				Config:      CreateMaskingViewFailure,
 				ExpectError: regexp.MustCompile(CreateMVDetailErrorMsg),
 			},
-		},
-	})
-}
-
-func TestAccMaskingView_CreateMaskingViewError(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
 			{
+				// Failure scenario -  Cannot create masking view when both host_id and host_group_id are given as input.
 				Config:      CreateMaskingViewError,
 				ExpectError: regexp.MustCompile(CreateMVDetailErrorMsg),
 			},
-		},
-	})
-}
-
-func TestAccMaskingView_CreateMaskingViewErrorEmptyHostAndHostGroupID(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
 			{
+				// Failure scenario - cannot create masking view with empty host and host group ID
 				Config:      CreateMaskingViewErrorEmptyHostAndHostGroupID,
 				ExpectError: regexp.MustCompile(CreateMVDetailErrorMsg),
 			},
