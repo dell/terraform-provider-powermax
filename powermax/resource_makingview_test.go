@@ -16,7 +16,6 @@ import (
 // It is mandatory to create `test` resources with a prefix - 'test_acc_'
 const (
 	TestAccPGForMaskingView        = "test_acc_pg_maskingview"
-	TestAccVolForMaskingView       = "test_acc_vol_maskingview"
 	TestAccHostForMaskingView      = "test_acc_host_maskingview"
 	TestAccCreateMaskingView       = "test_acc_create_maskingview"
 	TestAccUpdateMaskingView       = "test_acc_update_maskingview"
@@ -31,7 +30,7 @@ func init() {
 		F: func(region string) error {
 			powermaxClient, err := getSweeperClient(region)
 			if err != nil {
-				log.Println("Error getting sweeper client: " + err.Error())
+				log.Println("Error getting sweeper client")
 				return nil
 			}
 
@@ -39,7 +38,7 @@ func init() {
 
 			maskingViews, err := powermaxClient.PmaxClient.GetMaskingViewList(ctx, serialno)
 			if err != nil {
-				log.Println("Error getting masking view list: " + err.Error())
+				log.Println("Error getting masking view list")
 				return nil
 			}
 
@@ -47,7 +46,7 @@ func init() {
 				if strings.Contains(maskingView, SweepTestsTemplateIdentifier) {
 					err := powermaxClient.PmaxClient.DeleteMaskingView(ctx, serialno, maskingView)
 					if err != nil {
-						log.Println("Error deleting maskingview: " + maskingView + "with error: " + err.Error())
+						log.Println("Error deleting maskingview")
 					}
 				}
 			}
@@ -112,7 +111,7 @@ func TestAccMaskingView_CreateMaskingViewWithHostGroupID(t *testing.T) {
 	}
 	assertTFImportState := func(s []*terraform.InstanceState) error {
 		assert.Equal(t, TestAccCreateMaskingView, s[0].Attributes["name"])
-		assert.Equal(t, HostGroupID1, s[0].Attributes["host_group_id"])
+		assert.Equal(t, TestAccHostGroupName1, s[0].Attributes["host_group_id"])
 		assert.Equal(t, 1, len(s))
 		return nil
 	}
@@ -165,40 +164,17 @@ func TestAccMaskingView_CreateMaskingViewFailure(t *testing.T) {
 		ProtoV6ProviderFactories: testProviderFactory,
 		Steps: []resource.TestStep{
 			{
+				// Failure scenario -  Create masking view fails when storageGroup does not have any volumes associated with it.
 				Config:      CreateMaskingViewFailure,
 				ExpectError: regexp.MustCompile(CreateMVDetailErrorMsg),
 			},
-		},
-	})
-}
-
-func TestAccMaskingView_CreateMaskingViewError(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
 			{
+				// Failure scenario -  Cannot create masking view when both host_id and host_group_id are given as input.
 				Config:      CreateMaskingViewError,
 				ExpectError: regexp.MustCompile(CreateMVDetailErrorMsg),
 			},
-		},
-	})
-}
-
-func TestAccMaskingView_CreateMaskingViewErrorEmptyHostAndHostGroupID(t *testing.T) {
-	if os.Getenv("TF_ACC") == "" {
-		t.Skip("Dont run with units tests because it will try to create the context")
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testProviderFactory,
-		Steps: []resource.TestStep{
 			{
+				// Failure scenario - cannot create masking view with empty host and host group ID
 				Config:      CreateMaskingViewErrorEmptyHostAndHostGroupID,
 				ExpectError: regexp.MustCompile(CreateMVDetailErrorMsg),
 			},
@@ -245,39 +221,29 @@ resource "powermax_port_group" "pg_for_maskingview" {
 	]
 }
 
+resource "powermax_host" "host_create_test_1" {
+	name = "` + TestAccHostForHG1 + `"
+	host_flags = {
+	}
+	initiators = ["` + InitiatorID1 + `"]
+}
+
+resource "powermax_host_group" "hg_for_maskingview" {
+	name = "` + TestAccHostGroupName1 + `"
+	host_flags = {
+		spc2_protocol_version = {
+			enabled = false
+			override = true
+		}
+	}
+	host_ids = [powermax_host.host_create_test_1.id]
+}
+
 resource "powermax_masking_view" "create_maskingview_with_host_group" {
 	name = "` + TestAccCreateMaskingView + `"
 	storage_group_id = "` + StorageGroupForMV1 + `"
 	port_group_id = powermax_port_group.pg_for_maskingview.id
-	host_group_id = "` + HostGroupID1 + `"
-}
-`
-
-var UpdateMaskingViewWithHostGroupSuccess = `
-provider "powermax" {
-	username = "` + username + `"
-	password = "` + password + `"
-	endpoint = "` + endpoint + `"
-	serial_number = "` + serialno + `"
-	insecure = true
-}
-
-resource "powermax_port_group" "pg_for_maskingview" {
-	name = "` + TestAccPGForMaskingView + `"
-	protocol = "SCSI_FC"
-	ports = [
-		{
-			director_id = "` + DirectorID1 + `"
-			port_id = "2"
-		}
-	]
-}
-
-resource "powermax_masking_view" "create_maskingview_with_host_group" {
-	name = "` + TestAccUpdateMaskingView + `"
-	storage_group_id = "` + StorageGroupForMV1 + `"
-	port_group_id = powermax_port_group.pg_for_maskingview.id
-	host_group_id = "` + HostGroupID1 + `"
+	host_group_id = powermax_host_group.hg_for_maskingview.id
 }
 `
 

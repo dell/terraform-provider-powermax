@@ -163,7 +163,8 @@ func (p *provider) GetResources(ctx context.Context) (map[string]tfsdk.ResourceT
 		"powermax_volume":        resourceVolumeType{},
 		"powermax_host":          resourceHostType{},
 		"powermax_port_group":    resourcePortGroupType{},
-		"powermax_masking_view":  resourceMaskingViewType{}}, nil
+		"powermax_masking_view":  resourceMaskingViewType{},
+		"powermax_host_group":    resourceHostGroupType{}}, nil
 }
 
 func (p *provider) GetDataSources(ctx context.Context) (map[string]tfsdk.DataSourceType, diag.Diagnostics) {

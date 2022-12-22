@@ -10,6 +10,8 @@ type Host struct {
 	Name types.String `tfsdk:"name"`
 	// HostFlags - Specifies the flags set for a host
 	HostFlags HostFlags `tfsdk:"host_flags"`
+	// ConsistentLun - Specifies whether the consistent_lun flag is set or not for a host
+	ConsistentLun types.Bool `tfsdk:"consistent_lun"`
 	// Initiators - (Set of String) Specifies the list of initiators for a host
 	Initiators types.Set `tfsdk:"initiators"`
 	// NumOfMaskingViews - Specifies the number of masking views for a host
@@ -34,15 +36,14 @@ type Host struct {
 
 // HostFlags - group of flags used as part of host creation
 type HostFlags struct {
-	VolumeSetAddressing HostFlag   `tfsdk:"volume_set_addressing"`
-	DisableQResetOnUa   HostFlag   `tfsdk:"disable_q_reset_on_ua"`
-	EnvironSet          HostFlag   `tfsdk:"environ_set"`
-	AvoidResetBroadcast HostFlag   `tfsdk:"avoid_reset_broadcast"`
-	Openvms             HostFlag   `tfsdk:"openvms"`
-	Scsi3               HostFlag   `tfsdk:"scsi_3"`
-	Spc2ProtocolVersion HostFlag   `tfsdk:"spc2_protocol_version"`
-	ScsiSupport1        HostFlag   `tfsdk:"scsi_support1"`
-	ConsistentLun       types.Bool `tfsdk:"consistent_lun"`
+	VolumeSetAddressing HostFlag `tfsdk:"volume_set_addressing"`
+	DisableQResetOnUa   HostFlag `tfsdk:"disable_q_reset_on_ua"`
+	EnvironSet          HostFlag `tfsdk:"environ_set"`
+	AvoidResetBroadcast HostFlag `tfsdk:"avoid_reset_broadcast"`
+	Openvms             HostFlag `tfsdk:"openvms"`
+	Scsi3               HostFlag `tfsdk:"scsi_3"`
+	Spc2ProtocolVersion HostFlag `tfsdk:"spc2_protocol_version"`
+	ScsiSupport1        HostFlag `tfsdk:"scsi_support1"`
 }
 
 // HostFlag holds overwrite info for individual flag
