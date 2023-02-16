@@ -31,7 +31,7 @@ var lockMutex sync.Mutex
 // defaultMaxPowerMaxConnections is the number of workers that can query powermax at a time
 const defaultMaxPowerMaxConnections = 10
 
-func newMaskingViewDataSource() datasource.DataSource {
+func NewMaskingViewDataSource() datasource.DataSource {
 	return &maskingViewDataSource{}
 }
 

@@ -87,12 +87,6 @@ func CopyFields(ctx context.Context, source, destination interface{}) error {
 				}
 				if destinationField.Type().String() == "basetypes.MapValue" {
 					destinationFieldValue, _ = types.MapValue(types.StringType, structToMap(sourceField.Interface()))
-					//sourceFieldValue := reflect.ValueOf(sourceField)
-					//for i := 0; i < sourceFieldValue.NumField(); i++ {
-					//	sourceFieldValueName := sourceFieldValue.Type().Field(i).StorageGroupID
-					//	sourceFieldValueVal := sourceFieldValue.Elem().Field(i).Interface()
-					//
-					//}
 				}
 			default:
 				tflog.Error(ctx, "unsupported source field type", map[string]interface{}{
