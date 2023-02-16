@@ -8,8 +8,6 @@ import (
 	"terraform-provider-powermax/powermax/provider"
 	"testing"
 
-	pmax "github.com/dell/gopowermax/v2"
-
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/joho/godotenv"
@@ -37,9 +35,6 @@ func Init() {
 	endpoint := os.Getenv("POWERMAX_ENDPOINT")
 	serialNumber := os.Getenv("POWERMAX_SERIAL_NUMBER")
 	pmaxVersion := os.Getenv("POWERMAX_VERSION")
-	if pmaxVersion == "" {
-		pmaxVersion = pmax.DefaultAPIVersion
-	}
 
 	ProviderConfig = fmt.Sprintf(`
 		provider "powermax" {
@@ -67,9 +62,14 @@ func testAccPreCheck(t *testing.T) {
 	if os.Getenv("POWERMAX_SERIAL_NUMBER") == "" {
 		t.Fatal("POWERMAX_SERIAL_NUMBER environment variable not set")
 	}
+	if os.Getenv("POWERMAX_VERSION") == "" {
+		t.Fatal("POWERMAX_VERSION environment variable not set")
+	}
+
 	t.Log(os.Getenv("POWERMAX_ENDPOINT"))
 	t.Log(os.Getenv("POWERMAX_USERNAME"))
 	t.Log(os.Getenv("POWERMAX_PASSWORD"))
 	t.Log(os.Getenv("POWERMAX_SERIAL_NUMBER"))
+	t.Log(os.Getenv("POWERMAX_VERSION"))
 	t.Log(ProviderConfig)
 }

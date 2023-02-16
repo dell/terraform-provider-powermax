@@ -1,8 +1,10 @@
-package provider
+package test
 
 import (
 	"context"
 	"github.com/dell/gopowermax/v2/types/v100"
+	"terraform-provider-powermax/powermax/helper"
+	"terraform-provider-powermax/powermax/models"
 	"testing"
 )
 
@@ -43,8 +45,8 @@ func Test_CopyFields(t *testing.T) {
 		UnreducibleDataGB:     0,
 	}
 
-	var sg StorageGroupResourceModel
-	err := CopyFields(context.Background(), sgResponse, &sg)
+	var sg models.StorageGroupResourceModel
+	err := helper.CopyFields(context.Background(), sgResponse, &sg)
 	if err != nil {
 		t.Errorf("CopyFields() error = %v", err)
 	}

@@ -1,4 +1,4 @@
-package provider
+package helper
 
 import (
 	"context"
@@ -94,7 +94,6 @@ func CopyFields(ctx context.Context, source, destination interface{}) error {
 					//
 					//}
 				}
-				fmt.Printf("convert source struct %v\n", sourceField.String())
 			default:
 				tflog.Error(ctx, "unsupported source field type", map[string]interface{}{
 					"sourceField": sourceField,
