@@ -10,6 +10,6 @@ You may obtain a copy of the License at
 
 # Support
 
-  * To report any issue, create an issue [here](https://github.com/dell/terraform-provider-powermax/issues).
-  * If any requirements have not been addressed, then create an issue [here](https://github.com/dell/terraform-provider-powermax/issues).
-  * To provide feedback to the development team, send an email to **Terraform.Providers@dell.com**.
+* To report any issue, create an issue [here](https://github.com/dell/terraform-provider-powermax/issues).
+* If any requirements have not been addressed, then create an issue [here](https://github.com/dell/terraform-provider-powermax/issues).
+* To provide feedback to the development team, send an email to **Terraform.Providers@dell.com**.

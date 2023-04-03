@@ -10,7 +10,3 @@ You may obtain a copy of the License at
 
 # Maintainers
 
-* @shenda1 
-* @SoorajBharadwaj07
-* @manishaagarwal1311
-* @naveen-patil-dell

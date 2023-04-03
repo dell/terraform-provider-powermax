@@ -8,37 +8,31 @@ License: [MPL-2.0 license](https://github.com/hashicorp/terraform-plugin-docs/bl
 
 * * *
 Package: terraform-plugin-framework  
-Version: v0.10.0  
+Version: v1.1.1
 Copyright: Copyright (c) 2020 HashiCorp, Inc.  
 License: [MPL-2.0 license](https://github.com/hashicorp/terraform-plugin-framework/blob/main/LICENSE)
 
 * * *
 
 Package: terraform-plugin-go  
-Version: v0.14.0  
+Version: v0.14.3  
 Copyright: Copyright (c) 2020 HashiCorp, Inc.  
 License: [MPL-2.0 license](https://github.com/hashicorp/terraform-plugin-go/blob/main/LICENSE)
 
 * * *
 
 Package: terraform-plugin-sdk/v2  
-Version: v2.21.0  
+Version: v2.24.1 
 Copyright: Copyright (c) 2020 HashiCorp, Inc.  
 License: [MPL-2.0 license](https://github.com/hashicorp/terraform-plugin-sdk/blob/main/LICENSE)
 
 * * *
 
 Package: terraform-plugin-log  
-Version: v0.7.0  
+Version: v0.8.0
 Copyright: Copyright (c) 2020 HashiCorp, Inc.  
 License: [MPL-2.0 license](https://github.com/hashicorp/terraform-plugin-log/blob/main/LICENSE)
 
-* * *
-
-Package: testify  
-Version: v1.7.2  
-Copyright: Copyright (c) 2012-2020 Mat Ryer, Tyler Bunnell and contributors.  
-License: [MIT License](https://github.com/stretchr/testify/blob/v1.7.2/LICENSE)
 
 * * *
 
