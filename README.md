@@ -19,35 +19,53 @@ For general information about Terraform, visit the [official website][tf-website
 
 ## Table of Contents
 
-  * [Code of Conduct](https://github.com/dell/terraform-provider-powermax/blob/main/about/CODE_OF_CONDUCT.md)
-  * [Committer Guide](https://github.com/dell/terraform-provider-powermax/blob/main/about/COMMITTER_GUIDE.md)
-  * [Contributing Guide](https://github.com/dell/terraform-provider-powermax/blob/main/about/CONTRIBUTING.md)
-  * [Maintainers](https://github.com/dell/terraform-provider-powermax/blob/main/about/MAINTAINERS.md)
-  * [Support](https://github.com/dell/terraform-provider-powermax/blob/main/about/SUPPORT.md)
-  * [Security](https://github.com/dell/terraform-provider-powermax/blob/main/about/SECURITY.md)
-  * [Attribution](https://github.com/dell/terraform-provider-powermax/blob/main/about/ATTRIBUTION.md)
-  * [Additional Information](https://github.com/dell/terraform-provider-powermax/blob/main/about/ADDITIONAL_INFORMATION.md)
+* [Code of Conduct](about/CODE_OF_CONDUCT.md)
+* [Committer Guide](about/COMMITTER_GUIDE.md)
+* [Contributing Guide](about/CONTRIBUTING.md)
+* [Developer](about/DEVELOPER.md)
+* [Maintainers](about/MAINTAINERS.md)
+* [Support](about/SUPPORT.md)
+* [Attribution](about/ATTRIBUTION.md)
+* [Additional Information](about/ADDITIONAL_INFORMATION.md)
 
 ## Supported Platforms
-  * PowerMax with Unisphere versions 10.0 and above.
+* PowerMax with Unisphere versions 10.0 and above.
 
 ## Prerequisites
-  * [Terraform >= 1.3.2](https://www.terraform.io)
-  * Go >= 1.19
+* [Terraform >= 1.3.2](https://www.terraform.io)
+* Go >= 1.19
 
 ## Installation
 Install Terraform provider for PowerMax from terraform registry by adding the following block
 ```terraform
 terraform {
   required_providers {
-    powermax = {
-       version = "0.0.1"
-       source  = "dell/powermax"
+    powermax = { 
+      version = "0.0.1"
+      source = "registry.terraform.io/dell/powermax"
     }
   }
 }
 ```
-For adding resources, please refer [examples](https://github.com/dell/terraform-provider-powermax/blob/main/docs)
 
-## About
-Terraform Provider for PowerMax is 100% open source and community-driven. All components are available under [MPL-2.0 license](https://www.mozilla.org/en-US/MPL/2.0/) on GitHub.
+
+## Usage
+Once you have installed the PowerMax provider, you can start using it in your Terraform configuration files. The provider has a number of resources that you can use to manage your PowerMax storage arrays.
+
+For example, you can use the `powermax_storagegroup` resource to create a new storage group:
+```terraform
+resource "powermax_storagegroup" "test" {
+  name             = "terraform_sg"
+  srp_id           = "SRP_1"
+  slo              = "Gold"
+  host_io_limit = {
+    host_io_limit_io_sec = "1000"
+    host_io_limit_mb_sec = "1000"
+    dynamic_distribution  = "Never"
+  }
+}
+```
+For more resources, please refer to [examples](examples/main.tf)
+
+## License
+The Terraform provider for PowerMax is open-source software released under the [MPL-2.0 license](https://www.mozilla.org/en-US/MPL/2.0/).
