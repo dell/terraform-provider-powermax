@@ -1,8 +1,12 @@
+// Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 package provider
 
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"terraform-provider-powermax/client"
+
 	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,8 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"reflect"
-	"terraform-provider-powermax/client"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

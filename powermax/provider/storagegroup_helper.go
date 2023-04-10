@@ -1,11 +1,13 @@
+// Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 package provider
 
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"reflect"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 const (

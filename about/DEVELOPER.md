@@ -33,18 +33,18 @@
 ### Build the provider
 1. Clone the repo and switch to the develop branch
     ```
-    git clone git@eos2git.cec.lab.emc.com:Jason-jin1/terraform-provider-powermax-framework.git
+    git clone git@eos2git.cec.lab.emc.com:SES-PIE/terraform-powermax-internal.git
     git checkout -b <branch-name>
     ```
 
 2. Enter the repo
     ```
-    cd terraform-provider-powermax-framework
+    cd terraform-powermax-internal
     ```
 
 3. Build the provider
     ```
-    go install
+    go install .
     ```
 
 ### Run and test

@@ -1,9 +1,11 @@
+// Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 package provider
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"terraform-provider-powermax/client"
+
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -129,6 +131,7 @@ func (p *PmaxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewStorageGroup,
+		NewHostGroup,
 	}
 }
 
