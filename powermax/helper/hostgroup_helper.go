@@ -47,8 +47,8 @@ func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupM
 				hostState.HostFlags.VolumeSetAddressing.Enabled = basetypes.NewBoolValue(isEnabled)
 				hostState.HostFlags.VolumeSetAddressing.Override = basetypes.NewBoolValue(true)
 			case constants.DisableQResetOnUa:
-				hostState.HostFlags.DisableQResetOnUa.Enabled = basetypes.NewBoolValue(isEnabled)
-				hostState.HostFlags.DisableQResetOnUa.Override = basetypes.NewBoolValue(true)
+				hostState.HostFlags.DisableQResetOnUA.Enabled = basetypes.NewBoolValue(isEnabled)
+				hostState.HostFlags.DisableQResetOnUA.Override = basetypes.NewBoolValue(true)
 			case constants.AvoidResetBroadcast:
 				hostState.HostFlags.AvoidResetBroadcast.Enabled = basetypes.NewBoolValue(isEnabled)
 				hostState.HostFlags.AvoidResetBroadcast.Override = basetypes.NewBoolValue(true)
@@ -56,14 +56,14 @@ func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupM
 				hostState.HostFlags.EnvironSet.Enabled = basetypes.NewBoolValue(isEnabled)
 				hostState.HostFlags.EnvironSet.Override = basetypes.NewBoolValue(true)
 			case constants.OpenVMS:
-				hostState.HostFlags.Openvms.Enabled = basetypes.NewBoolValue(isEnabled)
-				hostState.HostFlags.Openvms.Override = basetypes.NewBoolValue(true)
+				hostState.HostFlags.OpenVMS.Enabled = basetypes.NewBoolValue(isEnabled)
+				hostState.HostFlags.OpenVMS.Override = basetypes.NewBoolValue(true)
 			case constants.SCSISupport1:
-				hostState.HostFlags.ScsiSupport1.Enabled = basetypes.NewBoolValue(isEnabled)
-				hostState.HostFlags.ScsiSupport1.Override = basetypes.NewBoolValue(true)
+				hostState.HostFlags.SCSISupport1.Enabled = basetypes.NewBoolValue(isEnabled)
+				hostState.HostFlags.SCSISupport1.Override = basetypes.NewBoolValue(true)
 			case constants.SCSI3:
-				hostState.HostFlags.Scsi3.Enabled = basetypes.NewBoolValue(isEnabled)
-				hostState.HostFlags.Scsi3.Override = basetypes.NewBoolValue(true)
+				hostState.HostFlags.SCSI3.Enabled = basetypes.NewBoolValue(isEnabled)
+				hostState.HostFlags.SCSI3.Override = basetypes.NewBoolValue(true)
 			case constants.SPC2ProtocolVersion:
 				hostState.HostFlags.Spc2ProtocolVersion.Enabled = basetypes.NewBoolValue(isEnabled)
 				hostState.HostFlags.Spc2ProtocolVersion.Override = basetypes.NewBoolValue(true)
@@ -75,18 +75,18 @@ func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupM
 func setDefaultHostFlagsForHostGroup(hostState *models.HostGroupModal) {
 	hostState.HostFlags.VolumeSetAddressing.Enabled = basetypes.NewBoolValue(false)
 	hostState.HostFlags.VolumeSetAddressing.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.DisableQResetOnUa.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.DisableQResetOnUa.Override = basetypes.NewBoolValue(false)
+	hostState.HostFlags.DisableQResetOnUA.Enabled = basetypes.NewBoolValue(false)
+	hostState.HostFlags.DisableQResetOnUA.Override = basetypes.NewBoolValue(false)
 	hostState.HostFlags.AvoidResetBroadcast.Enabled = basetypes.NewBoolValue(false)
 	hostState.HostFlags.AvoidResetBroadcast.Override = basetypes.NewBoolValue(false)
 	hostState.HostFlags.EnvironSet.Enabled = basetypes.NewBoolValue(false)
 	hostState.HostFlags.EnvironSet.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.Openvms.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.Openvms.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.ScsiSupport1.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.ScsiSupport1.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.Scsi3.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.Scsi3.Override = basetypes.NewBoolValue(false)
+	hostState.HostFlags.OpenVMS.Enabled = basetypes.NewBoolValue(false)
+	hostState.HostFlags.OpenVMS.Override = basetypes.NewBoolValue(false)
+	hostState.HostFlags.SCSISupport1.Enabled = basetypes.NewBoolValue(false)
+	hostState.HostFlags.SCSISupport1.Override = basetypes.NewBoolValue(false)
+	hostState.HostFlags.SCSI3.Enabled = basetypes.NewBoolValue(false)
+	hostState.HostFlags.SCSI3.Override = basetypes.NewBoolValue(false)
 	hostState.HostFlags.Spc2ProtocolVersion.Enabled = basetypes.NewBoolValue(false)
 	hostState.HostFlags.Spc2ProtocolVersion.Override = basetypes.NewBoolValue(false)
 }
@@ -150,8 +150,8 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 				Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
 			},
 			DisableQResetOnUA: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.DisableQResetOnUa.Enabled.ValueBool(),
-				Override: plan.HostFlags.DisableQResetOnUa.Override.ValueBool(),
+				Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
+				Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
 			},
 			EnvironSet: &pmaxTypes.HostFlag{
 				Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
@@ -162,20 +162,20 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 				Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
 			},
 			OpenVMS: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.Openvms.Enabled.ValueBool(),
-				Override: plan.HostFlags.Openvms.Override.ValueBool(),
+				Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
+				Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
 			},
 			SCSI3: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.Scsi3.Enabled.ValueBool(),
-				Override: plan.HostFlags.Scsi3.Override.ValueBool(),
+				Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
+				Override: plan.HostFlags.SCSI3.Override.ValueBool(),
 			},
 			Spc2ProtocolVersion: &pmaxTypes.HostFlag{
 				Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
 				Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
 			},
 			SCSISupport1: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.ScsiSupport1.Enabled.ValueBool(),
-				Override: plan.HostFlags.ScsiSupport1.Override.ValueBool(),
+				Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
+				Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
 			},
 			ConsistentLUN: plan.ConsistentLun.ValueBool(),
 		}

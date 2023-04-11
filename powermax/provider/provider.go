@@ -132,6 +132,7 @@ func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource
 	return []func() resource.Resource{
 		NewStorageGroup,
 		NewHostGroup,
+		NewHost,
 	}
 }
 

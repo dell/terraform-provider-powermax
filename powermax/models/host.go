@@ -3,16 +3,35 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
+// HostResourceModel describes the resource data model.
+type HostResourceModel struct {
+	HostID             types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	NumberMaskingViews types.Int64  `tfsdk:"num_of_masking_views"`
+	NumberInitiators   types.Int64  `tfsdk:"num_of_initiators"`
+	NumberHostGroups   types.Int64  `tfsdk:"num_of_host_groups"`
+	PortFlagsOverride  types.Bool   `tfsdk:"port_flags_override"`
+	ConsistentLun      types.Bool   `tfsdk:"consistent_lun"`
+	HostType           types.String `tfsdk:"type"`
+	Initiators         types.List   `tfsdk:"initiator"`
+	MaskingviewIDs     types.List   `tfsdk:"maskingview"`
+	PowerPathHosts     types.List   `tfsdk:"powerpathhosts"`
+	NumPowerPathHosts  types.Int64  `tfsdk:"numofpowerpathhosts"`
+	BWLimit            types.Int64  `tfsdk:"bw_limit"`
+	// HostFlags - Specifies the flags set for a host
+	HostFlags HostFlags `tfsdk:"host_flags"`
+}
+
 // HostFlags - group of flags used as part of host creation
 type HostFlags struct {
 	VolumeSetAddressing HostFlag `tfsdk:"volume_set_addressing"`
-	DisableQResetOnUa   HostFlag `tfsdk:"disable_q_reset_on_ua"`
+	DisableQResetOnUA   HostFlag `tfsdk:"disable_q_reset_on_ua"`
 	EnvironSet          HostFlag `tfsdk:"environ_set"`
 	AvoidResetBroadcast HostFlag `tfsdk:"avoid_reset_broadcast"`
-	Openvms             HostFlag `tfsdk:"openvms"`
-	Scsi3               HostFlag `tfsdk:"scsi_3"`
+	OpenVMS             HostFlag `tfsdk:"openvms"`
+	SCSI3               HostFlag `tfsdk:"scsi_3"`
 	Spc2ProtocolVersion HostFlag `tfsdk:"spc2_protocol_version"`
-	ScsiSupport1        HostFlag `tfsdk:"scsi_support1"`
+	SCSISupport1        HostFlag `tfsdk:"scsi_support1"`
 }
 
 // HostFlag holds overwrite info for individual flag

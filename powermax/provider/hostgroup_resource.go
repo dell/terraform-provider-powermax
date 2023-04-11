@@ -248,8 +248,8 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 			Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
 		},
 		DisableQResetOnUA: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.DisableQResetOnUa.Enabled.ValueBool(),
-			Override: plan.HostFlags.DisableQResetOnUa.Override.ValueBool(),
+			Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
+			Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
 		},
 		EnvironSet: &pmaxTypes.HostFlag{
 			Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
@@ -260,20 +260,20 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 			Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
 		},
 		OpenVMS: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.Openvms.Enabled.ValueBool(),
-			Override: plan.HostFlags.Openvms.Override.ValueBool(),
+			Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
+			Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
 		},
 		SCSI3: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.Scsi3.Enabled.ValueBool(),
-			Override: plan.HostFlags.Scsi3.Override.ValueBool(),
+			Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
+			Override: plan.HostFlags.SCSI3.Override.ValueBool(),
 		},
 		Spc2ProtocolVersion: &pmaxTypes.HostFlag{
 			Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
 			Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
 		},
 		SCSISupport1: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.ScsiSupport1.Enabled.ValueBool(),
-			Override: plan.HostFlags.ScsiSupport1.Override.ValueBool(),
+			Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
+			Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
 		},
 		ConsistentLUN: plan.ConsistentLun.ValueBool(),
 	}

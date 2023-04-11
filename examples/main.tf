@@ -35,8 +35,27 @@ provider "powermax" {
   insecure      = true
 }
 
-# resource "powermax_storagegroup" "test" {
-#   storage_group_id = "terraform_sg"
+# resource "powermax_host" "host_02_test" {
+#   name = "host_02_test"
+# 	initiator = ["10000000c9959b8e"]
+# 	host_flags = {
+# 		volume_set_addressing = {
+# 			override = true
+# 			enabled = true
+# 		}  
+# 		openvms = {
+# 			override = true
+# 			enabled = false
+# 		}
+#     avoid_reset_broadcast = {
+#       override = true
+#       enabled = false
+#     }
+#   }
+# }
+
+# resource "powermax_storagegroup" "sg56new" {
+#   storage_group_id = "terraform_sgnewup"
 #   srp_id           = "SRP_1"
 #   slo              = "Gold"
 #   host_io_limit = {
@@ -59,4 +78,8 @@ provider "powermax" {
 #   }
 #   host_ids = ["testHost"]
 #   name     = "host_group"
+#   # volume_size            = "100"
+#   # capacity_unit          = "CYL"
+#   # volume_identifier_name = "terraform_volume"
+#   # num_of_vols            = 1
 # }
