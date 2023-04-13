@@ -134,6 +134,7 @@ func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource
 		NewHostGroup,
 		NewHost,
 		NewPortGroup,
+		newMaskingView,
 	}
 }
 

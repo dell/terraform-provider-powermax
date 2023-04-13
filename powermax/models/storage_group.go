@@ -1,3 +1,4 @@
+// Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"

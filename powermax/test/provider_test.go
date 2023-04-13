@@ -23,7 +23,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 
 var ProviderConfig = ""
 
-func Init() {
+func init() {
 	err := godotenv.Load("powermax.env")
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)

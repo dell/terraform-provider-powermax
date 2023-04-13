@@ -11,7 +11,6 @@ import (
 
 func TestAccHostResource(t *testing.T) {
 	var hostTerraformName = "powermax_host.test_host_2"
-	Init()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

@@ -1,10 +1,10 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
-package provider
+package test
 
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 var createPortGroupConfig = `
@@ -35,7 +35,6 @@ resource "powermax_portgroup" "test_portgroup" {
 
 func TestAccPortgroupResource(t *testing.T) {
 	var portgroupTerraformName = "powermax_portgroup.test_portgroup"
-	Init()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
