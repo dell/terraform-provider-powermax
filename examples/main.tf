@@ -91,3 +91,10 @@ provider "powermax" {
 #   host_group_id = ""
 #   port_group_id = "Tao_k8s_env2_PG"
 # }
+
+# data "powermax_host" "HostDs" {
+# }
+
+# output "hostDsResult" {
+#    value = data.powermax_host.HostDs
+# }
