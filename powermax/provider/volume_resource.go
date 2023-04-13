@@ -223,13 +223,18 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							MarkdownDescription: "The ID of the storage group.",
 							Computed:            true,
 						},
+						"parent_storage_group_name": schema.StringAttribute{
+							Description:         "The ID of the storage group parents.",
+							MarkdownDescription: "The ID of the storage group parents.",
+							Computed:            true,
+						},
 					},
 				},
 				PlanModifiers: []planmodifier.List{
 					listplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"symmetrix_port_keys": schema.ListNestedAttribute{
+			"symmetrix_port_key": schema.ListNestedAttribute{
 				Computed:            true,
 				Description:         "The symmetrix ports associated with the volume.",
 				MarkdownDescription: "The symmetrix ports associated with the volume.",
@@ -240,9 +245,9 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 							MarkdownDescription: "The ID of the director.",
 							Computed:            true,
 						},
-						"port_id": schema.Float64Attribute{
-							Description:         "The id of the symmetrix port.",
-							MarkdownDescription: "The id of the symmetrix port.",
+						"port_id": schema.StringAttribute{
+							Description:         "The ID of the symmetrix port.",
+							MarkdownDescription: "The ID of the symmetrix port.",
 							Computed:            true,
 						},
 					},
@@ -276,7 +281,7 @@ func (r *volumeResource) Configure(_ context.Context, req resource.ConfigureRequ
 func (r volumeResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
 	tflog.Info(ctx, "creating volume")
 
-	var plan models.Volume
+	var plan models.VolumeResource
 	diags := request.Plan.Get(ctx, &plan)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
@@ -319,14 +324,14 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 		"volResponse": volResponse,
 	})
 
-	volState := models.Volume{}
+	volState := models.VolumeResource{}
 
 	tflog.Debug(ctx, "updating create volume state", map[string]interface{}{
 		"volResponse": volResponse,
 		"plan":        plan,
 		"volState":    volState,
 	})
-	err = helper.UpdateVolState(ctx, &volState, volResponse, &plan)
+	err = helper.UpdateVolResourceState(ctx, &volState, volResponse, &plan)
 	if err != nil {
 		response.Diagnostics.AddError(
 			"Error creating volume",
@@ -345,7 +350,7 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 
 func (r volumeResource) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
 	tflog.Info(ctx, "reading volume")
-	var volState models.Volume
+	var volState models.VolumeResource
 	diags := request.State.Get(ctx, &volState)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
@@ -373,7 +378,7 @@ func (r volumeResource) Read(ctx context.Context, request resource.ReadRequest, 
 		"volResponse": volResponse,
 		"volState":    volState,
 	})
-	err = helper.UpdateVolState(ctx, &volState, volResponse, nil)
+	err = helper.UpdateVolResourceState(ctx, &volState, volResponse, nil)
 	if err != nil {
 		response.Diagnostics.AddError(
 			"Error updating volume",
@@ -389,18 +394,18 @@ func (r volumeResource) Read(ctx context.Context, request resource.ReadRequest, 
 	tflog.Info(ctx, "read volume completed")
 }
 
-// Update Volume
+// Update VolumeResource
 // Supported updates: vol_name, mobility_id_enabled, size, cap_unit.
 func (r volumeResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
 	tflog.Info(ctx, "updating volume")
-	var planVol models.Volume
+	var planVol models.VolumeResource
 	diags := request.Plan.Get(ctx, &planVol)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
 		return
 	}
 	tflog.Info(ctx, "Fetched vol from plan")
-	var stateVol models.Volume
+	var stateVol models.VolumeResource
 	diags = response.State.Get(ctx, &stateVol)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
@@ -440,7 +445,7 @@ func (r volumeResource) Update(ctx context.Context, request resource.UpdateReque
 		"volResponse": volResponse,
 		"planVol":     planVol,
 	})
-	err = helper.UpdateVolState(ctx, &stateVol, volResponse, &planVol)
+	err = helper.UpdateVolResourceState(ctx, &stateVol, volResponse, &planVol)
 	if err != nil {
 		response.Diagnostics.AddError(
 			"Error reading volume",
@@ -458,7 +463,7 @@ func (r volumeResource) Update(ctx context.Context, request resource.UpdateReque
 
 func (r volumeResource) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting volume")
-	var volumeState models.Volume
+	var volumeState models.VolumeResource
 	diags := request.State.Get(ctx, &volumeState)
 	response.Diagnostics.Append(diags...)
 	if response.Diagnostics.HasError() {
@@ -470,7 +475,7 @@ func (r volumeResource) Delete(ctx context.Context, request resource.DeleteReque
 	}
 
 	// Unbind volume
-	var sgAssociatedWithVolume []models.StorageGroupID
+	var sgAssociatedWithVolume []models.StorageGroupName
 	diags = volumeState.StorageGroups.ElementsAs(ctx, &sgAssociatedWithVolume, true)
 	if diags.HasError() {
 		response.Diagnostics.Append(diags...)
@@ -520,7 +525,7 @@ func (r volumeResource) Delete(ctx context.Context, request resource.DeleteReque
 
 func (r volumeResource) ImportState(ctx context.Context, request resource.ImportStateRequest, response *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), request, response)
-	var stateVol models.Volume
+	var stateVol models.VolumeResource
 	response.State.Get(ctx, &stateVol)
 	// For importing volume, storage group for creating should leave as empty
 	stateVol.StorageGroupName = types.StringValue("")

@@ -3,7 +3,7 @@ module terraform-provider-powermax
 go 1.19
 
 require (
-	github.com/dell/gopowermax/v2 v2.2.0
+	github.com/dell/gopowermax/v2 v2.2.1-0.20230421091154-f4c024856a2f
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-framework v1.2.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.10.0

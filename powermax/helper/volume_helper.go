@@ -7,8 +7,11 @@ import (
 	"fmt"
 	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"math/big"
+	"reflect"
 	"strconv"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
@@ -26,7 +29,7 @@ const (
 )
 
 // GetVolumeSize returns the size of the volume in the correct format
-func GetVolumeSize(volume models.Volume) (interface{}, error) {
+func GetVolumeSize(volume models.VolumeResource) (interface{}, error) {
 	var size interface{}
 	if volume.CapUnit.ValueString() == CapacityUnitCyl {
 		if volume.Size.ValueBigFloat().IsInt() {
@@ -44,8 +47,8 @@ func GetVolumeSize(volume models.Volume) (interface{}, error) {
 	return size, nil
 }
 
-// UpdateVolState updates the volume state with the response from the array
-func UpdateVolState(ctx context.Context, volState *models.Volume, volResponse *pmaxTypes.Volume, volPlan *models.Volume) error {
+// UpdateVolResourceState updates resource state given vol response from array.
+func UpdateVolResourceState(ctx context.Context, volState *models.VolumeResource, volResponse *pmaxTypes.Volume, volPlan *models.VolumeResource) error {
 	// Manually copy
 	volState.ID = types.StringValue(volResponse.VolumeID)
 	if volPlan != nil {
@@ -54,7 +57,9 @@ func UpdateVolState(ctx context.Context, volState *models.Volume, volResponse *p
 	}
 	// Copy values with the same fields
 	err := CopyFields(ctx, volResponse, volState)
-
+	if err != nil {
+		return err
+	}
 	// Convert size
 	switch volState.CapUnit.ValueString() {
 	case CapacityUnitCyl:
@@ -66,52 +71,31 @@ func UpdateVolState(ctx context.Context, volState *models.Volume, volResponse *p
 	case CapacityUnitMb:
 		volState.Size = types.NumberValue(big.NewFloat(volResponse.FloatCapacityMB))
 	}
+	// Handle symmetrix port key
+	volState.SymmetrixPortKey, _ = GetSymmetrixPortKeyObjects(volResponse)
 
-	// copy storage groups
-	var sgObjects []attr.Value
-	sgType := map[string]attr.Type{
-		"storage_group_name": types.StringType,
-	}
-	for _, sg := range volResponse.StorageGroupIDList {
-		sgMap := make(map[string]attr.Value)
-		sgMap["storage_group_name"] = types.StringValue(sg)
-		sgObject, _ := types.ObjectValue(sgType, sgMap)
-		sgObjects = append(sgObjects, sgObject)
-	}
-	volState.StorageGroups, _ = types.ListValue(types.ObjectType{AttrTypes: sgType}, sgObjects)
+	return nil
+}
 
-	var symmetrixPortKeysObjects []attr.Value
+func GetSymmetrixPortKeyObjects(volResponse *pmaxTypes.Volume) (types.List, diag.Diagnostics) {
+	// handle symmetrix port key due to name rule
+	var symmetrixPortKeyObjects []attr.Value
 	pkType := map[string]attr.Type{
 		"director_id": types.StringType,
-		"port_id":     types.NumberType,
+		"port_id":     types.StringType,
 	}
 	for _, pk := range volResponse.SymmetrixPortKey {
 		pkMap := make(map[string]attr.Value)
 		pkMap["director_id"] = types.StringValue(pk.DirectorID)
 		pkMap["port_id"] = types.StringValue(pk.PortID)
 		pkObject, _ := types.ObjectValue(pkType, pkMap)
-		symmetrixPortKeysObjects = append(symmetrixPortKeysObjects, pkObject)
+		symmetrixPortKeyObjects = append(symmetrixPortKeyObjects, pkObject)
 	}
-	volState.SymmetrixPortKeys, _ = types.ListValue(types.ObjectType{AttrTypes: pkType}, symmetrixPortKeysObjects)
-
-	var rdfGroupsObjects []attr.Value
-	rdfType := map[string]attr.Type{
-		"rdf_group_number": types.Int64Type,
-		"label":            types.StringType,
-	}
-	for _, rdf := range volResponse.RDFGroupIDList {
-		rdfMap := make(map[string]attr.Value)
-		rdfMap["rdf_group_number"] = types.Int64Value(int64(rdf.RDFGroupNumber))
-		rdfMap["label"] = types.StringValue(rdf.Label)
-		rdfGroupsObject, _ := types.ObjectValue(rdfType, rdfMap)
-		rdfGroupsObjects = append(rdfGroupsObjects, rdfGroupsObject)
-	}
-	volState.RDFGroupIDList, _ = types.ListValue(types.ObjectType{AttrTypes: rdfType}, rdfGroupsObjects)
-	return err
+	return types.ListValue(types.ObjectType{AttrTypes: pkType}, symmetrixPortKeyObjects)
 }
 
 // UpdateVol updates the volume and return updated parameters, failed updated parameters and errors
-func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol models.Volume) ([]string, []string, []string) {
+func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol models.VolumeResource) ([]string, []string, []string) {
 	var updatedParameters []string
 	var updateFailedParameters []string
 	var errorMessages []string
@@ -153,4 +137,40 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 	}
 
 	return updatedParameters, updateFailedParameters, errorMessages
+}
+
+func GetVolumeFilterParam(model models.VolumeDatasource) (map[string]string, error) {
+	filter := model.VolumeFilter
+	param := make(map[string]string)
+	v := reflect.ValueOf(filter).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		switch field.Type() {
+		case reflect.TypeOf(basetypes.StringValue{}):
+			stringValue, ok := field.Interface().(types.String)
+			if !ok {
+				return param, fmt.Errorf("failed to type assertion on field %s", field.Type().Field(i).Name)
+			}
+			if len(stringValue.ValueString()) != 0 {
+				param[v.Type().Field(i).Tag.Get("tfsdk")] = stringValue.ValueString()
+			}
+		case reflect.TypeOf(basetypes.BoolValue{}):
+			boolValue, ok := field.Interface().(types.Bool)
+			if !ok {
+				return param, fmt.Errorf("failed to type assertion on field %s", field.Type().Field(i).Name)
+			}
+			if !boolValue.IsNull() {
+				param[v.Type().Field(i).Tag.Get("tfsdk")] = boolValue.String()
+			}
+		default:
+			return param, fmt.Errorf("unexpected field %s is detected", field.Type().Field(i).Name)
+		}
+	}
+	// Due to the rule of attribute name, need to handle storageGroupId separately
+	if _, ok := param["storage_group_name"]; ok {
+		param["storageGroupId"] = param["storage_group_name"]
+		delete(param, "storage_group_name")
+	}
+
+	return param, nil
 }

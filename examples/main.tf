@@ -36,11 +36,17 @@ provider "powermax" {
 }
 
 # resource "powermax_volume" "test_vol" {
-# 	sg_name  = "terraform_sg"
-# 	vol_name = "test_acc_create_volume_1"
-#     size     = 2.45
-#     cap_unit = "GB"
+#   sg_name  = "terraform_sg"
+#   vol_name = "test_acc_create_volume_1"
+#   size     = 2.45
+#   cap_unit = "GB"
 # }
+
+#data "powermax_volume" "volume_datasource_test" {
+#  filter {
+#    storage_group_name = "terraform_sg"
+#  }
+#}
 
 # resource "powermax_host" "host_02_test" {
 #   name = "host_02_test"

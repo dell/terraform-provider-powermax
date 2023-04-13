@@ -81,7 +81,7 @@ func CopyFields(ctx context.Context, source, destination interface{}) error {
 			case reflect.Bool:
 				destinationFieldValue = types.BoolValue(sourceField.Bool())
 			case reflect.Array, reflect.Slice:
-				destinationFieldValue, _ = types.ListValueFrom(ctx, types.StringType, sourceField.Interface())
+				destinationFieldValue = copySliceToTargetField(ctx, sourceField.Interface())
 			case reflect.Struct:
 				if destinationField.Type().String() == "basetypes.ObjectValue" {
 					err := CopyFields(ctx, sourceField.Interface(), &destinationFieldValue)
@@ -128,4 +128,55 @@ func structToMap(s interface{}) map[string]attr.Value {
 		}
 	}
 	return result
+}
+
+func copySliceToTargetField(ctx context.Context, fields interface{}) attr.Value {
+	var objects []attr.Value
+	attrTypeMap := make(map[string]attr.Type)
+
+	// get the attrType for Object
+	structElem := reflect.ValueOf(fields).Type().Elem()
+	if structElem.Kind() == reflect.String {
+		listValue, _ := types.ListValueFrom(ctx, types.StringType, fields)
+		return listValue
+	} else if structElem.Kind() == reflect.Struct {
+		for fieldIndex := 0; fieldIndex < structElem.NumField(); fieldIndex++ {
+			field := structElem.Field(fieldIndex)
+			tag := field.Tag.Get("json")
+			tag = strings.TrimSuffix(tag, ",omitempty")
+			switch field.Type.Kind() {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				attrTypeMap[tag] = types.Int64Type
+			case reflect.String:
+				attrTypeMap[tag] = types.StringType
+			case reflect.Float32, reflect.Float64:
+				attrTypeMap[tag] = types.NumberType
+			}
+		}
+		// iterate the slice
+		arr := reflect.ValueOf(fields)
+		for index := 0; index < arr.Len(); index++ {
+			valueMap := make(map[string]attr.Value)
+			// iterate the fields
+			elem := arr.Index(index)
+			for fieldIndex := 0; fieldIndex < elem.NumField(); fieldIndex++ {
+				tag := elem.Type().Field(fieldIndex).Tag.Get("json")
+				tag = strings.TrimSuffix(tag, ",omitempty")
+				switch elem.Field(fieldIndex).Type().Kind() {
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					valueMap[tag] = types.Int64Value(elem.Field(fieldIndex).Int())
+				case reflect.String:
+					valueMap[tag] = types.StringValue(elem.Field(fieldIndex).String())
+				case reflect.Float32, reflect.Float64:
+					valueMap[tag] = types.NumberValue(big.NewFloat(elem.Field(fieldIndex).Float()))
+					//valueMap[tag] = types.Float64Value(elem.Field(fieldIndex).Float())
+				}
+			}
+			object, _ := types.ObjectValue(attrTypeMap, valueMap)
+			objects = append(objects, object)
+		}
+		listValue, _ := types.ListValue(types.ObjectType{AttrTypes: attrTypeMap}, objects)
+		return listValue
+	}
+	return nil
 }
