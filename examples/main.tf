@@ -35,6 +35,13 @@ provider "powermax" {
   insecure      = true
 }
 
+# resource "powermax_volume" "test_vol" {
+# 	sg_name  = "terraform_sg"
+# 	vol_name = "test_acc_create_volume_1"
+#     size     = 2.45
+#     cap_unit = "GB"
+# }
+
 # resource "powermax_host" "host_02_test" {
 #   name = "host_02_test"
 # 	initiator = ["10000000c9959b8e"]
@@ -42,7 +49,7 @@ provider "powermax" {
 # 		volume_set_addressing = {
 # 			override = true
 # 			enabled = true
-# 		}  
+# 		}
 # 		openvms = {
 # 			override = true
 # 			enabled = false
