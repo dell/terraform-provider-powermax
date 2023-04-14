@@ -16,17 +16,19 @@ provider "powermax" {
   insecure      = true
 }
 
-resource "powermax_portgroup" "portgroup_1" {
-	name = "tf_pg_1_1"
-	protocol = "SCSI_FC"
-	ports = [
-		{
-			director_id = "FA-2D"
-			port_id = "11"
-		},
-		{
-			director_id = "FA-2D"
-			port_id = "10"
-		}
-	]
+# List all portgroups.
+data "powermax_portgroups" "fiberportgroups" {
+    type = "fiber"
 }
+data "powermax_portgroups" "scsiportgroups" {
+    type = "iscsi"
+}
+
+
+output "fiberportgroups" {
+  value = data.powermax_portgroups.fiberportgroups
+} 
+
+output "scsiportgroups" {
+  value = data.powermax_portgroups.scsiportgroups
+} 
