@@ -50,6 +50,9 @@ const (
 	// ReadHostGroupDetailsErrorMsg specifies error details occurred while reading hostgroup
 	ReadHostGroupDetailsErrorMsg = "Could not read hostgroup "
 
+	// ReadHostGroupDetailsErrorMsg specifies error details occurred while reading hostgroup
+	ReadHostGroupListDetailsErrorMsg = "Could not read hostgroups "
+
 	// UpdateHostGroupDetailsErrorMsg specifies error details occurred while updating hostgroup
 	UpdateHostGroupDetailsErrorMsg = "Could not update hostgroup "
 
