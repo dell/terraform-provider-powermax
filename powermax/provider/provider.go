@@ -140,10 +140,10 @@ func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource
 
 func (p *PmaxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
 		NewHostDataSource,
 		NewHostGroupDataSource,
 		NewPortgroupDataSource,
+		newMaskingViewDataSource,
 	}
 }
 

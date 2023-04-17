@@ -98,3 +98,9 @@ provider "powermax" {
 # output "hostDsResult" {
 #    value = data.powermax_host.HostDs
 # }
+
+# data "powermax_maskingview" "all" {}
+
+# output "all" {
+#     value = data.powermax_maskingview.all
+# }
