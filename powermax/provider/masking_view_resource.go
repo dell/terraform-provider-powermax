@@ -41,11 +41,16 @@ func (r *maskingView) Metadata(ctx context.Context, req resource.MetadataRequest
 func (r *maskingView) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing MaskingViews in PowerMax array. Updates are supported for the following parameters: `id`.",
-		Description:         "Resource for managing MaskingViews in PowerMax array. Updates are supported for the following parameters: `id`.",
+		MarkdownDescription: "Resource for managing MaskingViews in PowerMax array. Updates are supported for the following parameters: `name`.",
+		Description:         "Resource for managing MaskingViews in PowerMax array. Updates are supported for the following parameters: `name`.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The ID of the masking view.",
+				MarkdownDescription: "The ID of the masking view.",
+			},
+			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "Unique identifier of the masking view.",
 				MarkdownDescription: "Unique identifier of the masking view.",
@@ -124,9 +129,9 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		)
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Calling api to create MaskingView - %s", plan.ID.ValueString()))
+	tflog.Debug(ctx, fmt.Sprintf("Calling api to create MaskingView - %s", plan.Name.ValueString()))
 
-	maskingView, err := r.client.PmaxClient.CreateMaskingView(ctx, r.client.SymmetrixID, plan.ID.ValueString(), plan.StorageGroupID.ValueString(), hostOrHostGroupId, false, plan.PortGroupID.ValueString())
+	maskingView, err := r.client.PmaxClient.CreateMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString(), plan.StorageGroupID.ValueString(), hostOrHostGroupId, false, plan.PortGroupID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create masking view, got error: %s", err.Error()))
 		return
@@ -136,8 +141,8 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		"masking view": maskingView,
 	})
 
-	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.ID.ValueString()))
-	maskingView, err = r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, plan.ID.ValueString())
+	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.Name.ValueString()))
+	maskingView, err = r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading masking view", err.Error())
 		return
@@ -149,6 +154,7 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
+	plan.Name = types.StringValue(maskingView.MaskingViewID)
 	plan.ID = types.StringValue(maskingView.MaskingViewID)
 	// Save plan into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -169,8 +175,8 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", state.ID.ValueString()))
-	maskingView, err := r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, state.ID.ValueString())
+	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", state.Name.ValueString()))
+	maskingView, err := r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, state.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading masking view", err.Error())
 		return
@@ -182,6 +188,7 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
+	state.Name = types.StringValue(maskingView.MaskingViewID)
 	state.ID = types.StringValue(maskingView.MaskingViewID)
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -216,18 +223,18 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	// Rename masking view
-	if !plan.ID.Equal(state.ID) {
-		tflog.Debug(ctx, fmt.Sprintf("Calling api to rename MaskingView from %s to %s", state.ID.ValueString(), plan.ID.ValueString()))
+	if !plan.Name.Equal(state.Name) {
+		tflog.Debug(ctx, fmt.Sprintf("Calling api to rename MaskingView from %s to %s", state.Name.ValueString(), plan.Name.ValueString()))
 
-		_, err := r.client.PmaxClient.RenameMaskingView(ctx, r.client.SymmetrixID, state.ID.ValueString(), plan.ID.ValueString())
+		_, err := r.client.PmaxClient.RenameMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString(), plan.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Error renaming masking view", err.Error())
 			return
 		}
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.ID.ValueString()))
-	maskingView, err := r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, plan.ID.ValueString())
+	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.Name.ValueString()))
+	maskingView, err := r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading masking view", err.Error())
 		return
@@ -239,6 +246,7 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	state.Name = types.StringValue(maskingView.MaskingViewID)
 	state.ID = types.StringValue(maskingView.MaskingViewID)
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -257,8 +265,8 @@ func (r *maskingView) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("Calling api to delete MaskingView - %s", state.ID.ValueString()))
-	err := r.client.PmaxClient.DeleteMaskingView(ctx, r.client.SymmetrixID, state.ID.ValueString())
+	tflog.Debug(ctx, fmt.Sprintf("Calling api to delete MaskingView - %s", state.Name.ValueString()))
+	err := r.client.PmaxClient.DeleteMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete masking view, got error: %s", err))
 		return
@@ -270,5 +278,5 @@ func (r *maskingView) Delete(ctx context.Context, req resource.DeleteRequest, re
 }
 
 func (r *maskingView) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }

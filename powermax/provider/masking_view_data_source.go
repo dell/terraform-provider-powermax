@@ -51,6 +51,11 @@ func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.Schem
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The ID of the masking view.",
+				MarkdownDescription: "The ID of the masking view.",
+			},
+			"name": schema.StringAttribute{
 				Description:         "Unique identifier of the masking view.",
 				MarkdownDescription: "Unique identifier of the masking view.",
 				Optional:            true,
@@ -59,9 +64,9 @@ func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.Schem
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
-			"masking_view_ids": schema.ListAttribute{
-				Description:         "List of masking view IDs.",
-				MarkdownDescription: "List of masking view IDs.",
+			"masking_view_names": schema.ListAttribute{
+				Description:         "List of masking view names.",
+				MarkdownDescription: "List of masking view names.",
 				ElementType:         types.StringType,
 				Optional:            true,
 				Validators: []validator.List{
@@ -74,7 +79,7 @@ func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"masking_view_id": schema.StringAttribute{
+						"masking_view_name": schema.StringAttribute{
 							Description:         "Unique identifier of the masking view.",
 							MarkdownDescription: "Unique identifier of the masking view.",
 							Computed:            true,
@@ -163,10 +168,10 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	var maskingViewIds []string
 	// Get all masking view Ids and append to maskingViewIds
-	if state.ID.ValueString() != "" {
-		maskingViewIds = append(maskingViewIds, state.ID.ValueString())
-	} else if !state.MaskingViewIDs.IsNull() {
-		state.MaskingViewIDs.ElementsAs(ctx, &maskingViewIds, true)
+	if state.Name.ValueString() != "" {
+		maskingViewIds = append(maskingViewIds, state.Name.ValueString())
+	} else if !state.MaskingViewNames.IsNull() {
+		state.MaskingViewNames.ElementsAs(ctx, &maskingViewIds, true)
 	} else {
 		tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingViewList for Symmetrix - %s", d.client.SymmetrixID))
 		maskingViewList, err := d.client.PmaxClient.GetMaskingViewList(context.Background(), d.client.SymmetrixID)
@@ -203,11 +208,11 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmaxTypes.MaskingView, connections []*pmaxTypes.MaskingViewConnection) (model models.MaskingViewModel, err error) {
 
 	model = models.MaskingViewModel{
-		MaskingViewID:  types.StringValue(maskingView.MaskingViewID),
-		HostID:         types.StringValue(maskingView.HostID),
-		HostGroupID:    types.StringValue(maskingView.HostGroupID),
-		PortGroupID:    types.StringValue(maskingView.PortGroupID),
-		StorageGroupID: types.StringValue(maskingView.StorageGroupID),
+		MaskingViewName: types.StringValue(maskingView.MaskingViewID),
+		HostID:          types.StringValue(maskingView.HostID),
+		HostGroupID:     types.StringValue(maskingView.HostGroupID),
+		PortGroupID:     types.StringValue(maskingView.PortGroupID),
+		StorageGroupID:  types.StringValue(maskingView.StorageGroupID),
 	}
 
 	var totalCapacity float64
@@ -279,14 +284,14 @@ func (d *maskingViewDataSource) getMaskingViewToConnections(ctx context.Context,
 	return ch
 }
 
-func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datasource.ReadResponse, maskingViewIds []string) <-chan *pmaxTypes.MaskingView {
+func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datasource.ReadResponse, maskingViewNames []string) <-chan *pmaxTypes.MaskingView {
 
 	ch := make(chan *pmaxTypes.MaskingView)
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, defaultMaxPowerMaxConnections)
 
 	go func() {
-		for _, maskingViewID := range maskingViewIds {
+		for _, maskingViewID := range maskingViewNames {
 			sem <- struct{}{}
 			wg.Add(1)
 			go func(id string) {

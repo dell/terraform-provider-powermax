@@ -92,7 +92,7 @@ provider "powermax" {
 # }
 
 # resource "powermax_maskingview" "test" {
-#   id = "terraform_testMV"
+#   name = "terraform_testMV"
 #   storage_group_id = "Tao_k8s_env2_SG"
 #   host_id = "Tao_k8s_env2_host"
 #   host_group_id = ""

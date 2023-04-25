@@ -1,5 +1,5 @@
 data "powermax_maskingview" "id" {
-  id = "terraform_tao_testMV_rename"
+  name = "terraform_tao_testMV_rename"
 }
 
 output "id" {
@@ -7,7 +7,7 @@ output "id" {
 }
 
 data "powermax_maskingview" "idList" {
-  masking_view_ids = [ "terraform_tao_testMV_rename", "Yulan_SG_MV" ]
+  masking_view_names = [ "terraform_tao_testMV_rename", "Yulan_SG_MV" ]
 }
 
 output "idList" {
