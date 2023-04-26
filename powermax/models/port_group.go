@@ -30,3 +30,17 @@ type PortKey struct {
 	DirectorID types.String `tfsdk:"director_id"`
 	PortID     types.String `tfsdk:"port_id"`
 }
+
+// PortgroupDataSourceModel describes the data source data model.
+type PortgroupsDataSourceModel struct {
+	ID         types.String `tfsdk:"id"`
+	PortGroups []PortGroup  `tfsdk:"port_groups"`
+	//filter
+	PgFilter *portGroupFilterType `tfsdk:"filter"`
+}
+
+type portGroupFilterType struct {
+	Names []types.String `tfsdk:"names"`
+	// Type - The type of the portgroup
+	Type types.String `tfsdk:"type"`
+}

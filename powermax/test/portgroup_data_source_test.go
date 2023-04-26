@@ -9,7 +9,7 @@ import (
 
 // Test to Fetch Host details
 func TestAccPortGroupDatasource(t *testing.T) {
-	var portGroupName = "data.powermax_portgroups.fiberportgroups"
+	var portGroupName = "data.powermax_portgroups.fibreportgroups"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -17,7 +17,7 @@ func TestAccPortGroupDatasource(t *testing.T) {
 			{
 				Config: ProviderConfig + PortGroupDataSourceParamsAll,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(portGroupName, "type", "fiber"),
+					resource.TestCheckResourceAttr(portGroupName, "port_groups.0.type", "Fibre"),
 				),
 			},
 		},
@@ -25,11 +25,18 @@ func TestAccPortGroupDatasource(t *testing.T) {
 }
 
 var PortGroupDataSourceParamsAll = `
-data "powermax_portgroups" "fiberportgroups" {
-    type = "fiber"
+data "powermax_portgroups" "fibreportgroups" {
+	filter {
+		# Optional list of names to filter
+		names = [
+		  "ConnorsPortGroup",
+		  "vro-ui-pg-WmLkGjfI",
+		]
+		type = "fibre"
+	}
 }
 
 
-output "fiberportgroups" {
-  value = data.powermax_portgroups.fiberportgroups
+output "fibreportgroups" {
+  value = data.powermax_portgroups.fibreportgroups
 } `
