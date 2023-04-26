@@ -3,12 +3,13 @@ package helper
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"math/big"
 	"reflect"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func CopyFields(ctx context.Context, source, destination interface{}) error {
@@ -77,7 +78,7 @@ func CopyFields(ctx context.Context, source, destination interface{}) error {
 			case reflect.Bool:
 				destinationFieldValue = types.BoolValue(sourceField.Bool())
 			case reflect.Array, reflect.Slice:
-				destinationFieldValue, _ = types.ListValueFrom(nil, types.StringType, sourceField.Interface())
+				destinationFieldValue, _ = types.ListValueFrom(ctx, types.StringType, sourceField.Interface())
 			case reflect.Struct:
 				if destinationField.Type().String() == "basetypes.ObjectValue" {
 					err := CopyFields(ctx, sourceField.Interface(), &destinationFieldValue)

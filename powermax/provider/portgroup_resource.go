@@ -35,7 +35,7 @@ type PortGroup struct {
 	client *client.Client
 }
 
-// PortGroup Resource schema
+// PortGroup Resource schema.
 func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
@@ -127,7 +127,7 @@ func (r *PortGroup) Configure(ctx context.Context, req resource.ConfigureRequest
 	r.client = pmaxClient
 }
 
-// Create PortGroup
+// Create PortGroup.
 func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	//Create(ctx context.Context, req tfsdk.CreateResourceRequest, resp *tfsdk.CreateResourceResponse) {
 	tflog.Info(ctx, "creating port group")
@@ -177,7 +177,7 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 	tflog.Info(ctx, "create portgroup completed")
 }
 
-// Read PortGroup
+// Read PortGroup.
 func (r *PortGroup) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Info(ctx, "reading portgroup")
 	var pgState models.PortGroup
@@ -220,7 +220,7 @@ func (r *PortGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 }
 
 // Update PortGroup
-// Supported updates: name, ports
+// Supported updates: name, ports.
 func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Info(ctx, "updating portgroup")
 	var pgPlan, pgState models.PortGroup
@@ -269,7 +269,7 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 	tflog.Info(ctx, "update portgroup completed")
 }
 
-// Delete PortGroup
+// Delete PortGroup.
 func (r *PortGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting portgroup")
 	var pgState models.PortGroup
@@ -293,7 +293,7 @@ func (r *PortGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 	tflog.Info(ctx, "delete portgroup completed")
 }
 
-// Import resource
+// Import resource.
 func (r *PortGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Info(ctx, "importing port group state")
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)

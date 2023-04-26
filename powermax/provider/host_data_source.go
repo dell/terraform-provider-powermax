@@ -3,6 +3,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -18,7 +19,7 @@ var (
 	_ datasource.DataSourceWithConfigure = &HostDataSource{}
 )
 
-// NewHostDataSource returns the host data source object
+// NewHostDataSource returns the host data source object.
 func NewHostDataSource() datasource.DataSource {
 	return &HostDataSource{}
 }
@@ -222,11 +223,22 @@ func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 	}
 }
 
-func (d *HostDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+func (d *HostDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
-	d.client = req.ProviderData.(*client.Client)
+	pmaxclient, ok := req.ProviderData.(*client.Client)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *client.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	d.client = pmaxclient
 }
 
 func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

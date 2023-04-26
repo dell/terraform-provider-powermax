@@ -1,7 +1,7 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 package helper
 
-// General Reusable Functions
+// General Reusable Functions.
 func IsParamUpdated(updatedParams []string, paramName string) bool {
 	isParamUpdate := false
 	for _, updatedParam := range updatedParams {

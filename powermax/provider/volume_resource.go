@@ -271,7 +271,7 @@ func (r *volumeResource) Configure(_ context.Context, req resource.ConfigureRequ
 	r.client = c
 }
 
-// Create - method to create volume resource
+// Create - method to create volume resource.
 func (r volumeResource) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
 	tflog.Info(ctx, "creating volume")
 
@@ -389,7 +389,7 @@ func (r volumeResource) Read(ctx context.Context, request resource.ReadRequest, 
 }
 
 // Update Volume
-// Supported updates: vol_name, mobility_id_enabled, size, cap_unit
+// Supported updates: vol_name, mobility_id_enabled, size, cap_unit.
 func (r volumeResource) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
 	tflog.Info(ctx, "updating volume")
 	var planVol models.Volume

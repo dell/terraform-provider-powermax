@@ -3,7 +3,7 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// PortGroup holds portgroup schema attribute details
+// PortGroup holds portgroup schema attribute details.
 type PortGroup struct {
 	// ID - defines portgroup ID
 	ID types.String `tfsdk:"id"`
@@ -25,7 +25,7 @@ type PortGroup struct {
 	TestID types.String `tfsdk:"test_id"`
 }
 
-// PortKey holds DirectorID and PortKey
+// PortKey holds DirectorID and PortKey.
 type PortKey struct {
 	DirectorID types.String `tfsdk:"director_id"`
 	PortID     types.String `tfsdk:"port_id"`

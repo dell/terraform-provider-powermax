@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func UpdateHostGroupState(hostGroupState *models.HostGroupModal, hostGroupResponse *pmaxTypes.HostGroup) {
+func UpdateHostGroupState(hostGroupState *models.HostGroupModel, hostGroupResponse *pmaxTypes.HostGroup) {
 	hostGroupState.ID = types.StringValue(hostGroupResponse.HostGroupID)
 	hostGroupState.Name = types.StringValue(hostGroupResponse.HostGroupID)
 	hostGroupState.NumOfHosts = types.Int64Value(hostGroupResponse.NumOfHosts)
@@ -38,7 +38,7 @@ func UpdateHostGroupState(hostGroupState *models.HostGroupModal, hostGroupRespon
 	setHostFlagsInHg(hostGroupResponse.DisabledFlags, false, hostGroupState)
 }
 
-func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupModal) {
+func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupModel) {
 	if flags != "" {
 		flagsArr := strings.Split(flags, ",")
 		for _, flag := range flagsArr {
@@ -72,7 +72,7 @@ func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupM
 	}
 }
 
-func setDefaultHostFlagsForHostGroup(hostState *models.HostGroupModal) {
+func setDefaultHostFlagsForHostGroup(hostState *models.HostGroupModel) {
 	hostState.HostFlags.VolumeSetAddressing.Enabled = basetypes.NewBoolValue(false)
 	hostState.HostFlags.VolumeSetAddressing.Override = basetypes.NewBoolValue(false)
 	hostState.HostFlags.DisableQResetOnUA.Enabled = basetypes.NewBoolValue(false)
@@ -91,29 +91,27 @@ func setDefaultHostFlagsForHostGroup(hostState *models.HostGroupModal) {
 	hostState.HostFlags.Spc2ProtocolVersion.Override = basetypes.NewBoolValue(false)
 }
 
-func saveHgListAttribute(hostGroupState *models.HostGroupModal, listAttribute []string, attributeName string) diag.Diagnostics {
+func saveHgListAttribute(hostGroupState *models.HostGroupModel, listAttribute []string, attributeName string) {
 	var attributeListType types.List
-	var err diag.Diagnostics
+
 	if len(listAttribute) > 0 {
 		var attributeList []attr.Value
 		for _, attribute := range listAttribute {
 			attributeList = append(attributeList, types.StringValue(attribute))
 		}
-		attributeListType, err = types.ListValue(types.StringType, attributeList)
+		attributeListType, _ = types.ListValue(types.StringType, attributeList)
 	} else {
 		// Empty List
-		attributeListType, err = types.ListValue(types.StringType, []attr.Value{})
+		attributeListType, _ = types.ListValue(types.StringType, []attr.Value{})
 	}
 	if attributeName == "maskingViews" {
 		hostGroupState.Maskingviews = attributeListType
 	} else if attributeName == "hostIDs" {
 		hostGroupState.HostIDs = types.Set(attributeListType)
 	}
-
-	return err
 }
 
-func UpdateHostGroup(ctx context.Context, client client.Client, plan, state models.HostGroupModal) ([]string, []string, []string) {
+func UpdateHostGroup(ctx context.Context, client client.Client, plan, state models.HostGroupModel) ([]string, []string, []string) {
 	updatedParameters := []string{}
 	updateFailedParameters := []string{}
 	errorMessages := []string{}
@@ -201,7 +199,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-// Based on state either use the filtered list of host groups or get all host groups
+// Based on state either use the filtered list of host groups or get all host groups.
 func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceModel, plan *models.HostGroupDataSourceModel, client client.Client) ([]string, error) {
 	var hostgroupIds []string
 	if len(plan.HostGroupFilter) == 0 || len(plan.HostGroupFilter[0].IDs) == 0 {
@@ -210,10 +208,6 @@ func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceMo
 			return hostgroupIds, err
 		}
 		hostgroupIds = hostGroupResponse.HostGroupIDs
-		var hgIds []attr.Value
-		for _, id := range hostgroupIds {
-			hgIds = append(hgIds, types.StringValue(id))
-		}
 	} else {
 		for _, hg := range plan.HostGroupFilter[0].IDs {
 			hostgroupIds = append(hostgroupIds, hg.ValueString())

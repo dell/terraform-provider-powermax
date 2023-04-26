@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// Test to Fetch Host details
+// Test to Fetch Host details.
 func TestAccPortGroupDatasource(t *testing.T) {
 	var portGroupName = "data.powermax_portgroups.fibreportgroups"
 	resource.Test(t, resource.TestCase{

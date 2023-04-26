@@ -261,7 +261,7 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 	var planHost models.HostModel
 	diags := req.Plan.Get(ctx, &planHost)
 	// Read Terraform plan into the model
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &planHost)...)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -341,7 +341,7 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 
 }
 
-// Delete StorageGroup
+// Delete HostGroup.
 func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting Host")
 	var hostState models.HostModel
@@ -449,7 +449,7 @@ func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resourc
 	var hostState models.HostModel
 	diags := req.State.Get(ctx, &hostState)
 	// Read Terraform prior state into the model
-	resp.Diagnostics.Append(req.State.Get(ctx, &hostState)...)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

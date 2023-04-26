@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	// CapacityUnitTb represents the unit TeraBytes for capacity
+	// CapacityUnitTb represents the unit TeraBytes for capacity.
 	CapacityUnitTb = "TB"
-	// CapacityUnitGb represents the unit GigaBytes for capacity
+	// CapacityUnitGb represents the unit GigaBytes for capacity.
 	CapacityUnitGb = "GB"
-	// CapacityUnitMb represents the unit MegaBytes for capacity
+	// CapacityUnitMb represents the unit MegaBytes for capacity.
 	CapacityUnitMb = "MB"
-	// CapacityUnitCyl represents the unit CYL for capacity
+	// CapacityUnitCyl represents the unit CYL for capacity.
 	CapacityUnitCyl = "CYL"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// Test to Fetch Host details
+// Test to Fetch Host details.
 func TestAccHostDatasource(t *testing.T) {
 	var hostName = "data.powermax_host.HostDs"
 	resource.Test(t, resource.TestCase{

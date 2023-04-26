@@ -3,8 +3,8 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// HostGroup holds hostgroup schema attribute details
-type HostGroupModal struct {
+// HostGroup holds hostgroup schema attribute details.
+type HostGroupModel struct {
 	// ID - defines host ID
 	ID types.String `tfsdk:"id"`
 	// Name - The name of the hostgroup

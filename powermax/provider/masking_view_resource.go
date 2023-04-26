@@ -196,7 +196,7 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 	tflog.Info(ctx, "Done with Read Masking View resource")
 }
 
-// Update: support rename
+// Update: support rename.
 func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Info(ctx, "Updating Masking View...")
 	// Read Terraform plan into the model

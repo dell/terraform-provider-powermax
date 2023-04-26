@@ -29,19 +29,19 @@ func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostR
 
 	iniAttributeList := []attr.Value{}
 	for _, ini := range hostResponse.Initiators {
-		iniAttributeList = append(iniAttributeList, types.StringValue(string(ini)))
+		iniAttributeList = append(iniAttributeList, types.StringValue(ini))
 	}
 	hostState.Initiators, _ = types.ListValue(types.StringType, iniAttributeList)
 
 	maskViewAttributeList := []attr.Value{}
 	for _, id := range hostResponse.MaskingviewIDs {
-		maskViewAttributeList = append(maskViewAttributeList, types.StringValue(string(id)))
+		maskViewAttributeList = append(maskViewAttributeList, types.StringValue(id))
 	}
 	hostState.MaskingviewIDs, _ = types.ListValue(types.StringType, maskViewAttributeList)
 
 	powerPathAttributeList := []attr.Value{}
 	for _, id := range hostResponse.PowerPathHosts {
-		powerPathAttributeList = append(maskViewAttributeList, types.StringValue(string(id)))
+		powerPathAttributeList = append(maskViewAttributeList, types.StringValue(id))
 	}
 	hostState.PowerPathHosts, _ = types.ListValue(types.StringType, powerPathAttributeList)
 	setDefaultHostFlags(hostState)

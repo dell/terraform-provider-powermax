@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// Test to Fetch all Hostgroup details
+// Test to Fetch all Hostgroup details.
 func TestAccHostGroupDatasource(t *testing.T) {
 	var hostGroupName = "data.powermax_hostgroup.all"
 	resource.Test(t, resource.TestCase{

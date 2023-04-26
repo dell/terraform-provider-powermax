@@ -28,7 +28,7 @@ var (
 
 var lockMutex sync.Mutex
 
-// defaultMaxPowerMaxConnections is the number of workers that can query powermax at a time
+// defaultMaxPowerMaxConnections is the number of workers that can query powermax at a time.
 const defaultMaxPowerMaxConnections = 10
 
 func NewMaskingViewDataSource() datasource.DataSource {
@@ -204,7 +204,7 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 	tflog.Info(ctx, "Done with Read Masking View data source ")
 }
 
-// updateMaskingViewState parse masking view and masking view connections to the state model
+// updateMaskingViewState parse masking view and masking view connections to the state model.
 func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmaxTypes.MaskingView, connections []*pmaxTypes.MaskingViewConnection) (model models.MaskingViewModel, err error) {
 
 	model = models.MaskingViewModel{
@@ -253,7 +253,7 @@ func (d *maskingViewDataSource) getMaskingViewToConnections(ctx context.Context,
 			wg.Add(1)
 			go func(mv *pmaxTypes.MaskingView) {
 				defer wg.Done()
-				maskingViewConnection, err := d.client.PmaxClient.GetMaskingViewConnections(context.Background(), d.client.SymmetrixID, mv.MaskingViewID, "")
+				maskingViewConnection, err := d.client.PmaxClient.GetMaskingViewConnections(ctx, d.client.SymmetrixID, mv.MaskingViewID, "")
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
@@ -322,7 +322,7 @@ func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datas
 	return ch
 }
 
-// contains will return true if the slice contains the given value
+// contains will return true if the slice contains the given value.
 func contains(slice []attr.Value, value string) bool {
 	for _, element := range slice {
 		if element.Equal(types.StringValue(value)) {

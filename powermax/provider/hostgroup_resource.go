@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Ensure implementation
+// Ensure implementation.
 var (
 	_ resource.Resource                = &HostGroup{}
 	_ resource.ResourceWithConfigure   = &HostGroup{}
@@ -229,8 +229,8 @@ func (r *HostGroup) Configure(ctx context.Context, req resource.ConfigureRequest
 
 func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Info(ctx, "Create Host Group")
-	var plan models.HostGroupModal
-	var state models.HostGroupModal
+	var plan models.HostGroupModel
+	var state models.HostGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -319,7 +319,7 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 
 func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Info(ctx, "Reading Host Group")
-	var state models.HostGroupModal
+	var state models.HostGroupModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -354,10 +354,10 @@ func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 }
 
 // Update HostGroup
-// Supported updates: name, host_ids, host_flags
+// Supported updates: name, host_ids, host_flags.
 func (r *HostGroup) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Info(ctx, "Updating HostGroup")
-	var planHostGroup models.HostGroupModal
+	var planHostGroup models.HostGroupModel
 	diags := req.Plan.Get(ctx, &planHostGroup)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -365,7 +365,7 @@ func (r *HostGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 	}
 	tflog.Info(ctx, "fetched hostgroup details from plan")
 
-	var stateHostGroup models.HostGroupModal
+	var stateHostGroup models.HostGroupModel
 	diags = req.State.Get(ctx, &stateHostGroup)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -422,7 +422,7 @@ func (r *HostGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 
 func (r *HostGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting hostgroup")
-	var hostGroupState models.HostGroupModal
+	var hostGroupState models.HostGroupModel
 	diags := req.State.Get(ctx, &hostGroupState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -446,7 +446,7 @@ func (r *HostGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 
 func (r *HostGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Info(ctx, "Importing Hostgroup State")
-	var hostGroupState models.HostGroupModal
+	var hostGroupState models.HostGroupModel
 	hostGroupID := req.ID
 	tflog.Debug(ctx, "fetching Hostgroup by ID", map[string]interface{}{
 		"symmetrixID": r.client.SymmetrixID,

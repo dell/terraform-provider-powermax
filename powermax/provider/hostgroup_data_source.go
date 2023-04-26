@@ -151,7 +151,7 @@ func (r *hostGroupDataSource) Configure(ctx context.Context, req datasource.Conf
 	r.client = client
 }
 
-// Read
+// Read.
 func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state models.HostGroupDataSourceModel
 	var plan models.HostGroupDataSourceModel

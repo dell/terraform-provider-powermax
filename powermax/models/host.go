@@ -22,7 +22,7 @@ type HostModel struct {
 	HostFlags HostFlags `tfsdk:"host_flags"`
 }
 
-// HostFlags - group of flags used as part of host creation
+// HostFlags - group of flags used as part of host creation.
 type HostFlags struct {
 	VolumeSetAddressing HostFlag `tfsdk:"volume_set_addressing"`
 	DisableQResetOnUA   HostFlag `tfsdk:"disable_q_reset_on_ua"`
@@ -34,7 +34,7 @@ type HostFlags struct {
 	SCSISupport1        HostFlag `tfsdk:"scsi_support1"`
 }
 
-// HostFlag holds overwrite info for individual flag
+// HostFlag holds overwrite info for individual flag.
 type HostFlag struct {
 	Enabled  types.Bool `tfsdk:"enabled"`
 	Override types.Bool `tfsdk:"override"`

@@ -2,17 +2,18 @@ package client
 
 import (
 	"context"
+	"errors"
 
 	pmax "github.com/dell/gopowermax/v2"
 )
 
-// Client type is to hold powermax client and symmetrix ID
+// Client type is to hold powermax client and symmetrix ID.
 type Client struct {
 	PmaxClient  *pmax.Client
 	SymmetrixID string
 }
 
-// NewClient returns the gopowermax client
+// NewClient returns the gopowermax client.
 func NewClient(endpoint, username, password, serialNumber, pmaxVersion string, insecure bool) (*Client, error) {
 	cc := pmax.ConfigConnect{
 		Endpoint: endpoint,
@@ -28,8 +29,11 @@ func NewClient(endpoint, username, password, serialNumber, pmaxVersion string, i
 	if err != nil {
 		return nil, err
 	}
-	pmaxClientWithID := pmaxClient.WithSymmetrixID(serialNumber).(*pmax.Client)
-
+	pmaxClientWithID, ok := pmaxClient.WithSymmetrixID(serialNumber).(*pmax.Client)
+	if !ok { // type assertion failed
+		err := errors.New("Creating client returned error")
+		return nil, err
+	}
 	client := Client{
 		SymmetrixID: serialNumber,
 		PmaxClient:  pmaxClientWithID,
