@@ -3,8 +3,8 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// HostResourceModel describes the resource data model.
-type HostResourceModel struct {
+// HostModel describes the resource data model.
+type HostModel struct {
 	HostID             types.String `tfsdk:"id"`
 	Name               types.String `tfsdk:"name"`
 	NumberMaskingViews types.Int64  `tfsdk:"num_of_masking_views"`

@@ -16,7 +16,7 @@ func TestAccHostDatasource(t *testing.T) {
 			{
 				Config: ProviderConfig + HostDataSourceParamsAll,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(hostName, "host_ids.#", "19"),
+					resource.TestCheckResourceAttr(hostName, "hosts.#", "1"),
 				),
 			},
 		},
@@ -25,6 +25,12 @@ func TestAccHostDatasource(t *testing.T) {
 
 var HostDataSourceParamsAll = `
 data "powermax_host" "HostDs" {
+	filter {
+		# Optional list of IDs to filter
+		ids = [
+		  "hostExample",
+		]
+	}
 	
 }
 output "hostDsResult" {

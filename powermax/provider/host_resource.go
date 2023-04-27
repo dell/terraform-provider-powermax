@@ -258,7 +258,7 @@ func (r *Host) Configure(ctx context.Context, req resource.ConfigureRequest, res
 
 func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Info(ctx, "Creating Host...")
-	var planHost models.HostResourceModel
+	var planHost models.HostModel
 	diags := req.Plan.Get(ctx, &planHost)
 	// Read Terraform plan into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &planHost)...)
@@ -330,7 +330,7 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 	tflog.Debug(ctx, "create host response", map[string]interface{}{
 		"Create Host Response": hostCreateResp,
 	})
-	result := models.HostResourceModel{}
+	result := models.HostModel{}
 	helper.UpdateHostState(&result, initiators, hostCreateResp)
 	diags = resp.State.Set(ctx, result)
 	resp.Diagnostics.Append(diags...)
@@ -344,7 +344,7 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 // Delete StorageGroup
 func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting Host")
-	var hostState models.HostResourceModel
+	var hostState models.HostModel
 	diags := req.State.Get(ctx, &hostState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -367,7 +367,7 @@ func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *res
 }
 func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Info(ctx, "updating host")
-	var plan models.HostResourceModel
+	var plan models.HostModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -375,7 +375,7 @@ func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *res
 	}
 	tflog.Info(ctx, "fetched host details from plan")
 
-	var state models.HostResourceModel
+	var state models.HostModel
 	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -446,7 +446,7 @@ func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *res
 
 func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Info(ctx, "Reading Host...")
-	var hostState models.HostResourceModel
+	var hostState models.HostModel
 	diags := req.State.Get(ctx, &hostState)
 	// Read Terraform prior state into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &hostState)...)
@@ -483,7 +483,7 @@ func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resourc
 
 func (r *Host) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Info(ctx, "importing host state")
-	var hostState models.HostResourceModel
+	var hostState models.HostModel
 	hostID := req.ID
 	tflog.Debug(ctx, "fetching host by ID", map[string]interface{}{
 		"symmetrixID": r.client.SymmetrixID,

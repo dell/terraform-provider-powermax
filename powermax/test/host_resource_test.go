@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccHostResource(t *testing.T) {
-	var hostTerraformName = "powermax_host.test_host_2"
+	var hostTerraformName = "powermax_host.Test_Host"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -18,14 +18,14 @@ func TestAccHostResource(t *testing.T) {
 			// Create and Read test
 			{
 				Config: ProviderConfig + `
-				resource "powermax_host" "test_host_2" {
+				resource "powermax_host" "Test_Host" {
 					host_flags = {
 						avoid_reset_broadcast = {
 							enabled  = true
 							override = true
 						}
 				  }
-				  name     = "test_host_2"
+				  name     = "Test_Host"
 				  initiator = ["10000000c9959b8e"]
 				}
 				`,
@@ -56,7 +56,7 @@ func TestAccHostResource(t *testing.T) {
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.enabled", "false"),
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.override", "false"),
 					// Verify the name
-					resource.TestCheckResourceAttr(hostTerraformName, "name", "test_host_2"),
+					resource.TestCheckResourceAttr(hostTerraformName, "name", "Test_Host"),
 				),
 			},
 			// Import testing
@@ -68,7 +68,7 @@ func TestAccHostResource(t *testing.T) {
 			// Update testing
 			{
 				Config: ProviderConfig + `
-				resource "powermax_host" "test_host_2" {
+				resource "powermax_host" "Test_Host" {
 					host_flags = {
 						avoid_reset_broadcast = {
 							enabled  = false
@@ -88,7 +88,7 @@ func TestAccHostResource(t *testing.T) {
 						}
 						
 				  }
-				  name     = "test_host_2_update"
+				  name     = "Host_new_update"
 				  initiator = ["10000000c9959b8e"]
 				}
 				`,
@@ -119,7 +119,7 @@ func TestAccHostResource(t *testing.T) {
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.enabled", "false"),
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.override", "false"),
 					// Verify the name
-					resource.TestCheckResourceAttr(hostTerraformName, "name", "test_host_2_update"),
+					resource.TestCheckResourceAttr(hostTerraformName, "name", "Host_new_update"),
 				),
 			},
 			// auto checks delete to clean up the test

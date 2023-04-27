@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func UpdateHostState(hostState *models.HostResourceModel, planInitiators []string, hostResponse *pmaxTypes.Host) {
+func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostResponse *pmaxTypes.Host) {
 	hostState.HostID = types.StringValue(hostResponse.HostID)
 	hostState.Name = types.StringValue(hostResponse.HostID)
 	hostState.NumberHostGroups = types.Int64Value(hostResponse.NumberHostGroups)
@@ -50,7 +50,7 @@ func UpdateHostState(hostState *models.HostResourceModel, planInitiators []strin
 
 }
 
-func UpdateHost(ctx context.Context, client client.Client, plan, state models.HostResourceModel) ([]string, []string, []string) {
+func UpdateHost(ctx context.Context, client client.Client, plan, state models.HostModel) ([]string, []string, []string) {
 	updatedParameters := []string{}
 	updateFailedParameters := []string{}
 	errorMessages := []string{}
@@ -146,7 +146,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-func setDefaultHostFlags(hostState *models.HostResourceModel) {
+func setDefaultHostFlags(hostState *models.HostModel) {
 	hostState.HostFlags.VolumeSetAddressing.Enabled = types.BoolValue(false)
 	hostState.HostFlags.VolumeSetAddressing.Override = types.BoolValue(false)
 	hostState.HostFlags.DisableQResetOnUA.Enabled = types.BoolValue(false)
@@ -164,7 +164,7 @@ func setDefaultHostFlags(hostState *models.HostResourceModel) {
 	hostState.HostFlags.Spc2ProtocolVersion.Enabled = types.BoolValue(false)
 	hostState.HostFlags.Spc2ProtocolVersion.Override = types.BoolValue(false)
 }
-func setHostFlags(flags string, isEnabled bool, hostState *models.HostResourceModel) {
+func setHostFlags(flags string, isEnabled bool, hostState *models.HostModel) {
 	if flags != "" {
 		flagsArr := strings.Split(flags, ",")
 		for _, flag := range flagsArr {
