@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// Test to Fetch Host details
+// Test to Fetch all Hostgroup details
 func TestAccHostGroupDatasource(t *testing.T) {
-	var hostGroupName = "data.powermax_hostgroup.groups"
+	var hostGroupName = "data.powermax_hostgroup.all"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -17,18 +17,58 @@ func TestAccHostGroupDatasource(t *testing.T) {
 			{
 				Config: ProviderConfig + HostGroupDataSourceParamsAll,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(hostGroupName, "host_group_id.#", "9"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.#", "4"),
+					resource.TestCheckResourceAttr(hostGroupName, "filter.#", "0"),
 				),
 			},
 		},
 	})
 }
 
-var HostGroupDataSourceParamsAll = `
-# List all hostgroups
-data "powermax_hostgroup" "groups" {}
+func TestAccHostGroupFilteredDatasource(t *testing.T) {
+	var hostGroupName = "data.powermax_hostgroup.groups"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: ProviderConfig + HostGroupDataSourceParamsFiltered,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.#", "2"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.consistent_lun", "false"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.#", "2"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.0.host_id", "81"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.0.initiator.#", "1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host_group_id", "host_group_example_1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.name", "host_group_example_1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.num_of_hosts", "2"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.num_of_initiators", "1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.num_of_masking_views", "1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.port_flags_override", "false"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.type", "Fibre"),
+				),
+			},
+		},
+	})
+}
+
+var HostGroupDataSourceParamsFiltered = `
+# List a specific hostgroup
+data "powermax_hostgroup" "groups" {
+  filter {
+    ids = ["host_group_example_1", "host_group_example_2"]
+  }
+}
 
 output "groups" {
   value = data.powermax_hostgroup.groups
+}
+`
+var HostGroupDataSourceParamsAll = `
+# List all hostgroups
+data "powermax_hostgroup" "all" {}
+
+output "all" {
+  value = data.powermax_hostgroup.all
 }
 `

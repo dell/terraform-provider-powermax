@@ -200,3 +200,83 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 
 	return updatedParameters, updateFailedParameters, errorMessages
 }
+
+// Based on state either use the filtered list of host groups or get all host groups
+func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceModel, plan *models.HostGroupDataSourceModel, client client.Client) ([]string, error) {
+	var hostgroupIds []string
+	if len(plan.HostGroupFilter) == 0 || len(plan.HostGroupFilter[0].IDs) == 0 {
+		hostGroupResponse, err := client.PmaxClient.GetHostGroupList(ctx, client.SymmetrixID)
+		if err != nil {
+			return hostgroupIds, err
+		}
+		hostgroupIds = hostGroupResponse.HostGroupIDs
+		var hgIds []attr.Value
+		for _, id := range hostgroupIds {
+			hgIds = append(hgIds, types.StringValue(id))
+		}
+	} else {
+		for _, hg := range plan.HostGroupFilter[0].IDs {
+			hostgroupIds = append(hostgroupIds, hg.ValueString())
+		}
+	}
+	return hostgroupIds, nil
+}
+
+func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal, diag.Diagnostics) {
+	model := models.HostGroupDetailModal{
+		HostGroupId:       types.StringValue(hg.HostGroupID),
+		Name:              types.StringValue(hg.HostGroupID),
+		ConsistentLun:     types.BoolValue(hg.ConsistentLun),
+		PortFlagsOverride: types.BoolValue(hg.PortFlagsOverride),
+		NumOfMaskingViews: types.Int64Value(hg.NumberMaskingViews),
+		NumOfHosts:        types.Int64Value(hg.NumOfHosts),
+		NumOfInitiators:   types.Int64Value(hg.NumberInitiators),
+		Type:              types.StringValue(hg.HostGroupType),
+	}
+	var hosts []models.HostGroupHostDetailModal
+	var err diag.Diagnostics
+	for _, host := range hg.Hosts {
+		var intiators types.List
+
+		tempHost := models.HostGroupHostDetailModal{
+			HostId: types.StringValue(host.HostID),
+		}
+		if len(host.Initiators) > 0 {
+			var attributeList []attr.Value
+			for _, attribute := range host.Initiators {
+				attributeList = append(attributeList, types.StringValue(attribute))
+			}
+			intiators, err = types.ListValue(types.StringType, attributeList)
+			if err != nil {
+				return model, err
+			}
+		} else {
+			// Empty List
+			intiators, err = types.ListValue(types.StringType, []attr.Value{})
+			if err != nil {
+				return model, err
+			}
+		}
+		tempHost.Initiator = intiators
+		hosts = append(hosts, tempHost)
+		model.Host = hosts
+	}
+
+	if len(hg.MaskingviewIDs) > 0 {
+		var attributeList []attr.Value
+		for _, attribute := range hg.MaskingviewIDs {
+			attributeList = append(attributeList, types.StringValue(attribute))
+		}
+		model.Maskingview, err = types.ListValue(types.StringType, attributeList)
+		if err != nil {
+			return model, err
+		}
+	} else {
+		// Empty List
+		model.Maskingview, err = types.ListValue(types.StringType, []attr.Value{})
+		if err != nil {
+			return model, err
+		}
+	}
+	return model, err
+}

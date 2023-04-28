@@ -28,3 +28,40 @@ type HostGroupModal struct {
 	// Maskingview - Specifies the list of maskingviews for a hostgroup
 	Maskingviews types.List `tfsdk:"maskingviews"`
 }
+
+type HostGroupDataSourceModel struct {
+	ID               types.String           `tfsdk:"id"`
+	HostGroupDetails []HostGroupDetailModal `tfsdk:"host_group_details"`
+	HostGroupFilter  []filterType           `tfsdk:"filter"`
+}
+type filterType struct {
+	IDs []types.String `tfsdk:"ids"`
+}
+
+type HostGroupDetailModal struct {
+	// HostGroupId - defines hostgroup ID
+	HostGroupId types.String `tfsdk:"host_group_id"`
+	// Name - The name of the hostgroup
+	Name types.String `tfsdk:"name"`
+	// ConsistentLun - Specifies whether the consistent_lun flag is set or not for a hostgroup
+	ConsistentLun types.Bool `tfsdk:"consistent_lun"`
+	// NumOfMaskingViews - Specifies the number of masking views for a hostgroup
+	NumOfMaskingViews types.Int64 `tfsdk:"num_of_masking_views"`
+	// NumOfInitiators - Specifies the number of initiators for a hostgroup
+	NumOfInitiators types.Int64 `tfsdk:"num_of_initiators"`
+	// NumOfHosts - Specifies the number of hosts in the hostgroup
+	NumOfHosts types.Int64 `tfsdk:"num_of_hosts"`
+	// PortFlagsOverride - Specifies whether port flags override is enabled on the hostgroup
+	PortFlagsOverride types.Bool `tfsdk:"port_flags_override"`
+	// Type - Specifies the type of hostgroup
+	Type types.String `tfsdk:"type"`
+	// Maskingview - Specifies the list of maskingviews for a hostgroup
+	Maskingview types.List `tfsdk:"maskingview"`
+	// List hosts and there initiators related to a hostgroup
+	Host []HostGroupHostDetailModal `tfsdk:"host"`
+}
+
+type HostGroupHostDetailModal struct {
+	HostId    types.String `tfsdk:"host_id"`
+	Initiator types.List   `tfsdk:"initiator"`
+}

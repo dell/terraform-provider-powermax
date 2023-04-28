@@ -85,10 +85,6 @@ provider "powermax" {
 #   }
 #   host_ids = ["testHost"]
 #   name     = "host_group"
-#   # volume_size            = "100"
-#   # capacity_unit          = "CYL"
-#   # volume_identifier_name = "terraform_volume"
-#   # num_of_vols            = 1
 # }
 
 # resource "powermax_maskingview" "test" {
