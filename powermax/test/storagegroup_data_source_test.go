@@ -27,7 +27,7 @@ func TestAccStorageGroupDataSource(t *testing.T) {
 			{
 				Config: ProviderConfig + testAccSgAllDataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.powermax_storagegroup.test", "storage_groups.#", "36"),
+					resource.TestCheckResourceAttr("data.powermax_storagegroup.test", "storage_groups.#", "10"),
 				),
 			},
 		},
