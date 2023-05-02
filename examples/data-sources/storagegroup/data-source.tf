@@ -1,6 +1,6 @@
 data "powermax_storagegroup" "test" {
-  storage_groups: [{
-    "storage_group_id": "esa_sg572",
+  storage_groups = [{
+    "storage_group_id" : "esa_sg572",
   }]
 }
 

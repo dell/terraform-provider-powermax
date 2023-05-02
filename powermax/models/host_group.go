@@ -32,10 +32,11 @@ type HostGroupModel struct {
 type HostGroupDataSourceModel struct {
 	ID               types.String           `tfsdk:"id"`
 	HostGroupDetails []HostGroupDetailModal `tfsdk:"host_group_details"`
-	HostGroupFilter  []filterType           `tfsdk:"filter"`
+	HostGroupFilter  *filterType            `tfsdk:"filter"`
 }
+
 type filterType struct {
-	IDs []types.String `tfsdk:"ids"`
+	IDs []types.String `tfsdk:"names"`
 }
 
 type HostGroupDetailModal struct {

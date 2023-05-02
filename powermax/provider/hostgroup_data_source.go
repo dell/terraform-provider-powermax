@@ -119,13 +119,11 @@ func (d *hostGroupDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"filter": schema.ListNestedBlock{
-				NestedObject: schema.NestedBlockObject{
-					Attributes: map[string]schema.Attribute{
-						"ids": schema.SetAttribute{
-							Optional:    true,
-							ElementType: types.StringType,
-						},
+			"filter": schema.SingleNestedBlock{
+				Attributes: map[string]schema.Attribute{
+					"names": schema.SetAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
 					},
 				},
 			},
@@ -178,7 +176,7 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	for _, hostGroupId := range hostgroupIds {
 		tflog.Debug(ctx, hostGroupId)
 		groupDetail, err := d.client.PmaxClient.GetHostGroupByID(ctx, d.client.SymmetrixID, hostGroupId)
-		if resp.Diagnostics.HasError() {
+		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error getting the details of host group: "+hostGroupId,
 				constants.ReadHostGroupListDetailsErrorMsg+"with error: "+err.Error(),

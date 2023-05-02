@@ -56,7 +56,7 @@ var HostGroupDataSourceParamsFiltered = `
 # List a specific hostgroup
 data "powermax_hostgroup" "groups" {
   filter {
-    ids = ["host_group_example_1", "host_group_example_2"]
+    names = ["host_group_example_1", "host_group_example_2"]
   }
 }
 

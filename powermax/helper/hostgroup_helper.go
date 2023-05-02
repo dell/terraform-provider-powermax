@@ -202,14 +202,14 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 // Based on state either use the filtered list of host groups or get all host groups.
 func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceModel, plan *models.HostGroupDataSourceModel, client client.Client) ([]string, error) {
 	var hostgroupIds []string
-	if len(plan.HostGroupFilter) == 0 || len(plan.HostGroupFilter[0].IDs) == 0 {
+	if plan.HostGroupFilter == nil || len(plan.HostGroupFilter.IDs) == 0 {
 		hostGroupResponse, err := client.PmaxClient.GetHostGroupList(ctx, client.SymmetrixID)
 		if err != nil {
 			return hostgroupIds, err
 		}
 		hostgroupIds = hostGroupResponse.HostGroupIDs
 	} else {
-		for _, hg := range plan.HostGroupFilter[0].IDs {
+		for _, hg := range plan.HostGroupFilter.IDs {
 			hostgroupIds = append(hostgroupIds, hg.ValueString())
 		}
 	}

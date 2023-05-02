@@ -2,19 +2,19 @@ data "powermax_host" "HostDsAll" {
 }
 
 data "powermax_host" "HostDsFiltered" {
-   filter {
-      # Optional list of IDs to filter
-      ids = [
-        "Host124",
-        "Host173",
-      ]
-    }
+  filter {
+    # Optional list of IDs to filter
+    ids = [
+      "Host124",
+      "Host173",
+    ]
+  }
 }
 
 output "hostDsResultAll" {
-   value = data.powermax_host.HostDsAll
+  value = data.powermax_host.HostDsAll
 }
 
 output "hostDsResult" {
-   value = data.powermax_host.HostDsFiltered
+  value = data.powermax_host.HostDsFiltered
 }
