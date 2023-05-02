@@ -27,7 +27,7 @@ var HostDataSourceParamsAll = `
 data "powermax_host" "HostDs" {
 	filter {
 		# Optional list of IDs to filter
-		ids = [
+		names = [
 		  "hostExample",
 		]
 	}

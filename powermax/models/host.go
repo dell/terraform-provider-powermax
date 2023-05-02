@@ -39,3 +39,16 @@ type HostFlag struct {
 	Enabled  types.Bool `tfsdk:"enabled"`
 	Override types.Bool `tfsdk:"override"`
 }
+
+// HostsDataSourceModel describes the data source data model.
+type HostsDataSourceModel struct {
+	ID    types.String `tfsdk:"id"`
+	Hosts []HostModel  `tfsdk:"hosts"`
+
+	//filter
+	HostFilter *HostFilterType `tfsdk:"filter"`
+}
+
+type HostFilterType struct {
+	Names []types.String `tfsdk:"names"`
+}

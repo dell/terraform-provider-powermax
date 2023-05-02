@@ -28,19 +28,6 @@ type HostDataSource struct {
 	client *client.Client
 }
 
-// hostsDataSourceModel describes the data source data model.
-type hostsDataSourceModel struct {
-	ID    types.String       `tfsdk:"id"`
-	Hosts []models.HostModel `tfsdk:"hosts"`
-
-	//filter
-	HostFilter []filterType `tfsdk:"filter"`
-}
-
-type filterType struct {
-	IDs []types.String `tfsdk:"ids"`
-}
-
 func (d *HostDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_host"
 }
@@ -209,13 +196,11 @@ func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"filter": schema.ListNestedBlock{
-				NestedObject: schema.NestedBlockObject{
-					Attributes: map[string]schema.Attribute{
-						"ids": schema.SetAttribute{
-							Optional:    true,
-							ElementType: types.StringType,
-						},
+			"filter": schema.SingleNestedBlock{
+				Attributes: map[string]schema.Attribute{
+					"names": schema.SetAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
 					},
 				},
 			},
@@ -242,8 +227,8 @@ func (d *HostDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 }
 
 func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var plan hostsDataSourceModel
-	var state hostsDataSourceModel
+	var plan models.HostsDataSourceModel
+	var state models.HostsDataSourceModel
 
 	diags := req.Config.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -253,7 +238,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	var hostIds []string
 	// Get host IDs from config or query all if not specified
-	if len(plan.HostFilter) == 0 || len(plan.HostFilter[0].IDs) == 0 {
+	if plan.HostFilter == nil || len(plan.HostFilter.Names) == 0 {
 		// Read all the hosts
 		hostIdList, err := d.client.PmaxClient.GetHostList(ctx, d.client.SymmetrixID)
 		if err != nil {
@@ -263,7 +248,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		hostIds = hostIdList.HostIDs
 	} else {
 		// get ids from filter and assign to hostIds
-		for _, ids := range plan.HostFilter[0].IDs {
+		for _, ids := range plan.HostFilter.Names {
 			hostIds = append(hostIds, ids.ValueString())
 		}
 	}
