@@ -95,11 +95,6 @@ func (d *PortgroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 							Description:         "The masking views associated with the portgroup.",
 							MarkdownDescription: "The masking views associated with the portgroup.",
 						},
-						"test_id": schema.StringAttribute{
-							Computed:            true,
-							Description:         "The test ID of the portgroup.",
-							MarkdownDescription: "The test ID of the portgroup.",
-						},
 					},
 				},
 			},

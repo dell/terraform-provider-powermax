@@ -43,7 +43,6 @@ func updatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.Port
 
 	pgState.NumOfMaskingViews = types.Int64Value(pgResponse.NumberMaskingViews)
 	pgState.NumOfPorts = types.Int64Value(pgResponse.NumberPorts)
-	pgState.TestID = types.StringValue(pgResponse.TestID)
 	pgState.Type = types.StringValue(pgResponse.PortGroupType)
 
 	var attributeListType types.List

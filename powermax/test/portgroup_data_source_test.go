@@ -29,8 +29,8 @@ data "powermax_portgroups" "fibreportgroups" {
 	filter {
 		# Optional list of names to filter
 		names = [
-		  "ConnorsPortGroup",
-		  "vro-ui-pg-WmLkGjfI",
+		  "test1_fibre",
+		  "test2_fibre",
 		]
 		type = "fibre"
 	}

@@ -26,8 +26,8 @@ resource "powermax_portgroup" "test_portgroup" {
 	protocol = "SCSI_FC"
 	ports = [
 		{
-			director_id = "FA-2D"
-			port_id = "11"
+			director_id = "FA-1D"
+			port_id = "12"
 		}
 	]
 }
@@ -68,8 +68,8 @@ func TestAccPortgroupResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(portgroupTerraformName, "name", "tf_pg_test_1_upd"),
 					resource.TestCheckResourceAttr(portgroupTerraformName, "protocol", "SCSI_FC"),
-					resource.TestCheckResourceAttr(portgroupTerraformName, "ports.0.director_id", "FA-2D"),
-					resource.TestCheckResourceAttr(portgroupTerraformName, "ports.0.port_id", "11"),
+					resource.TestCheckResourceAttr(portgroupTerraformName, "ports.0.director_id", "FA-1D"),
+					resource.TestCheckResourceAttr(portgroupTerraformName, "ports.0.port_id", "12"),
 
 					// Verify Calculated values
 					// numofmaskingviews
@@ -82,11 +82,3 @@ func TestAccPortgroupResource(t *testing.T) {
 		},
 	})
 }
-
-/*func testAccPortgroupResourceConfig(configurableAttribute string) string {
-	return fmt.Sprintf(`
-resource "portgroup" "test" {
-  configurable_attribute = %[1]q
-}
-`, configurableAttribute)
-}*/

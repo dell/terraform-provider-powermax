@@ -24,8 +24,8 @@ data "powermax_portgroups" "fibreportgroups" {
     type = "fibre"
     # Optional list of IDs to filter
     names = [
-      "test1",
-      "test2",
+      "test1_fibre",
+      "test2_fibre",
     ]
   }
 }

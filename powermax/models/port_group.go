@@ -21,8 +21,6 @@ type PortGroup struct {
 	Type types.String `tfsdk:"type"`
 	// Maskingview - The list of masking views associated with the portgroup
 	Maskingview types.List `tfsdk:"maskingview"`
-	// TestID - The test ID of the portgroup
-	TestID types.String `tfsdk:"test_id"`
 }
 
 // PortKey holds DirectorID and PortKey.
