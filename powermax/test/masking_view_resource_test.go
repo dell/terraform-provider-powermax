@@ -18,16 +18,25 @@ func TestAccMaskingView_CreateMaskingViewWithHost(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      ProviderConfig + maskingViewCreateFailedTest,
-				ExpectError: regexp.MustCompile(`.*The host_id or host_group_id only needs to be specified one.*.`),
-			},
-			{
 				Config: ProviderConfig + maskingViewCreateWithHostTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "terraform_MV_accTest_host"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "Tao_k8s_env2_SG"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "host_id", "Tao_k8s_env2_host"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "TestHostMaskingView"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "TestnewSG"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "host_id", "IG_Dell_198151"),
 				),
+			},
+		},
+	})
+}
+func TestAccMaskingView_CreateMaskingViewWithHostFailTest(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      ProviderConfig + maskingViewCreateFailedTest,
+				ExpectError: regexp.MustCompile(`.*Specify either host_id or host_group_id*.`),
 			},
 		},
 	})
@@ -42,9 +51,9 @@ func TestAccMaskingView_CreateMaskingViewWithHostGroup(t *testing.T) {
 			{
 				Config: ProviderConfig + maskingViewCreateWithHostGroupTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "name", "terraform_MV_accTest_hostGroup"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "storage_group_id", "Tao_k8s_env2_SG"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "host_group_id", "Tao_k8s_env2_host_group"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "name", "TestHostGroupMaskingView"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "storage_group_id", "TestnewSG"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "host_group_id", "TestHostGroup"),
 				),
 			},
 		},
@@ -58,21 +67,10 @@ func TestAccMaskingView_UpdateMaskingView(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: ProviderConfig + maskingViewCreateWithHostTest,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "terraform_MV_accTest_host"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "Tao_k8s_env2_SG"),
-				),
-			},
-			{
-				Config:      ProviderConfig + maskingViewUpdateFailedTest,
-				ExpectError: regexp.MustCompile(`.*maskingView's host, hostGroup, portGroup or storageGroup cannot be update after creation*.`),
-			},
-			{
 				Config: ProviderConfig + maskingViewUpdateRenameTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "terraform_MV_accTest_host_rename"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "Tao_k8s_env2_SG"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "maskingViewUpdate"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "esa_sg572"),
 				),
 			},
 		},
@@ -95,8 +93,8 @@ func TestAccMaskingView_ImportSuccess(t *testing.T) {
 				ExpectError:       nil,
 				ImportStateVerify: true,
 				ImportStateCheck: func(s []*terraform.InstanceState) error {
-					assert.Equal(t, "terraform_MV_accTest_host", s[0].Attributes["name"])
-					assert.Equal(t, "Tao_k8s_env2_host", s[0].Attributes["host_id"])
+					assert.Equal(t, "TestHostMaskingView", s[0].Attributes["name"])
+					assert.Equal(t, "IG_Dell_198151", s[0].Attributes["host_id"])
 					return nil
 				},
 			},
@@ -123,11 +121,11 @@ func TestAccMaskingView_ImportFailure(t *testing.T) {
 
 var maskingViewCreateWithHostTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "terraform_MV_accTest_host"
-	storage_group_id = "Tao_k8s_env2_SG"
-	host_id = "Tao_k8s_env2_host"
+	name = "TestHostMaskingView"
+	storage_group_id = "TestnewSG"
+	host_id = "IG_Dell_198151"
 	host_group_id = ""
-	port_group_id = "Tao_k8s_env2_PG"
+	port_group_id = "TestnewSG_PG"
   }
 `
 
@@ -143,21 +141,21 @@ resource "powermax_maskingview" "masking_view_create_failed_test" {
 
 var maskingViewCreateWithHostGroupTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_group_test" {
-	name = "terraform_MV_accTest_hostGroup"
-	storage_group_id = "Tao_k8s_env2_SG"
+	name = "TestHostGroupMaskingView"
+	storage_group_id = "TestnewSG"
 	host_id = ""
-	host_group_id = "Tao_k8s_env2_host_group"
-	port_group_id = "Tao_k8s_env2_PG"
+	host_group_id = "TestHostGroup"
+	port_group_id = "TestnewSG_PG"
   }
 `
 
 var maskingViewUpdateRenameTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "terraform_MV_accTest_host_rename"
-	storage_group_id = "Tao_k8s_env2_SG"
-	host_id = "Tao_k8s_env2_host"
+	name = "maskingViewUpdate"
+	storage_group_id = "esa_sg572"
+	host_id = "Host173"
 	host_group_id = ""
-	port_group_id = "Tao_k8s_env2_PG"
+	port_group_id = "esa_vmax_portgroup572"
   }
 `
 

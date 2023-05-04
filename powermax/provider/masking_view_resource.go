@@ -124,8 +124,8 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		hostOrHostGroupID = plan.HostGroupID.ValueString()
 	} else {
 		resp.Diagnostics.AddError(
-			"The host_id or host_group_id only needs to be specified one.",
-			"unexpected error: The host_id or host_group_id only needs to be specified one.",
+			"Specify either host_id or host_group_id.",
+			"unexpected error: Specify either host_id or host_group_id",
 		)
 	}
 
