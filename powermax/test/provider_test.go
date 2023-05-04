@@ -66,10 +66,5 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("POWERMAX_VERSION environment variable not set")
 	}
 
-	t.Log(os.Getenv("POWERMAX_ENDPOINT"))
-	t.Log(os.Getenv("POWERMAX_USERNAME"))
-	t.Log(os.Getenv("POWERMAX_PASSWORD"))
-	t.Log(os.Getenv("POWERMAX_SERIAL_NUMBER"))
-	t.Log(os.Getenv("POWERMAX_VERSION"))
 	t.Log(ProviderConfig)
 }

@@ -7,8 +7,5 @@ resource "powermax_storagegroup" "test" {
     host_io_limit_mb_sec = "1000"
     dynamicDistribution  = "Never"
   }
-  volume_size            = "100"
-  capacity_unit          = "CYL"
-  volume_identifier_name = "terraform_volume"
-  num_of_vols            = 1
+  volume_ids = ["0008F"]
 }

@@ -34,8 +34,5 @@ type StorageGroupResourceModel struct {
 	Tags                  types.String `tfsdk:"tags"`
 	UUID                  types.String `tfsdk:"uuid"`
 	UnreducibleDataGB     types.Number `tfsdk:"unreducible_data_gb"`
-	//VolumeIDs             types.Set    `tfsdk:"volume_ids"`
-	//VolumeSize            types.String `tfsdk:"volume_size"`
-	//CapacityUnit          types.String `tfsdk:"capacity_unit"`
-	//VolumeIdentifierName  types.String `tfsdk:"volume_identifier_name"`
+	VolumeIDs             types.List   `tfsdk:"volume_ids"`
 }

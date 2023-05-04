@@ -13,11 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/numberplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -81,7 +78,6 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:            true,
 				Description:         "The service level compliance status of the storage group",
 				MarkdownDescription: "The service level compliance status of the storage group",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"num_of_vols": schema.Int64Attribute{
 				Optional:            true,
@@ -124,7 +120,6 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Optional:            true,
 				Description:         "The emulation of the volumes in the storage group",
 				MarkdownDescription: "The emulation of the volumes in the storage group",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"type": schema.StringAttribute{
 				Computed:            true,
@@ -173,25 +168,21 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Optional:            true,
 				Description:         "States whether compression is enabled on storage group",
 				MarkdownDescription: "States whether compression is enabled on storage group",
-				PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
 			},
 			"compression_ratio": schema.StringAttribute{
 				Computed:            true,
 				Description:         "States whether compression is enabled on storage group",
 				MarkdownDescription: "States whether compression is enabled on storage group",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"compression_ratio_to_one": schema.NumberAttribute{
 				Computed:            true,
 				Description:         "Compression ratio numeric value of the storage group",
 				MarkdownDescription: "Compression ratio numeric value of the storage group",
-				PlanModifiers:       []planmodifier.Number{numberplanmodifier.UseStateForUnknown()},
 			},
 			"vp_saved_percent": schema.NumberAttribute{
 				Computed:            true,
 				Description:         "VP saved percentage figure",
 				MarkdownDescription: "VP saved percentage figure",
-				PlanModifiers:       []planmodifier.Number{numberplanmodifier.UseStateForUnknown()},
 			},
 			"tags": schema.StringAttribute{
 				Computed:            true,
@@ -207,37 +198,14 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:            true,
 				Description:         "The amount of unreducible data in Gb.",
 				MarkdownDescription: "SThe amount of unreducible data in Gb.",
-				PlanModifiers:       []planmodifier.Number{numberplanmodifier.UseStateForUnknown()},
 			},
-			//"volume_ids": schema.SetAttribute{
-			//	ElementType:         types.StringType,
-			//	Optional:            true,
-			//	Computed:            true,
-			//	Description:         "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.",
-			//	MarkdownDescription: "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.",
-			//	PlanModifiers:       []planmodifier.Set{setplanmodifier.UseStateForUnknown()},
-			//},
-			//"volume_size": schema.StringAttribute{
-			//	Optional:            true,
-			//	Computed:            true,
-			//	Description:         "The desired volume size of storage group",
-			//	MarkdownDescription: "The desired volume size of storage group",
-			//	PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-			//},
-			//"capacity_unit": schema.StringAttribute{
-			//	Optional:            true,
-			//	Computed:            true,
-			//	Description:         "The unit of capacity enumeration values: CYL,MB,GB,TB",
-			//	MarkdownDescription: "The unit of capacity enumeration values: CYL,MB,GB,TB",
-			//	PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-			//},
-			//"volume_identifier_name": schema.StringAttribute{
-			//	Optional:            true,
-			//	Computed:            true,
-			//	Description:         "Volume identifier name",
-			//	MarkdownDescription: "Volume identifier name",
-			//	PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-			//},
+			"volume_ids": schema.ListAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.",
+				MarkdownDescription: "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.",
+			},
 		},
 	}
 }
@@ -302,12 +270,12 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 		"storage group": sg,
 	})
 
-	// Add new or existing volumes to the storage group based on volume attributes
-	//err = UpdateVolume(ctx, &plan, &state, r)
-	//if err != nil {
-	//	resp.Diagnostics.AddError("Failed to update volume", err.Error())
-	//	return
-	//}
+	// Add or remove existing volumes to the storage group based on volume attributes
+	err = helper.AddRemoveVolume(ctx, &plan, &state, r.client)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to update volume", err.Error())
+		return
+	}
 
 	// Update all fields of state
 	storageGroup, err := r.client.PmaxClient.GetStorageGroup(ctx, r.client.SymmetrixID, plan.StorageGroupID.ValueString())
@@ -317,15 +285,11 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	err = helper.CopyFields(ctx, storageGroup, &state)
-	state.ID = types.StringValue(storageGroup.StorageGroupID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error copying storage group fields", err.Error())
 		return
 	}
-
-	//state.CapacityUnit = plan.CapacityUnit
-	//state.VolumeIdentifierName = plan.VolumeIdentifierName
-	//state.VolumeSize = plan.VolumeSize
+	state.ID = types.StringValue(storageGroup.StorageGroupID)
 
 	// Save plan into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -349,6 +313,14 @@ func (r *StorageGroup) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.AddError("Error reading storage group", err.Error())
 		return
 	}
+
+	// Read volume list in storage group
+	volumeIDListInStorageGroup, err := r.client.PmaxClient.GetVolumeIDListInStorageGroup(ctx, r.client.SymmetrixID, state.StorageGroupID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading volume list in storage group", err.Error())
+		return
+	}
+	state.VolumeIDs, _ = types.ListValueFrom(ctx, types.StringType, volumeIDListInStorageGroup)
 
 	err = helper.CopyFields(ctx, storageGroup, &state)
 	if err != nil {
@@ -507,11 +479,11 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Update Volume
-	//err := UpdateVolume(ctx, &plan, &state, r)
-	//if err != nil {
-	//	resp.Diagnostics.AddError("Failed to update volume", err.Error())
-	//	return
-	//}
+	err := helper.AddRemoveVolume(ctx, &plan, &state, r.client)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to update volume", err.Error())
+		return
+	}
 
 	// Update all fields of state
 	storageGroup, err := r.client.PmaxClient.GetStorageGroup(ctx, r.client.SymmetrixID, state.StorageGroupID.ValueString())
