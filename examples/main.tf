@@ -87,7 +87,7 @@ provider "powermax" {
 #   name     = "host_group"
 # }
 
-# resource "powermax_maskingview" "test" {
+# resource "powermax_maskingview" "test_masking_view" {
 #   name = "terraform_testMV"
 #   storage_group_id = "Tao_k8s_env2_SG"
 #   host_id = "Tao_k8s_env2_host"
@@ -102,8 +102,12 @@ provider "powermax" {
 #    value = data.powermax_host.HostDs
 # }
 
-# data "powermax_maskingview" "all" {}
+# data "powermax_maskingview" "maskingViewData" {
+#    filter {
+#     names = ["terraform_tao_testMV_rename", "Yulan_SG_MV"]
+#   }
+# }
 
-# output "all" {
-#     value = data.powermax_maskingview.all
+# output "maskingViewDataResult" {
+#   value = data.powermax_maskingview.maskingViewData.masking_views
 # }

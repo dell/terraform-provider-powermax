@@ -1,21 +1,17 @@
-data "powermax_maskingview" "id" {
-  name = "terraform_tao_testMV_rename"
+# List a specific maskingView
+data "powermax_maskingview" "maskingViewFilter" {
+   filter {
+    names = ["terraform_tao_testMV_rename", "Yulan_SG_MV"]
+  }
 }
 
-output "id" {
-  value = data.powermax_maskingview.id.masking_views
+output "maskingViewFilterResult" {
+  value = data.powermax_maskingview.maskingViewFilter.masking_views
 }
 
-data "powermax_maskingview" "idList" {
-  masking_view_names = ["terraform_tao_testMV_rename", "Yulan_SG_MV"]
-}
+# List all maskingviews
+data "powermax_maskingview" "allMaskingViews" {}
 
-output "idList" {
-  value = data.powermax_maskingview.idList.masking_views
-}
-
-data "powermax_maskingview" "all" {}
-
-output "all" {
-  value = data.powermax_maskingview.all.maskingviews
+output "allMaskingViewsResult" {
+  value = data.powermax_maskingview.allMaskingViews.masking_views
 }

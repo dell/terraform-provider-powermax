@@ -15,10 +15,10 @@ type MaskingViewResourceModel struct {
 
 // MaskingViewDataSourceModel describes the data source data model.
 type MaskingViewDataSourceModel struct {
-	MaskingViews     []MaskingViewModel `tfsdk:"masking_views"`
-	Name             types.String       `tfsdk:"name"`
-	ID               types.String       `tfsdk:"id"`
-	MaskingViewNames types.List         `tfsdk:"masking_view_names"`
+	MaskingViews []MaskingViewModel `tfsdk:"masking_views"`
+	ID           types.String       `tfsdk:"id"`
+	//filter
+	MaskingViewFilter *MaskingViewFilterType `tfsdk:"filter"`
 }
 
 type MaskingViewModel struct {
@@ -31,4 +31,8 @@ type MaskingViewModel struct {
 	Volumes         types.List    `tfsdk:"volumes"`
 	Initiators      types.List    `tfsdk:"initiators"`
 	Ports           types.List    `tfsdk:"ports"`
+}
+
+type MaskingViewFilterType struct {
+	Names []types.String `tfsdk:"names"`
 }

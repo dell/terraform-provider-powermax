@@ -14,21 +14,15 @@ func TestAccMaskingView_FetchMaskingView(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: ProviderConfig + maskingViewDataSourceparamsID,
+				Config: ProviderConfig + maskingViewDataSourceFilter,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.powermax_maskingview.id", "masking_views.#", "1"),
-					resource.TestCheckResourceAttr("data.powermax_maskingview.id", "masking_views.0.masking_view_name", "Tao_k8s_env2_SG_MV"),
-					resource.TestCheckResourceAttr("data.powermax_maskingview.id", "masking_views.0.capacity_gb", "10"),
-					resource.TestCheckResourceAttr("data.powermax_maskingview.id", "masking_views.0.host_id", "Tao_k8s_env2_host"),
-					resource.TestCheckResourceAttr("data.powermax_maskingview.id", "masking_views.0.storage_group_id", "Tao_k8s_env2_SG"),
-					resource.TestCheckResourceAttr("data.powermax_maskingview.id", "masking_views.0.initiators.#", "3"),
-					resource.TestCheckTypeSetElemAttr("data.powermax_maskingview.id", "masking_views.0.ports.*", "OR-2C:000"),
-				),
-			},
-			{
-				Config: ProviderConfig + maskingViewDataSourceparamsIDList,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.powermax_maskingview.idList", "masking_views.#", "2"),
+					resource.TestCheckResourceAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.#", "1"),
+					resource.TestCheckResourceAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.0.masking_view_name", "Yulan_SG_MV"),
+					resource.TestCheckResourceAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.0.capacity_gb", "10"),
+					resource.TestCheckResourceAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.0.host_id", "csi-node-YL1-worker-1-onenvvkgfbkhm"),
+					resource.TestCheckResourceAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.0.storage_group_id", "Yulan_SG"),
+					resource.TestCheckResourceAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.0.initiators.#", "1"),
+					resource.TestCheckTypeSetElemAttr("data.powermax_maskingview.maskingViewFilter", "masking_views.0.ports.*", "OR-2C:000"),
 				),
 			},
 			{
@@ -38,17 +32,14 @@ func TestAccMaskingView_FetchMaskingView(t *testing.T) {
 	})
 }
 
-var maskingViewDataSourceparamsID = `
-data "powermax_maskingview" "id" {
-	name = "Tao_k8s_env2_SG_MV"
-}
+var maskingViewDataSourceFilter = `
+data "powermax_maskingview" "maskingViewFilter" {
+	filter {
+	 names = ["Yulan_SG_MV"]
+   }
+ }
 `
 
-var maskingViewDataSourceparamsIDList = `
-data "powermax_maskingview" "idList" {
-	masking_view_names = [ "csi-mv-YL1-worker-1-rvahi2ntosoe3", "Yulan_SG_Yiming_10838_MV" ]
-}
-`
 var maskingViewDataSourceparamsIDEmpty = `
 data "powermax_maskingview" "all" {}
 `

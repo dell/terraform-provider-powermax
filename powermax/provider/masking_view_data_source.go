@@ -10,12 +10,9 @@ import (
 	"terraform-provider-powermax/powermax/models"
 
 	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -52,26 +49,8 @@ func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.Schem
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The ID of the masking view.",
-				MarkdownDescription: "The ID of the masking view.",
-			},
-			"name": schema.StringAttribute{
-				Description:         "Unique identifier of the masking view.",
-				MarkdownDescription: "Unique identifier of the masking view.",
-				Optional:            true,
-				Computed:            true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
-			},
-			"masking_view_names": schema.ListAttribute{
-				Description:         "List of masking view names.",
-				MarkdownDescription: "List of masking view names.",
-				ElementType:         types.StringType,
-				Optional:            true,
-				Validators: []validator.List{
-					listvalidator.SizeAtLeast(1),
-				},
+				Description:         "Unique identifier of the masking view instance.",
+				MarkdownDescription: "Unique identifier of the masking view instance.",
 			},
 			"masking_views": schema.ListNestedAttribute{
 				Description:         "List of masking views.",
@@ -131,6 +110,16 @@ func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.Schem
 				},
 			},
 		},
+		Blocks: map[string]schema.Block{
+			"filter": schema.SingleNestedBlock{
+				Attributes: map[string]schema.Attribute{
+					"names": schema.SetAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -167,14 +156,11 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	var maskingViewIds []string
-	// Get all masking view Ids and append to maskingViewIds
-	if state.Name.ValueString() != "" {
-		maskingViewIds = append(maskingViewIds, state.Name.ValueString())
-	} else if !state.MaskingViewNames.IsNull() {
-		state.MaskingViewNames.ElementsAs(ctx, &maskingViewIds, true)
-	} else {
+	// Get masking view IDs from config or query all if not specified
+	if state.MaskingViewFilter == nil || len(state.MaskingViewFilter.Names) == 0 {
+		// Read all the masking views
 		tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingViewList for Symmetrix - %s", d.client.SymmetrixID))
-		maskingViewList, err := d.client.PmaxClient.GetMaskingViewList(context.Background(), d.client.SymmetrixID)
+		maskingViewList, err := d.client.PmaxClient.GetMaskingViewList(ctx, d.client.SymmetrixID)
 
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -183,7 +169,13 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 			)
 			return
 		}
-		maskingViewIds = append(maskingViewIds, maskingViewList.MaskingViewIDs...)
+		maskingViewIds = maskingViewList.MaskingViewIDs
+	} else {
+		tflog.Debug(ctx, fmt.Sprintf("Get masking view Ids from filter for Symmetrix - %s", d.client.SymmetrixID))
+		// get ids from filter and assign to maskingViewIds
+		for _, name := range state.MaskingViewFilter.Names {
+			maskingViewIds = append(maskingViewIds, name.ValueString())
+		}
 	}
 
 	var models []models.MaskingViewModel
@@ -300,7 +292,7 @@ func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datas
 					<-sem
 				}()
 				tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", id))
-				maskingView, err := d.client.PmaxClient.GetMaskingViewByID(context.Background(), d.client.SymmetrixID, id)
+				maskingView, err := d.client.PmaxClient.GetMaskingViewByID(ctx, d.client.SymmetrixID, id)
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
