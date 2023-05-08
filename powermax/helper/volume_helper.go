@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package helper
 
 import (
@@ -24,6 +25,7 @@ const (
 	CapacityUnitCyl = "CYL"
 )
 
+// GetVolumeSize returns the size of the volume in the correct format
 func GetVolumeSize(volume models.Volume) (interface{}, error) {
 	var size interface{}
 	if volume.CapUnit.ValueString() == CapacityUnitCyl {
@@ -42,6 +44,7 @@ func GetVolumeSize(volume models.Volume) (interface{}, error) {
 	return size, nil
 }
 
+// UpdateVolState updates the volume state with the response from the array
 func UpdateVolState(ctx context.Context, volState *models.Volume, volResponse *pmaxTypes.Volume, volPlan *models.Volume) error {
 	// Manually copy
 	volState.ID = types.StringValue(volResponse.VolumeID)
@@ -107,6 +110,7 @@ func UpdateVolState(ctx context.Context, volState *models.Volume, volResponse *p
 	return err
 }
 
+// UpdateVol updates the volume and return updated parameters, failed updated parameters and errors
 func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol models.Volume) ([]string, []string, []string) {
 	var updatedParameters []string
 	var updateFailedParameters []string

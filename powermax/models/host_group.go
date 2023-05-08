@@ -1,9 +1,10 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// HostGroup holds hostgroup schema attribute details.
+// HostGroupModel HostGroup holds hostgroup schema attribute details.
 type HostGroupModel struct {
 	// ID - defines host ID
 	ID types.String `tfsdk:"id"`
@@ -29,6 +30,7 @@ type HostGroupModel struct {
 	Maskingviews types.List `tfsdk:"maskingviews"`
 }
 
+// HostGroupDataSourceModel describes the hostgroup data source model.
 type HostGroupDataSourceModel struct {
 	ID               types.String           `tfsdk:"id"`
 	HostGroupDetails []HostGroupDetailModal `tfsdk:"host_group_details"`
@@ -39,9 +41,10 @@ type filterType struct {
 	IDs []types.String `tfsdk:"names"`
 }
 
+// HostGroupDetailModal describes the detail of hostgroup data source.
 type HostGroupDetailModal struct {
-	// HostGroupId - defines hostgroup ID
-	HostGroupId types.String `tfsdk:"host_group_id"`
+	// HostGroupID - defines hostgroup ID
+	HostGroupID types.String `tfsdk:"host_group_id"`
 	// Name - The name of the hostgroup
 	Name types.String `tfsdk:"name"`
 	// ConsistentLun - Specifies whether the consistent_lun flag is set or not for a hostgroup
@@ -62,7 +65,8 @@ type HostGroupDetailModal struct {
 	Host []HostGroupHostDetailModal `tfsdk:"host"`
 }
 
+// HostGroupHostDetailModal describes the detail of host.
 type HostGroupHostDetailModal struct {
-	HostId    types.String `tfsdk:"host_id"`
+	HostID    types.String `tfsdk:"host_id"`
 	Initiator types.List   `tfsdk:"initiator"`
 }

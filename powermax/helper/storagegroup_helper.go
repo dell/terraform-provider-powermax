@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package helper
 
 import (
@@ -9,12 +10,14 @@ import (
 	"terraform-provider-powermax/powermax/models"
 )
 
+// constants to annotate if a volume should be added or removed
 const (
 	AddVolume    = 1
 	RemoveVolume = 2
 	NoOperation  = 0
 )
 
+// AddRemoveVolume add or remove a volume based on the config of plan and current state
 func AddRemoveVolume(ctx context.Context, plan, state *models.StorageGroupResourceModel, client *client.Client) error {
 	var planVolumeIDs []string
 	var stateVolumeIDs []string

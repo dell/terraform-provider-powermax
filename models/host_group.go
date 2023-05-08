@@ -2,7 +2,7 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// HostGroup holds hostgroup schema attribute details
+// HostGroup holds hostgroup schema attribute details.
 type HostGroup struct {
 	// ID - defines host ID
 	ID types.String `tfsdk:"id"`

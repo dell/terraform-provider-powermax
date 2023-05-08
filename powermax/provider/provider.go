@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -30,8 +31,8 @@ type PmaxProvider struct {
 	version string
 }
 
-// ProviderData describes the provider data model.
-type ProviderData struct {
+// Data describes the provider data model.
+type Data struct {
 	Endpoint     types.String `tfsdk:"endpoint"`
 	Username     types.String `tfsdk:"username"`
 	Password     types.String `tfsdk:"password"`
@@ -40,11 +41,13 @@ type ProviderData struct {
 	Insecure     types.Bool   `tfsdk:"insecure"`
 }
 
+// Metadata returns the provider metadata.
 func (p *PmaxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "powermax"
 	resp.Version = p.version
 }
 
+// Schema returns the provider schema.
 func (p *PmaxProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -95,8 +98,9 @@ func (p *PmaxProvider) Schema(ctx context.Context, req provider.SchemaRequest, r
 	}
 }
 
+// Configure configures the provider.
 func (p *PmaxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ProviderData
+	var data Data
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -128,6 +132,7 @@ func (p *PmaxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	resp.ResourceData = pmaxClient
 }
 
+// Resources returns the provider resources.
 func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewStorageGroup,
@@ -139,6 +144,7 @@ func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource
 	}
 }
 
+// DataSources returns the provider data sources.
 func (p *PmaxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewHostDataSource,
@@ -149,6 +155,7 @@ func (p *PmaxProvider) DataSources(ctx context.Context) []func() datasource.Data
 	}
 }
 
+// New returns a new provider.
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
 		return &PmaxProvider{

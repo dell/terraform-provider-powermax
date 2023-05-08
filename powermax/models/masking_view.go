@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,6 +22,7 @@ type MaskingViewDataSourceModel struct {
 	MaskingViewFilter *MaskingViewFilterType `tfsdk:"filter"`
 }
 
+// MaskingViewModel describes the masking view data model.
 type MaskingViewModel struct {
 	MaskingViewName types.String  `tfsdk:"masking_view_name"`
 	HostID          types.String  `tfsdk:"host_id"`
@@ -33,6 +35,7 @@ type MaskingViewModel struct {
 	Ports           types.List    `tfsdk:"ports"`
 }
 
+// MaskingViewFilterType describes the masking view filter data model.
 type MaskingViewFilterType struct {
 	Names []types.String `tfsdk:"names"`
 }

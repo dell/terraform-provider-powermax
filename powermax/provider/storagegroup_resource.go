@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -24,6 +25,7 @@ var _ resource.Resource = &StorageGroup{}
 var _ resource.ResourceWithConfigure = &StorageGroup{}
 var _ resource.ResourceWithImportState = &StorageGroup{}
 
+// NewStorageGroup is a helper function to simplify the provider implementation.
 func NewStorageGroup() resource.Resource {
 	return &StorageGroup{}
 }
@@ -33,10 +35,12 @@ type StorageGroup struct {
 	client *client.Client
 }
 
+// Metadata Resource metadata.
 func (r *StorageGroup) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_storagegroup"
 }
 
+// Schema Resource schema.
 func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
@@ -210,6 +214,7 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 	}
 }
 
+// Configure the resource.
 func (r *StorageGroup) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -230,6 +235,7 @@ func (r *StorageGroup) Configure(ctx context.Context, req resource.ConfigureRequ
 	r.client = pmaxClient
 }
 
+// Create a storage group.
 func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Info(ctx, "Creating Storage Group...")
 	var plan models.StorageGroupResourceModel
@@ -298,6 +304,7 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 }
 
+// Read a storage group.
 func (r *StorageGroup) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Info(ctx, "Reading Storage Group...")
 	var state models.StorageGroupResourceModel
@@ -333,6 +340,7 @@ func (r *StorageGroup) Read(ctx context.Context, req resource.ReadRequest, resp 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
+// Update a storage group.
 func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Info(ctx, "Updating Storage group...")
 	// Read Terraform plan into the model
@@ -502,6 +510,7 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
+// Delete deletes a Storage Group
 func (r *StorageGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "Deleting Storage Group...")
 	var data models.StorageGroupResourceModel
@@ -522,6 +531,7 @@ func (r *StorageGroup) Delete(ctx context.Context, req resource.DeleteRequest, r
 	resp.State.RemoveResource(ctx)
 }
 
+// ImportState imports a Storage Group
 func (r *StorageGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("storage_group_id"), req, resp)
 }

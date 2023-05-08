@@ -18,11 +18,11 @@ func TestAccMaskingView_CreateMaskingViewWithHost(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      ProviderConfig + masking_view_create_failed_test,
+				Config:      ProviderConfig + maskingViewCreateFailedTest,
 				ExpectError: regexp.MustCompile(`.*The host_id or host_group_id only needs to be specified one.*.`),
 			},
 			{
-				Config: ProviderConfig + masking_view_create_with_host_test,
+				Config: ProviderConfig + maskingViewCreateWithHostTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "terraform_MV_accTest_host"),
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "Tao_k8s_env2_SG"),
@@ -40,7 +40,7 @@ func TestAccMaskingView_CreateMaskingViewWithHostGroup(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: ProviderConfig + masking_view_create_with_host_group_test,
+				Config: ProviderConfig + maskingViewCreateWithHostGroupTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "name", "terraform_MV_accTest_hostGroup"),
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "storage_group_id", "Tao_k8s_env2_SG"),
@@ -58,18 +58,18 @@ func TestAccMaskingView_UpdateMaskingView(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: ProviderConfig + masking_view_create_with_host_test,
+				Config: ProviderConfig + maskingViewCreateWithHostTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "terraform_MV_accTest_host"),
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "Tao_k8s_env2_SG"),
 				),
 			},
 			{
-				Config:      ProviderConfig + masking_view_update_failed_test,
+				Config:      ProviderConfig + maskingViewUpdateFailedTest,
 				ExpectError: regexp.MustCompile(`.*maskingView's host, hostGroup, portGroup or storageGroup cannot be update after creation*.`),
 			},
 			{
-				Config: ProviderConfig + masking_view_update_rename_test,
+				Config: ProviderConfig + maskingViewUpdateRenameTest,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "terraform_MV_accTest_host_rename"),
 					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "Tao_k8s_env2_SG"),
@@ -86,10 +86,10 @@ func TestAccMaskingView_ImportSuccess(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: ProviderConfig + masking_view_create_with_host_test,
+				Config: ProviderConfig + maskingViewCreateWithHostTest,
 			},
 			{
-				Config:            ProviderConfig + masking_view_create_with_host_test,
+				Config:            ProviderConfig + maskingViewCreateWithHostTest,
 				ResourceName:      "powermax_maskingview.masking_view_create_with_host_test",
 				ImportState:       true,
 				ExpectError:       nil,
@@ -111,7 +111,7 @@ func TestAccMaskingView_ImportFailure(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:        ProviderConfig + masking_view_create_with_host_test,
+				Config:        ProviderConfig + maskingViewCreateWithHostTest,
 				ResourceName:  "powermax_maskingview.masking_view_create_with_host_test",
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`.*Error reading masking view*`),
@@ -121,7 +121,7 @@ func TestAccMaskingView_ImportFailure(t *testing.T) {
 	})
 }
 
-var masking_view_create_with_host_test = `
+var maskingViewCreateWithHostTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
 	name = "terraform_MV_accTest_host"
 	storage_group_id = "Tao_k8s_env2_SG"
@@ -131,7 +131,7 @@ resource "powermax_maskingview" "masking_view_create_with_host_test" {
   }
 `
 
-var masking_view_create_failed_test = `
+var maskingViewCreateFailedTest = `
 resource "powermax_maskingview" "masking_view_create_failed_test" {
 	name = "terraform_MV_accTest_host"
 	storage_group_id = "Tao_k8s_env2_SG"
@@ -141,7 +141,7 @@ resource "powermax_maskingview" "masking_view_create_failed_test" {
   }
 `
 
-var masking_view_create_with_host_group_test = `
+var maskingViewCreateWithHostGroupTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_group_test" {
 	name = "terraform_MV_accTest_hostGroup"
 	storage_group_id = "Tao_k8s_env2_SG"
@@ -151,7 +151,7 @@ resource "powermax_maskingview" "masking_view_create_with_host_group_test" {
   }
 `
 
-var masking_view_update_rename_test = `
+var maskingViewUpdateRenameTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
 	name = "terraform_MV_accTest_host_rename"
 	storage_group_id = "Tao_k8s_env2_SG"
@@ -161,7 +161,7 @@ resource "powermax_maskingview" "masking_view_create_with_host_test" {
   }
 `
 
-var masking_view_update_failed_test = `
+var maskingViewUpdateFailedTest = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
 	name = "terraform_MV_accTest_host_rename"
 	storage_group_id = "Tao_k8s_env2_SG"

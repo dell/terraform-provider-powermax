@@ -1,7 +1,8 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package helper
 
-// General Reusable Functions.
+// IsParamUpdated General Reusable Functions.
 func IsParamUpdated(updatedParams []string, paramName string) bool {
 	isParamUpdate := false
 	for _, updatedParam := range updatedParams {
@@ -13,6 +14,7 @@ func IsParamUpdated(updatedParams []string, paramName string) bool {
 	return isParamUpdate
 }
 
+// CompareStringSlice Compare string slices. return true if the length and elements are same
 func CompareStringSlice(planInitiators, stateInitiators []string) bool {
 	if len(planInitiators) != len(stateInitiators) {
 		return false

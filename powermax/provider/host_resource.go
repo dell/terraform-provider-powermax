@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -32,6 +33,7 @@ var _ resource.Resource = &Host{}
 var _ resource.ResourceWithImportState = &Host{}
 var _ resource.ResourceWithConfigure = &Host{}
 
+// NewHost creates a new Host resource.
 func NewHost() resource.Resource {
 	return &Host{}
 }
@@ -41,10 +43,12 @@ type Host struct {
 	client *client.Client
 }
 
+// Metadata returns the metadata for the resource
 func (r *Host) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_host"
 }
 
+// Schema returns the schema for the resource
 func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	hostFlagNestedAttr := map[string]schema.Attribute{
 		"override": schema.BoolAttribute{
@@ -236,6 +240,7 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 	}
 }
 
+// Configure configure client for host resource
 func (r *Host) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -256,6 +261,7 @@ func (r *Host) Configure(ctx context.Context, req resource.ConfigureRequest, res
 	r.client = pmaxClient
 }
 
+// Create creates a host and refresh state
 func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Info(ctx, "Creating Host...")
 	var planHost models.HostModel
@@ -341,7 +347,7 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 
 }
 
-// Delete HostGroup.
+// Delete Host.
 func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting Host")
 	var hostState models.HostModel
@@ -365,6 +371,8 @@ func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *res
 
 	tflog.Info(ctx, "Delete host complete")
 }
+
+// Update Host.
 func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	tflog.Info(ctx, "updating host")
 	var plan models.HostModel
@@ -444,6 +452,7 @@ func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *res
 	tflog.Info(ctx, "update host completed")
 }
 
+// Read Host.
 func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Info(ctx, "Reading Host...")
 	var hostState models.HostModel
@@ -481,6 +490,7 @@ func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resourc
 
 }
 
+// ImportState imports the state of the resource from the req.
 func (r *Host) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Info(ctx, "importing host state")
 	var hostState models.HostModel

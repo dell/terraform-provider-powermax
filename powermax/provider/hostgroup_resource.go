@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -30,18 +31,22 @@ var (
 	_ resource.ResourceWithImportState = &HostGroup{}
 )
 
+// NewHostGroup is a helper function to simplify the provider implementation.
 func NewHostGroup() resource.Resource {
 	return &HostGroup{}
 }
 
+// HostGroup is the resource implementation.
 type HostGroup struct {
 	client *client.Client
 }
 
+// Metadata returns the metadata for the resource
 func (r *HostGroup) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_hostgroup"
 }
 
+// Schema returns the schema for the resource
 func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 
 	hostFlagNestedAttr := map[string]schema.Attribute{
@@ -209,6 +214,7 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 	}
 }
 
+// Configure the HostGroup resource
 func (r *HostGroup) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if provider is not config
 	if req.ProviderData == nil {
@@ -227,6 +233,7 @@ func (r *HostGroup) Configure(ctx context.Context, req resource.ConfigureRequest
 	r.client = client
 }
 
+// Create a HostGroup resource
 func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	tflog.Info(ctx, "Create Host Group")
 	var plan models.HostGroupModel
@@ -317,6 +324,7 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 	}
 }
 
+// Read a HostGroup resource
 func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	tflog.Info(ctx, "Reading Host Group")
 	var state models.HostGroupModel
@@ -326,20 +334,20 @@ func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		return
 	}
 
-	hostGroupId := state.ID.ValueString()
+	hostGroupID := state.ID.ValueString()
 	tflog.Debug(ctx, "fetching hostgroup by ID", map[string]interface{}{
 		"symmetricxId": r.client.SymmetrixID,
-		"hostGroupId":  hostGroupId,
+		"hostGroupID":  hostGroupID,
 	})
 
-	hgResponse, err := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostGroupId)
+	hgResponse, err := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostGroupID)
 	tflog.Debug(ctx, "Get HostGroup By ID response", map[string]interface{}{
 		"HostGroup Response": hgResponse,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading hostGroup",
-			constants.ReadHostGroupDetailsErrorMsg+hostGroupId+" with error: "+err.Error(),
+			constants.ReadHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
 		)
 		return
 	}
@@ -420,6 +428,7 @@ func (r *HostGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 	tflog.Info(ctx, "Update Hostgroup Completed")
 }
 
+// Delete a HostGroup resource
 func (r *HostGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	tflog.Info(ctx, "deleting hostgroup")
 	var hostGroupState models.HostGroupModel
@@ -444,6 +453,7 @@ func (r *HostGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 	tflog.Info(ctx, "delete hostgroup complete")
 }
 
+// ImportState method used to import hostgroup state
 func (r *HostGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Info(ctx, "Importing Hostgroup State")
 	var hostGroupState models.HostGroupModel

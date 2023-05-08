@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
@@ -49,6 +50,7 @@ type HostsDataSourceModel struct {
 	HostFilter *HostFilterType `tfsdk:"filter"`
 }
 
+// HostFilterType describes the filter data model.
 type HostFilterType struct {
 	Names []types.String `tfsdk:"names"`
 }

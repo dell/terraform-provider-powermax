@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -24,14 +25,17 @@ func NewHostDataSource() datasource.DataSource {
 	return &HostDataSource{}
 }
 
+// HostDataSource configures client for host data source.
 type HostDataSource struct {
 	client *client.Client
 }
 
+// Metadata returns the metadata for host data source.
 func (d *HostDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_host"
 }
 
+// Schema returns the schema for host data source.
 func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	hostFlagNestedAttr := map[string]schema.Attribute{
 		"override": schema.BoolAttribute{
@@ -208,6 +212,7 @@ func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 	}
 }
 
+// Configure configure client
 func (d *HostDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
@@ -226,6 +231,7 @@ func (d *HostDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 	d.client = pmaxclient
 }
 
+// Read host data source
 func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var plan models.HostsDataSourceModel
 	var state models.HostsDataSourceModel
@@ -240,12 +246,12 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	// Get host IDs from config or query all if not specified
 	if plan.HostFilter == nil || len(plan.HostFilter.Names) == 0 {
 		// Read all the hosts
-		hostIdList, err := d.client.PmaxClient.GetHostList(ctx, d.client.SymmetrixID)
+		hostIDList, err := d.client.PmaxClient.GetHostList(ctx, d.client.SymmetrixID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error reading host ids", err.Error())
 			return
 		}
-		hostIds = hostIdList.HostIDs
+		hostIds = hostIDList.HostIDs
 	} else {
 		// get ids from filter and assign to hostIds
 		for _, ids := range plan.HostFilter.Names {

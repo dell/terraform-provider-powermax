@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -28,6 +29,7 @@ var lockMutex sync.Mutex
 // defaultMaxPowerMaxConnections is the number of workers that can query powermax at a time.
 const defaultMaxPowerMaxConnections = 10
 
+// NewMaskingViewDataSource is a helper function to simplify the provider implementation.
 func NewMaskingViewDataSource() datasource.DataSource {
 	return &maskingViewDataSource{}
 }

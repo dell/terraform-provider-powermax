@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -131,7 +132,7 @@ func (d *hostGroupDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 	}
 }
 
-func (r *hostGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *hostGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if provider is not config
 	if req.ProviderData == nil {
 		return
@@ -146,7 +147,7 @@ func (r *hostGroupDataSource) Configure(ctx context.Context, req datasource.Conf
 		)
 		return
 	}
-	r.client = client
+	d.client = client
 }
 
 // Read.
@@ -162,7 +163,7 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	// Apply Filter hostgroup filter
-	hostgroupIds, err := helper.FilterHostGroupIds(ctx, &state, &plan, *d.client)
+	hostGroupIDs, err := helper.FilterHostGroupIds(ctx, &state, &plan, *d.client)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -173,12 +174,12 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	// Get details of each of the hostgroups
-	for _, hostGroupId := range hostgroupIds {
-		tflog.Debug(ctx, hostGroupId)
-		groupDetail, err := d.client.PmaxClient.GetHostGroupByID(ctx, d.client.SymmetrixID, hostGroupId)
+	for _, hostGroupID := range hostGroupIDs {
+		tflog.Debug(ctx, hostGroupID)
+		groupDetail, err := d.client.PmaxClient.GetHostGroupByID(ctx, d.client.SymmetrixID, hostGroupID)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error getting the details of host group: "+hostGroupId,
+				"Error getting the details of host group: "+hostGroupID,
 				constants.ReadHostGroupListDetailsErrorMsg+"with error: "+err.Error(),
 			)
 			return

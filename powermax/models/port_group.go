@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,7 +30,7 @@ type PortKey struct {
 	PortID     types.String `tfsdk:"port_id"`
 }
 
-// PortgroupDataSourceModel describes the data source data model.
+// PortgroupsDataSourceModel describes the data source data model.
 type PortgroupsDataSourceModel struct {
 	ID         types.String `tfsdk:"id"`
 	PortGroups []PortGroup  `tfsdk:"port_groups"`

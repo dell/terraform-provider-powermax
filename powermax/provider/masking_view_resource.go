@@ -117,11 +117,11 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	var hostOrHostGroupId string
+	var hostOrHostGroupID string
 	if plan.HostID.ValueString() != "" && plan.HostGroupID.ValueString() == "" {
-		hostOrHostGroupId = plan.HostID.ValueString()
+		hostOrHostGroupID = plan.HostID.ValueString()
 	} else if plan.HostID.ValueString() == "" && plan.HostGroupID.ValueString() != "" {
-		hostOrHostGroupId = plan.HostGroupID.ValueString()
+		hostOrHostGroupID = plan.HostGroupID.ValueString()
 	} else {
 		resp.Diagnostics.AddError(
 			"The host_id or host_group_id only needs to be specified one.",
@@ -131,7 +131,7 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to create MaskingView - %s", plan.Name.ValueString()))
 
-	maskingView, err := r.client.PmaxClient.CreateMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString(), plan.StorageGroupID.ValueString(), hostOrHostGroupId, false, plan.PortGroupID.ValueString())
+	maskingView, err := r.client.PmaxClient.CreateMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString(), plan.StorageGroupID.ValueString(), hostOrHostGroupID, false, plan.PortGroupID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create masking view, got error: %s", err.Error()))
 		return

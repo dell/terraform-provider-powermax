@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package helper
 
 import (
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// UpdateHostState update host state
 func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostResponse *pmaxTypes.Host) {
 	hostState.HostID = types.StringValue(hostResponse.HostID)
 	hostState.Name = types.StringValue(hostResponse.HostID)
@@ -50,6 +52,7 @@ func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostR
 
 }
 
+// UpdateHost update host and return updated parameters, failed updated parameters and errors
 func UpdateHost(ctx context.Context, client client.Client, plan, state models.HostModel) ([]string, []string, []string) {
 	updatedParameters := []string{}
 	updateFailedParameters := []string{}

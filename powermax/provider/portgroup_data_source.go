@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -22,14 +23,17 @@ type PortgroupDataSource struct {
 	client *client.Client
 }
 
+// NewPortgroupDataSource is a helper function to simplify the provider implementation.
 func NewPortgroupDataSource() datasource.DataSource {
 	return &PortgroupDataSource{}
 }
 
+// Metadata returns the metadata for the data source.
 func (d *PortgroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_portgroups"
 }
 
+// Schema returns the schema for the data source.
 func (d *PortgroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
@@ -117,6 +121,7 @@ func (d *PortgroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 	}
 }
 
+// Configure configures the data source.
 func (d *PortgroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {

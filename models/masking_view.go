@@ -2,7 +2,7 @@ package models
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// MaskingView  holds maskingview schema attribute details
+// MaskingView  holds maskingview schema attribute details.
 type MaskingView struct {
 	// ID - defines maskingview ID
 	ID types.String `tfsdk:"id"`

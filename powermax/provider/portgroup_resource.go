@@ -24,6 +24,7 @@ var (
 	_ resource.ResourceWithImportState = &PortGroup{}
 )
 
+// NewPortGroup is a helper function to simplify the provider implementation.
 func NewPortGroup() resource.Resource {
 	return &PortGroup{}
 }
@@ -33,7 +34,7 @@ type PortGroup struct {
 	client *client.Client
 }
 
-// PortGroup Resource schema.
+// Schema Resource schema.
 func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
@@ -95,10 +96,12 @@ func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 	}
 }
 
+// Metadata Resource metadata.
 func (r *PortGroup) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_portgroup"
 }
 
+// Configure PortGroup.
 func (r *PortGroup) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -285,7 +288,7 @@ func (r *PortGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 	tflog.Info(ctx, "delete portgroup completed")
 }
 
-// Import resource.
+// ImportState import resource.
 func (r *PortGroup) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Info(ctx, "importing port group state")
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)

@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package provider
 
 import (
@@ -18,6 +19,7 @@ import (
 var _ datasource.DataSource = &StorageGroupDataSource{}
 var _ datasource.DataSourceWithConfigure = &StorageGroupDataSource{}
 
+// NewStorageGroupDataSource is a helper function to simplify the provider implementation.
 func NewStorageGroupDataSource() datasource.DataSource {
 	return &StorageGroupDataSource{}
 }
@@ -33,10 +35,12 @@ type StorageGroupDataSourceModel struct {
 	StorageGroups []models.StorageGroupResourceModel `tfsdk:"storage_groups"`
 }
 
+// Metadata returns the metadata for the data source.
 func (d *StorageGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_storagegroup"
 }
 
+// Schema returns the schema for the data source.
 func (d *StorageGroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
@@ -211,6 +215,7 @@ func (d *StorageGroupDataSource) Schema(ctx context.Context, req datasource.Sche
 	}
 }
 
+// Configure the data source based on the configuration provided
 func (d *StorageGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
@@ -243,7 +248,7 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	var sgIds []string
+	var sgIDs []string
 	// Get storage group IDs from config or query all if not specified
 	if len(data.StorageGroups) == 0 {
 		storageGroupIDList, err := d.client.PmaxClient.GetStorageGroupIDList(ctx, d.client.SymmetrixID, "", false)
@@ -251,17 +256,17 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 			resp.Diagnostics.AddError("Error reading storage group ids", err.Error())
 			return
 		}
-		sgIds = storageGroupIDList.StorageGroupIDs
+		sgIDs = storageGroupIDList.StorageGroupIDs
 	} else {
-		// get ids from storageGroups and assign to sgIds
+		// get ids from storageGroups and assign to sgIDs
 		for _, sg := range data.StorageGroups {
-			sgIds = append(sgIds, sg.StorageGroupID.ValueString())
+			sgIDs = append(sgIDs, sg.StorageGroupID.ValueString())
 		}
 	}
 
-	// iterate sgIds and GetStorageGroup with each id
-	for _, sgId := range sgIds {
-		storageGroup, err := d.client.PmaxClient.GetStorageGroup(ctx, d.client.SymmetrixID, sgId)
+	// iterate sgIDs and GetStorageGroup with each id
+	for _, sgID := range sgIDs {
+		storageGroup, err := d.client.PmaxClient.GetStorageGroup(ctx, d.client.SymmetrixID, sgID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error reading storage group with id", err.Error())
 			continue
@@ -278,7 +283,7 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 		}
 		state.StorageGroups = append(state.StorageGroups, sg)
 	}
-	state.ID = types.StringValue(fmt.Sprintf("%s-storage-groups", sgIds))
+	state.ID = types.StringValue(fmt.Sprintf("%s-storage-groups", sgIDs))
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package constants
 
 const (
@@ -50,7 +51,7 @@ const (
 	// ReadHostGroupDetailsErrorMsg specifies error details occurred while reading hostgroup.
 	ReadHostGroupDetailsErrorMsg = "Could not read hostgroup "
 
-	// ReadHostGroupDetailsErrorMsg specifies error details occurred while reading hostgroup.
+	// ReadHostGroupListDetailsErrorMsg specifies error details occurred while reading hostgroup.
 	ReadHostGroupListDetailsErrorMsg = "Could not read hostgroups "
 
 	// UpdateHostGroupDetailsErrorMsg specifies error details occurred while updating hostgroup.

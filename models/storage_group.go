@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// StorageGroup holds storage group schema attribute details
+// StorageGroup holds storage group schema attribute details.
 type StorageGroup struct {
 	// ID - defines storage group ID
 	ID types.String `tfsdk:"id"`
@@ -60,13 +60,13 @@ type StorageGroup struct {
 	HostIOLimits types.Map `tfsdk:"host_io_limits"`
 }
 
-// SnapshotPolicy holds snapshot policy details associated with storage group
+// SnapshotPolicy holds snapshot policy details associated with storage group.
 type SnapshotPolicy struct {
 	PolicyName types.String `tfsdk:"policy_name"`
 	IsActive   types.Bool   `tfsdk:"is_active"`
 }
 
-// StorageGroupWithData is a wrapper storageGroupModel which has the storageGroup returned by powermax along with VolumeIDs and snapshot policies associated with this storageGroup
+// StorageGroupWithData is a wrapper storageGroupModel which has the storageGroup returned by powermax along with VolumeIDs and snapshot policies associated with this storageGroup.
 type StorageGroupWithData struct {
 	PmaxStorageGroup *pmaxTypes.StorageGroup
 	VolumeIDs        []string

@@ -1,4 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
+
 package helper
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
+// UpdateHostGroupState update host group state
 func UpdateHostGroupState(hostGroupState *models.HostGroupModel, hostGroupResponse *pmaxTypes.HostGroup) {
 	hostGroupState.ID = types.StringValue(hostGroupResponse.HostGroupID)
 	hostGroupState.Name = types.StringValue(hostGroupResponse.HostGroupID)
@@ -111,6 +113,7 @@ func saveHgListAttribute(hostGroupState *models.HostGroupModel, listAttribute []
 	}
 }
 
+// UpdateHostGroup update host group and return updated parameters, failed updated parameters and errors
 func UpdateHostGroup(ctx context.Context, client client.Client, plan, state models.HostGroupModel) ([]string, []string, []string) {
 	updatedParameters := []string{}
 	updateFailedParameters := []string{}
@@ -199,7 +202,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-// Based on state either use the filtered list of host groups or get all host groups.
+// FilterHostGroupIds Based on state either use the filtered list of host groups or get all host groups.
 func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceModel, plan *models.HostGroupDataSourceModel, client client.Client) ([]string, error) {
 	var hostgroupIds []string
 	if plan.HostGroupFilter == nil || len(plan.HostGroupFilter.IDs) == 0 {
@@ -216,9 +219,10 @@ func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceMo
 	return hostgroupIds, nil
 }
 
+// HostGroupDetailMapper convert pmaxTypes.HostGroup to models.HostGroupDetailModal
 func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal, diag.Diagnostics) {
 	model := models.HostGroupDetailModal{
-		HostGroupId:       types.StringValue(hg.HostGroupID),
+		HostGroupID:       types.StringValue(hg.HostGroupID),
 		Name:              types.StringValue(hg.HostGroupID),
 		ConsistentLun:     types.BoolValue(hg.ConsistentLun),
 		PortFlagsOverride: types.BoolValue(hg.PortFlagsOverride),
@@ -233,7 +237,7 @@ func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal
 		var intiators types.List
 
 		tempHost := models.HostGroupHostDetailModal{
-			HostId: types.StringValue(host.HostID),
+			HostID: types.StringValue(host.HostID),
 		}
 		if len(host.Initiators) > 0 {
 			var attributeList []attr.Value
