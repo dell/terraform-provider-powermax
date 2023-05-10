@@ -158,13 +158,3 @@ resource "powermax_maskingview" "masking_view_create_with_host_test" {
 	port_group_id = "esa_vmax_portgroup572"
   }
 `
-
-var maskingViewUpdateFailedTest = `
-resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "terraform_MV_accTest_host_rename"
-	storage_group_id = "Tao_k8s_env2_SG"
-	host_id = ""
-	host_group_id = "Tao_k8s_env2_host_group"
-	port_group_id = "Tao_k8s_env2_PG"
-  }
-`
