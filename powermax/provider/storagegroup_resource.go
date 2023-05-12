@@ -41,6 +41,7 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: `name`, `srp`, `enable_compression`, `service_level`, `host_io_limits`, `volume_ids`, `snapshot_policies`.",
+		Description:         "Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: `name`, `srp`, `enable_compression`, `service_level`, `host_io_limits`, `volume_ids`, `snapshot_policies`.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

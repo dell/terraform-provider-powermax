@@ -34,6 +34,7 @@ func (d *PortgroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Data source for reading PortGroups in PowerMax array.",
+		Description:         "Data source for reading PortGroups in PowerMax array.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Identifier",

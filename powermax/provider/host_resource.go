@@ -78,6 +78,7 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Resource for managing Host in PowerMax array.",
+		Description:         "Resource for managing Host in PowerMax array.",
 
 		Attributes: map[string]schema.Attribute{
 

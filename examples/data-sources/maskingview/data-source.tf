@@ -1,6 +1,6 @@
 # List a specific maskingView
 data "powermax_maskingview" "maskingViewFilter" {
-   filter {
+  filter {
     names = ["terraform_tao_testMV_rename", "Yulan_SG_MV"]
   }
 }

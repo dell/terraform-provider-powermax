@@ -45,7 +45,9 @@ func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 	}
 
 	resp.Schema = schema.Schema{
-		Description: "Host DataSource",
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Data source for reading Hosts in PowerMax array.",
+		Description:         "Data source for reading Hosts in PowerMax array.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:         "Unique identifier of the host instance.",
