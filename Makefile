@@ -1,9 +1,5 @@
-
 lint:
-	echo "Running staticcheck"
-	go install honnef.co/go/tools/cmd/staticcheck@latest
-	staticcheck ./...
-	golint ./...
+	golangci-lint run --fix
 
 vet:
 	echo "running go vet"
@@ -14,16 +10,11 @@ fmt:
 
 code-check: lint vet fmt
 
-unit_test:
-	echo "Running unit tests"
-	go test -v ./client -cover -timeout 10m 
+# Run acceptance tests
+.PHONY: testacc
+testacc:
+	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 120m
 
-integration_test:
-	echo "Running integration test"
-	go test -v ./powermax -cover -timeout 60m
-
-test: unit_test integration_test
-	
 generate:
 	go generate ./...
 
@@ -37,5 +28,5 @@ build: download
 sweep:
 	go test -v ./powermax -timeout 5h -sweep=all
 
-all: download code-check test compile
+all: download code-check testacc
 	

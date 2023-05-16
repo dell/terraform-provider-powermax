@@ -1,14 +1,21 @@
 <!--
 Copyright (c) 2022 Dell Inc., or its subsidiaries. All Rights Reserved.
 
-Licensed under the MPL, Version 2.0 (the "License");
+Licensed under the Mozilla Public License Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.mozilla.org/en-US/MPL/2.0/
+    http://mozilla.org/MPL/2.0/
+
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 -->
 
-# Committer Guidelines
+# Committer guidelines
 
 These are the guidelines for people with commit privileges on the GitHub repository. Committers act as members of the Core Team and not necessarily employees of Dell.
 
@@ -16,7 +23,7 @@ These guidelines apply to everyone and as Committers you have been given access 
 
 If these privileges are abused in any way and the quality of the project is compromised, our trust will be diminished and you may be asked to not commit or lose these privileges all together.
 
-## General Rules
+## General rules
 
 ### Don't
 
@@ -30,12 +37,14 @@ If these privileges are abused in any way and the quality of the project is comp
 
 ### Do
 
-* Always follow the defined coding guideline
+* Keep it simple.
+* Good work, your best every time.
 * Keep the design of your software clean and maintainable.
 * Squash your commits, avoid merges.
+* Be active. Committers that are not active may have their permissions suspended.
 * Write tests for all your deliverables.
 * Automate everything.
-* Maintain a high code coverage, equal to or greater than 90%.
+* Maintain a high code coverage.
 * Keep an open communication with other Committers.
 * Ask questions.
 * Document your contributions and remember to keep it simple.

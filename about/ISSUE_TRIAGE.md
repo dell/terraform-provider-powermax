@@ -41,10 +41,10 @@ The following section describes the various issue templates and the expected con
 
 Should explain what happened, what was expected and how to reproduce it together with any additional information that may help giving a complete picture of what happened such as screenshots, output and any environment related information that's applicable and/or maybe related to the reported problem:
 
- - OS/Version: [e.g. RHEL 8.5]
- - go Version [e.g. 1.19]
- - Terraform Version [e.g. 1.3.2]
- - Any other additional information...
+- OS/Version: [e.g. RHEL 8.5]
+- go Version [e.g. 1.19]
+- Terraform Version [e.g. 1.3.2]
+- Any other additional information...
 
 #### Feature requests
 
@@ -132,10 +132,10 @@ In case there is an uncertainty around the prioritization of an issue, please as
 
 1. If an issue has been categorized and any of the following criteria apply, the issue should be labeled as critical and must be actively worked on as someone's top priority right now.
 
-   - Results in any data loss
-   - Critical security or performance issues
-   - Problem that makes a feature unusable
-   - Multiple users experience a severe problem affecting their business, users etc.
+    - Results in any data loss
+    - Critical security or performance issues
+    - Problem that makes a feature unusable
+    - Multiple users experience a severe problem affecting their business, users etc.
 
 2. Label the issue `priority/critical`.
 3. Escalate the problem to the maintainers.
@@ -162,8 +162,8 @@ Depending on the issue and/or priority, it's always a good idea to consider sign
 In many cases the issue author or community as a whole is more suitable to contribute changes since they're experts in their domain. It's also quite common that someone has tried to get something to work using the documentation without success and made an effort to get it to work and/or reached out to the community to get the missing information.
 
 1. Kindly and politely add a comment to signal to users subscribed to updates of the issue.
-   - Explain that the issue would be nice to get resolved, but it isn't prioritized to work on by maintainers for an unforeseen future.
-   - If possible or applicable, try to help contributors getting starting by adding pointers and references to what code/files need to be changed and/or ideas of a good way to solve/implement the issue.
+    - Explain that the issue would be nice to get resolved, but it isn't prioritized to work on by maintainers for an unforeseen future.
+    - If possible or applicable, try to help contributors getting starting by adding pointers and references to what code/files need to be changed and/or ideas of a good way to solve/implement the issue.
 2. Label the issue with `help wanted`.
 3. If applicable, label the issue with `beginner friendly` to denote that the issue is suitable for a beginner to work on.
 

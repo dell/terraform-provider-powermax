@@ -55,15 +55,15 @@ By making a contribution to this project, I certify that:
 
 ## Submitting issues
 
-All issues related to the associated terraform provider should be submitted [here](https://github.com/dell/terraform-provider-powermax/issues). Issues will be triaged and labels will be used to indicate the type of issue. This section outlines the types of issues that can be submitted.  
+All issues related to the associated terraform provider should be submitted [here][issues]. Issues will be triaged and labels will be used to indicate the type of issue. This section outlines the types of issues that can be submitted.
 
 ### Report bugs
 
 We aim to track and document everything related to the repository via the Issues page. The code and documentation are released with no warranties or SLAs and are intended to be supported through a community driven process.
 
-Before submitting a new issue, make sure someone hasn't already reported the problem. Look through the [existing issues](https://github.com/dell/terraform-provider-powermax/issues) for similar issues.
+Before submitting a new issue, make sure someone hasn't already reported the problem. Look through the [existing issues][issues] for similar issues.
 
-Report a bug by submitting a [bug report](https://github.com/dell/terraform-provider-powermax/issues/new?labels=type%2Fbug%2C+needs-triage&template=bug_report.md&title=%5BBUG%5D%3A). Make sure that you provide as much information as possible on how to reproduce the bug.
+Report a bug by submitting a [bug report][issues]. Make sure that you provide as much information as possible on how to reproduce the bug.
 
 When opening a Bug please include the following information to help with debugging:
 
@@ -76,11 +76,11 @@ An Issue __must__ be created before submitting any pull request. Any pull reques
 
 ### Feature request
 
-If you have an idea of how to improve this project, submit a [feature request](https://github.com/dell/terraform-provider-powermax/issues/new?labels=type%2Ffeature-request%2C+needs-triage&template=feature_request.md&title=%5BFEATURE%5D%3A).
+If you have an idea of how to improve this project, submit a [feature request][issues]
 
 ### Answering questions
 
-If you have a question and you can't find the answer in the documentation or issues, the next step is to submit a [question.](https://github.com/dell/terraform-provider-powermax/issues/new?labels=type%2Fquestion&template=ask-a-question.md&title=%5BQUESTION%5D%3A)
+If you have a question and you can't find the answer in the documentation or issues, the next step is to submit a [question.][issues]
 
 We'd love your help answering questions being asked by other CSM users.
 
@@ -101,8 +101,8 @@ Read more about the ways you can [Triage issues](ISSUE_TRIAGE.md).
 
 Unsure where to begin contributing? Start by browsing issues labeled `beginner friendly` or `help wanted`.
 
-* [Beginner-friendly](https://github.com/dell/terraform-provider-powermax/issues?q=is%3Aopen+is%3Aissue+label%3A%22beginner+friendly%22) issues are generally straightforward to complete.
-* [Help wanted](https://github.com/dell/terraform-provider-powermax/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) issues are problems we would like the community to help us with regardless of complexity.
+* [Beginner-friendly][issues] issues are generally straightforward to complete.
+* [Help wanted][issues] issues are problems we would like the community to help us with regardless of complexity.
 
 When you're ready to contribute, it's time to create a pull request.
 
@@ -128,11 +128,8 @@ TF_ACC = 1
 ```
 
 ## Debugging
-Please refer the terraform [docs](https://developer.hashicorp.com/terraform/plugin/framework/debugging).
+Please refer to [Developer Guide](DEVELOPER.md) and the terraform [docs](https://developer.hashicorp.com/terraform/plugin/framework/debugging).
 
-## Branching
-
-* [Branching Strategy](BRANCHING.md)
 
 ## Signing your commits
 
@@ -249,3 +246,5 @@ A recommended approach is to ensure your editor supports running of goimports au
 ### TODOs in the code
 
 We don't like TODOs in the code or documentation. It is really best if you sort out all issues you can see with the changes before we check the changes in.
+
+[issues]: https://eos2git.cec.lab.emc.com/Jason-jin1/terraform-provider-powermax-framework/issues

@@ -1,81 +1,49 @@
 package client
 
 import (
-	"context"
-	"fmt"
 	"testing"
-
-	pmax "github.com/dell/gopowermax/v2"
-	"github.com/stretchr/testify/assert"
 )
 
-var endpoint string = "powermax_endpoint"
-var username string = "username"
-var password string = "password"
-var serialNumber string = "123"
-var pmaxVersion string = "100"
-var insecure bool = true
-var pmaxClient = &pmax.Client{}
-var oldNewClientWithArgs = newClientWithArgs
-var oldAuthenticate = authenticate
-var oldWithSymmetrixID = withSymmetrixID
-
-func init() {
-	defer func() {
-		newClientWithArgs = oldNewClientWithArgs
-		authenticate = oldAuthenticate
-		withSymmetrixID = oldWithSymmetrixID
-	}()
-}
-
 func TestNewClient(t *testing.T) {
-	newClientWithArgs = func(endpoint string,
-		applicationName string,
-		insecure,
-		useCerts bool) (client pmax.Pmax, err error) {
-		return pmaxClient, nil
-	}
-	authenticate = func(pmax pmax.Pmax, ctx context.Context, configConnect *pmax.ConfigConnect) error {
-		return nil
-	}
-	withSymmetrixID = func(pmaxIn pmax.Pmax, symmetrixID string) pmax.Pmax {
-		return pmaxClient
+	// Test case 1: Valid arguments
+	endpoint := "https://10.225.104.36:8443/"
+	username := "smc"
+	password := "smc"
+	serialNumber := "000120000605"
+	pmaxVersion := "100"
+	insecure := true
+
+	client, err := NewClient(endpoint, username, password, serialNumber, pmaxVersion, insecure)
+
+	if err != nil {
+		t.Errorf("Error creating new client: %v", err)
 	}
 
-	actualClient, actualErr := NewClient(endpoint, username, password, serialNumber, pmaxVersion, insecure)
-	assert.Nil(t, actualErr)
-	assert.NotNil(t, actualClient)
-	assert.Equal(t, pmaxClient, actualClient.PmaxClient)
-	assert.Equal(t, serialNumber, actualClient.SymmetrixID)
+	if client.PmaxClient == nil {
+		t.Errorf("Error creating new client: PmaxClient is nil")
+	}
+
+	if client.SymmetrixID != serialNumber {
+		t.Errorf("Error creating new client: SymmetrixID does not match")
+	}
 }
 
-func TestNewClientWithCertError(t *testing.T) {
-	newClientWithArgs = func(endpoint string,
-		applicationName string,
-		insecure,
-		useCerts bool) (client pmax.Pmax, err error) {
-		return nil, fmt.Errorf("invalid certificate")
-	}
-	actualClient, actualErr := NewClient(endpoint, username, password, serialNumber, pmaxVersion, insecure)
-	assert.Nil(t, actualClient)
-	assert.NotNil(t, actualErr)
-	assert.Equal(t, "invalid certificate", actualErr.Error())
-}
+func TestNewClientFail(t *testing.T) {
+	// Test case 2: Invalid arguments
+	endpoint := "https://10.225.104.36:8443/"
+	username := "bad"
+	password := "reallybad"
+	serialNumber := "0123"
+	pmaxVersion := "100"
+	insecure := true
 
-func TestNewClientWithAuthError(t *testing.T) {
+	_, err := NewClient(endpoint, username, password, serialNumber, pmaxVersion, insecure)
 
-	newClientWithArgs = func(endpoint string,
-		applicationName string,
-		insecure,
-		useCerts bool) (client pmax.Pmax, err error) {
-		return pmaxClient, nil
-	}
-	authenticate = func(pmax pmax.Pmax, ctx context.Context, configConnect *pmax.ConfigConnect) error {
-		return fmt.Errorf("authentication failed, invalid username/password")
+	if err != nil {
+		t.Log("Should show error when bad username or password")
+		return
 	}
 
-	actualClient, actualErr := NewClient(endpoint, username, password, serialNumber, pmaxVersion, insecure)
-	assert.Nil(t, actualClient)
-	assert.NotNil(t, actualErr)
-	assert.Equal(t, "authentication failed, invalid username/password", actualErr.Error())
+	t.Errorf("There should be an error here since we gave bad username and password: %v", err)
+
 }

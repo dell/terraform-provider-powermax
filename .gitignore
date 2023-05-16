@@ -4,10 +4,8 @@
 example.tf
 terraform.tfplan
 terraform.tfstate
-demo/
 bin/
 dist/
-out/
 modules-dev/
 /pkg/
 website/.vagrant
@@ -27,6 +25,7 @@ website/node_modules
 *.test
 *.iml
 
+coverage.out
 website/vendor
 
 # Test exclusions
@@ -36,25 +35,6 @@ website/vendor
 # Keep windows files with windows line endings
 *.winfile eol=crlf
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories (remove the comment below to include it)
-vendor/
-# Go workspace file
-go.work
-
-
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-# Test binary, built with `go test -c`
-terraform.txt
-terraform-provider-powermax
-examples/.terraform.lock.hcl
+# node
+node/
+node_modules/ 
