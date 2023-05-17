@@ -146,6 +146,7 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 	resp.Schema = schema.Schema{
 		// Description for Docs
 		MarkdownDescription: "Resource for managing HostGroups for a PowerMax Array",
+		Description:         "Resource for managing HostGroups for a PowerMax Array",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

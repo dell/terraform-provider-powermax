@@ -44,7 +44,10 @@ func (r volumeResource) Metadata(ctx context.Context, req resource.MetadataReque
 
 func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource for managing Volumes in PowerMax array. Updates are supported for the following parameters: 'vol_name', 'mobility_id_enabled', 'size', 'cap_unit'",
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Resource for managing Volumes in PowerMax array. Updates are supported for the following parameters: 'vol_name', 'mobility_id_enabled', 'size', 'cap_unit'",
+		Description:         "Resource for managing Volumes in PowerMax array. Updates are supported for the following parameters: 'vol_name', 'mobility_id_enabled', 'size', 'cap_unit'",
+
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:         "The ID of the volume.",

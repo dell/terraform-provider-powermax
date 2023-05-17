@@ -45,8 +45,9 @@ func (d *maskingViewDataSource) Metadata(ctx context.Context, req datasource.Met
 
 func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Masking View data source",
-		Description:         "Masking View data source",
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Data source for reading Masking Views in PowerMax array.",
+		Description:         "Data source for reading Masking Views in PowerMax array.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

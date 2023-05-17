@@ -39,6 +39,7 @@ func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Resource for managing PortGroups in PowerMax array. Updates are supported for the following parameters: `name`, `ports`.",
+		Description:         "Resource for managing PortGroups in PowerMax array. Updates are supported for the following parameters: `name`, `ports`.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

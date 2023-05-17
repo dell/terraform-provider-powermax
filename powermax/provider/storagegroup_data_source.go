@@ -40,6 +40,7 @@ func (d *StorageGroupDataSource) Schema(ctx context.Context, req datasource.Sche
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Data Source for reading StorageGroups in PowerMax array",
+		Description:         "Data Source for reading StorageGroups in PowerMax array",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

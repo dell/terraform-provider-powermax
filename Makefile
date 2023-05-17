@@ -6,6 +6,7 @@ vet:
 	go vet
 
 fmt:
+	terraform fmt -recursive examples/
 	go fmt
 
 code-check: lint vet fmt
