@@ -1,11 +1,10 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
-package test
+package provider
 
 import (
 	"fmt"
 	"log"
 	"os"
-	"terraform-provider-powermax/powermax/provider"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -18,7 +17,7 @@ import (
 // CLI command executed to create a provider server to which the CLI can
 // reattach.
 var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"powermax": providerserver.NewProtocol6WithError(provider.New("test")()),
+	"powermax": providerserver.NewProtocol6WithError(New("test")()),
 }
 
 var ProviderConfig = ""

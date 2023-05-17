@@ -8,6 +8,7 @@ import (
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
+	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -139,7 +140,7 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 		"plan": plan,
 		"resp": resp,
 	})
-	pmaxPorts := getPmaxPortsFromTfsdkPG(plan)
+	pmaxPorts := helper.GetPmaxPortsFromTfsdkPG(plan)
 
 	tflog.Debug(ctx, "calling create port group on pmax client", map[string]interface{}{
 		"symmetrixID": r.client.SymmetrixID,
@@ -163,7 +164,7 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 		"pgResponse": pgResponse,
 		"pgState":    pgState,
 	})
-	updatePGState(&pgState, &plan, pgResponse)
+	helper.UpdatePGState(&pgState, &plan, pgResponse)
 
 	diags = resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)
@@ -205,7 +206,7 @@ func (r *PortGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		"pgState":    pgState,
 		"pgResponse": pgResponse,
 	})
-	updatePGState(&pgState, &pgState, pgResponse)
+	helper.UpdatePGState(&pgState, &pgState, pgResponse)
 
 	diags = resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)
@@ -231,7 +232,7 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 		return
 	}
 
-	updatedParams, updateFailedParameters, errorMessages := updatePortGroup(ctx, *r.client, pgPlan, pgState)
+	updatedParams, updateFailedParameters, errorMessages := helper.UpdatePortGroup(ctx, *r.client, pgPlan, pgState)
 	if len(errorMessages) > 0 || len(updateFailedParameters) > 0 {
 		errMessage := strings.Join(errorMessages, ",\n")
 		resp.Diagnostics.AddError(
@@ -241,7 +242,7 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 
 	portGroupID := pgState.ID.ValueString()
 
-	if isParamUpdated(updatedParams, "name") {
+	if helper.IsParamUpdated(updatedParams, "name") {
 		portGroupID = pgPlan.Name.ValueString()
 	}
 
@@ -254,7 +255,7 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 		return
 	}
 
-	updatePGState(&pgState, &pgPlan, pgResponse)
+	helper.UpdatePGState(&pgState, &pgPlan, pgResponse)
 
 	diags = resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)
