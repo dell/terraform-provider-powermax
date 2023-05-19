@@ -1,6 +1,6 @@
 resource "powermax_host" "host_1" {
-  id        = "host_1"
-  initiator = ["10000000c9959b8e"]
+  name      = "host_1"
+  initiator = ["10000000c9fc4b7e"]
   host_flags = {
     volume_set_addressing = {
       override = true
