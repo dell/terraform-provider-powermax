@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2022 Dell Inc., or its subsidiaries. All Rights Reserved.
+Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
 
 Licensed under the Mozilla Public License Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,3 +48,9 @@ If these privileges are abused in any way and the quality of the project is comp
 * Keep an open communication with other Committers.
 * Ask questions.
 * Document your contributions and remember to keep it simple.
+
+## People
+
+| Name  |  GitHub ID  |  Nickname  |
+|-------|-------------|------------|
+|       |             |            |

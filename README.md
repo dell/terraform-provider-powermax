@@ -1,71 +1,71 @@
-# Terraform provider for PowerMax
+<!--
+Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.1%20adopted-ff69b4.svg)](https://github.com/dell/terraform-provider-powermax/blob/main/about/CODE_OF_CONDUCT.md)
-[![License](https://img.shields.io/github/license/dell/terraform-provider-powermax)](https://github.com/dell/terraform-provider-powermax/blob/main/LICENSE)
-[![Go version](https://img.shields.io/badge/go-1.19+-blue.svg)](https://go.dev/dl/)
-[![Terraform version](https://img.shields.io/badge/terraform-1.0+-blue.svg)](https://www.terraform.io/downloads)
-[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/dell/terraform-provider-powermax?include_prereleases&label=latest&style=flat-square)](https://github.com/dell/terraform-provider-powermax/releases)
+Licensed under the Mozilla Public License Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-
-The Terraform Provider for PowerMax is a plugin for Terraform that allows the resource management of Powermax Storage arrays. For more details on PowerMax, please refer to PowerMax Official webpage [here][powermax-website].
-
-For general information about Terraform, visit the [official website][tf-website] and the [GitHub project page][tf-github].
-
-[tf-website]: https://terraform.io
-[tf-github]: https://github.com/hashicorp/terraform
-[powermax-website]: https://www.dell.com/en-in/dt/storage/powermax.htm?_gl=1*ji7vok*_ga*MTQ2NjY2MDI1Mi4xNjM0MTgzMzM3*_ga_1234567890*MTY2MDEwNzI4NC4xMC4wLjE2NjAxMDcyODQuMA..*_ga_5932KMEGPX*MTY2MDEwNzI4NC4xMC4wLjE2NjAxMDcyODQuNjA.&_ga=2.187158379.250612555.1660107285-1466660252.1634183337#tab0=0
+    http://mozilla.org/MPL/2.0/
 
 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+# Terraform Provider for Dell Technologies PowerMax
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](about/CODE_OF_CONDUCT.md)
+[![License](https://img.shields.io/badge/License-MPL_2.0-blue.svg)](LICENSE)
+
+The Terraform Provider for Dell Technologies (Dell) PowerMax allows Data Center and IT administrators to use Hashicorp Terraform to automate and orchestrate the provisioning and management of Dell PowerMax storage systems.
+
+The Terraform Provider can be used to manage volumes, storage groups, port groups, hosts, host groups and masking views.
 
 ## Table of Contents
 
-* [Code of Conduct](about/CODE_OF_CONDUCT.md)
-* [Committer Guide](about/COMMITTER_GUIDE.md)
-* [Contributing Guide](about/CONTRIBUTING.md)
-* [Developer](about/DEVELOPER.md)
-* [Maintainers](about/MAINTAINERS.md)
-* [Support](about/SUPPORT.md)
-* [Attribution](about/ATTRIBUTION.md)
-* [Additional Information](about/ADDITIONAL_INFORMATION.md)
+* [Support](#support)
+* [License](#license)
+* [Prerequisites](#prerequisites)
+* [List of DataSources in Terraform Provider for Dell PowerMax](#list-of-datasources-in-terraform-provider-for-dell-powermax)
+* [List of Resources in Terraform Provider for Dell PowerMax](#list-of-resources-in-terraform-provider-for-dell-powermax)
+* [Releasing, Maintenance and Deprecation](#releasing-maintenance-and-deprecation)
 
-## Supported Platforms
-* PowerMax with Unisphere versions 10.0 and above.
-
-## Prerequisites
-* [Terraform >= 1.3.2](https://www.terraform.io)
-* Go >= 1.19
-
-## Installation
-Install Terraform provider for PowerMax from terraform registry by adding the following block
-```terraform
-terraform {
-  required_providers {
-    powermax = { 
-      version = "0.0.1"
-      source = "registry.terraform.io/dell/powermax"
-    }
-  }
-}
-```
-
-
-## Usage
-Once you have installed the PowerMax provider, you can start using it in your Terraform configuration files. The provider has a number of resources that you can use to manage your PowerMax storage arrays.
-
-For example, you can use the `powermax_storagegroup` resource to create a new storage group:
-```terraform
-resource "powermax_storagegroup" "test" {
-  name             = "terraform_sg"
-  srp_id           = "SRP_1"
-  slo              = "Gold"
-  host_io_limit = {
-    host_io_limit_io_sec = "1000"
-    host_io_limit_mb_sec = "1000"
-    dynamic_distribution  = "Never"
-  }
-}
-```
-For more resources, please refer to [examples](examples/main.tf)
+## Support
+For any Terraform Provider for Dell PowerMax issues, questions or feedback, please follow our [support process](https://github.com/dell/dell-terraform-providers/blob/main/docs/SUPPORT.md)
 
 ## License
-The Terraform provider for PowerMax is open-source software released under the [MPL-2.0 license](https://www.mozilla.org/en-US/MPL/2.0/).
+The Terraform Provider for Dell PowerMax is released and licensed under the MPL-2.0 license. See [LICENSE](LICENSE) for the full terms.
+
+## Prerequisites
+
+| **Terraform Provider** | **PowerMax Unisphere Version** | **OS** | **Terraform** | **Golang** |
+|---------------------|-----------------------|-------|--------------------|--------------------------|
+| v1.0.0 | 10.0 | ubuntu22.04 <br> rhel8.x <br> rhel7.x | 1.3.2 | 1.19.x
+
+## List of DataSources in Terraform Provider for Dell PowerMax
+  * [Volume](docs/data-sources/volume.md)
+  * [Storage Group](docs/data-sources/storagegroup.md)
+  * [Port Group](docs/data-sources/portgroups.md)
+  * [Host](docs/data-sources/host.md)
+  * [Host Group](docs/data-sources/hostgroup.md)
+  * [Masking View](docs/data-sources/maskingview.md)
+
+## List of Resources in Terraform Provider for Dell PowerMax
+  * [Volume](docs/resources/volume.md)
+  * [Storage Group](docs/resources/storagegroup.md)
+  * [Port Group](docs/resources/portgroup.md)
+  * [Host](docs/resources/host.md)
+  * [Host Group](docs/resources/hostgroup.md)
+  * [Masking View](docs/resources/maskingview.md)
+
+## Installation and execution of Terraform Provider for Dell PowerMax
+The installation and execution steps of Terraform Provider for Dell PowerMax can be found [here](about/INSTALLATION.md). 
+
+## Releasing, Maintenance and Deprecation
+
+Terraform Provider for Dell Technnologies PowerMax follows [Semantic Versioning](https://semver.org/).
+
+New versions will be release regularly if significant changes (bug fix or new feature) are made in the provider.
+
+Released code versions are located on tags in the form of "vx.y.z" where x.y.z corresponds to the version number.
