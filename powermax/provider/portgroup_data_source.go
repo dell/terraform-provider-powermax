@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"terraform-provider-powermax/client"
+	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -188,7 +189,7 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		}
 		var pg models.PortGroup
 		// Copy fields from the provider client data into the Terraform state
-		updatePGState(&pg, &pg, pgResponse)
+		helper.UpdatePGState(&pg, &pg, pgResponse)
 		if err != nil {
 			resp.Diagnostics.AddError("Error copying port group fields", err.Error())
 			continue

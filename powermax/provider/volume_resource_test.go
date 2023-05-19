@@ -1,5 +1,5 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
-package test
+package provider
 
 import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"

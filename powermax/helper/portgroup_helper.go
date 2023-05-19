@@ -1,6 +1,6 @@
 // Copyright ©2023 Dell Inc. or its subsidiaries. All Rights Reserved.
 
-package provider
+package helper
 
 import (
 	"context"
@@ -15,7 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func getPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
+// GetPmaxPortsFromTfsdkPG returns a slice of pmaxTypes.PortKey from a models.PortGroup
+func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
 
 	if len(tfsdkPg.Ports) > 0 {
 		pmaxPorts := make([]pmaxTypes.PortKey, 0)
@@ -33,7 +34,8 @@ func getPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
 	return nil
 }
 
-func updatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.PortGroup) {
+// UpdatePGState updates the state of a PortGroup
+func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.PortGroup) {
 	pgState.ID = types.StringValue(pgResponse.PortGroupID)
 	pgState.Name = types.StringValue(pgResponse.PortGroupID)
 	if pgResponse.PortGroupProtocol == "" {
@@ -96,9 +98,10 @@ func updatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.Port
 
 }
 
-func updatePortGroup(ctx context.Context, client client.Client, planPg, statePg models.PortGroup) (updatedParams []string, updateFailedParams []string, errorMessages []string) {
-	planPorts := getPmaxPortsFromTfsdkPG(planPg)
-	statePorts := getPmaxPortsFromTfsdkPG(statePg)
+// UpdatePortGroup updates a PortGroup and returns a slice of updated parameters, failed parameters and error messages
+func UpdatePortGroup(ctx context.Context, client client.Client, planPg, statePg models.PortGroup) (updatedParams []string, updateFailedParams []string, errorMessages []string) {
+	planPorts := GetPmaxPortsFromTfsdkPG(planPg)
+	statePorts := GetPmaxPortsFromTfsdkPG(statePg)
 	if !(len(planPorts) == 0 && len(statePorts) == 0) && !reflect.DeepEqual(planPorts, statePorts) {
 		_, err := client.PmaxClient.UpdatePortGroup(ctx, client.SymmetrixID, statePg.Name.ValueString(), planPorts)
 		if err != nil {
@@ -120,15 +123,4 @@ func updatePortGroup(ctx context.Context, client client.Client, planPg, statePg 
 		}
 	}
 	return updatedParams, updateFailedParams, errorMessages
-}
-
-func isParamUpdated(updatedParams []string, paramName string) bool {
-	isParamUpdate := false
-	for _, updatedParam := range updatedParams {
-		if updatedParam == paramName {
-			isParamUpdate = true
-			break
-		}
-	}
-	return isParamUpdate
 }
