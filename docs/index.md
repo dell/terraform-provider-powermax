@@ -21,12 +21,12 @@ linkTitle: "Provider"
 page_title: "powermax Provider"
 subcategory: ""
 description: |-
-  The Terraform provider for Dell PowerMax can be used to interact with a Dell PowerFlex array in order to manage the array resources.
+  The Terraform provider for Dell PowerMax can be used to interact with a Dell PowerMax array in order to manage the array resources.
 ---
 
 # powermax Provider
 
-The Terraform provider for Dell PowerMax can be used to interact with a Dell PowerFlex array in order to manage the array resources.
+The Terraform provider for Dell PowerMax can be used to interact with a Dell PowerMax array in order to manage the array resources.
 
 ## Example Usage
 

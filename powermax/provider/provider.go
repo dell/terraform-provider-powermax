@@ -51,9 +51,9 @@ func (p *PmaxProvider) Metadata(ctx context.Context, req provider.MetadataReques
 func (p *PmaxProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "The Terraform provider for Dell PowerMax " +
-			"can be used to interact with a Dell PowerFlex array in order to manage the array resources.",
+			"can be used to interact with a Dell PowerMax array in order to manage the array resources.",
 		MarkdownDescription: "The Terraform provider for Dell PowerMax " +
-			"can be used to interact with a Dell PowerFlex array in order to manage the array resources.",
+			"can be used to interact with a Dell PowerMax array in order to manage the array resources.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				MarkdownDescription: "IP or FQDN of the PowerMax host",

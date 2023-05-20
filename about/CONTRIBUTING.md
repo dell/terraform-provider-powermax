@@ -1,20 +1,27 @@
 <!--
-Copyright (c) 2022 Dell Inc., or its subsidiaries. All Rights Reserved.
+Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
 
-Licensed under the MPL, Version 2.0 (the "License");
+Licensed under the Mozilla Public License Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://www.mozilla.org/en-US/MPL/2.0/
+    http://mozilla.org/MPL/2.0/
+
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 -->
-# How to Contribute
+
+# How to contribute
 
 Become one of the contributors to this project! We thrive to build a welcoming and open community for anyone who wants to use the project or contribute to it. There are just a few small guidelines you need to follow. To help us create a safe and positive community experience for all, we require all participants to adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Table of Contents
+## Table of contents
 
 * [Become a contributor](#Become-a-contributor)
-* [Contributor agreement](#Contributor-agreement)
 * [Submitting issues](#Submitting-issues)
 * [Triage issues](#Triage-issues)
 * [Your first contribution](#Your-first-contribution)
@@ -22,52 +29,33 @@ Become one of the contributors to this project! We thrive to build a welcoming a
 * [Signing your commits](#Signing-your-commits)
 * [Pull requests](#Pull-requests)
 * [Code reviews](#Code-reviews)
-* [Code Style](#Code-style)
+* [TODOs in the code](#TODOs-in-the-code)
 
 ## Become a contributor
 
 You can contribute to this project in several ways. Here are some examples:
 
-* Contribute to the project documentation and codebase.
+* Contribute to the Terraform provider for Dell PowerMax documentation and codebase.
 * Report and triage bugs.
-* Feature requests
+* Feature requests.
 * Write technical documentation and blog posts, for users and contributors.
 * Help others by answering questions about this project.
 
-## Contributor Agreement
-All contributions shall be made under the Developer Certification of Origin ("DCO") (see http://elinux.org/Developer_Certificate_Of_Origin) which is reproduced below. Specifically, the Git commit message for the contribution should contain the following tag information signifying use of the DCO:
-
-
-"Signed-off-by: [Your Name] [youremail@company.com]"
-
-
-________________________________________
-### Developer's Certificate of Origin 1.1
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I have the right to submit it under the open source license indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best of my knowledge, is covered under an appropriate open source license and I have the right under that license to submit that work with modifications, whether created in whole or in part by me, under the same open source license (unless I am permitted to submit under a different license), as indicated in the file; or
-
-(c) The contribution was provided directly to me by some other person who certified (a), (b) or (c) and I have not modified it.
-
-(d) I understand and agree that this project and the contribution are public and that a record of the contribution (including all personal information I submit with it, including my sign-off) is maintained indefinitely and may be redistributed consistent with this project or the open source license(s) involved.
-
 ## Submitting issues
 
-All issues related to the associated terraform provider should be submitted [here][issues]. Issues will be triaged and labels will be used to indicate the type of issue. This section outlines the types of issues that can be submitted.
+All issues related to Terraform provider for Dell PowerMax, regardless of the service/repository the issue belongs to (see table above), should be submitted [here](https://github.com/dell/dell-terraform-providers/issues). Issues will be triaged and labels will be used to indicate the type of issue. This section outlines the types of issues that can be submitted.  
 
 ### Report bugs
 
-We aim to track and document everything related to the repository via the Issues page. The code and documentation are released with no warranties or SLAs and are intended to be supported through a community driven process.
+We aim to track and document everything related to Terraform provider for Dell PowerMax via the Issues page. The code and documentation are released with no warranties or SLAs and are intended to be supported through a community driven process.
 
-Before submitting a new issue, make sure someone hasn't already reported the problem. Look through the [existing issues][issues] for similar issues.
+Before submitting a new issue, make sure someone hasn't already reported the problem. Look through the [existing issues](https://github.com/dell/dell-terraform-providers/issues) for similar issues.
 
-Report a bug by submitting a [bug report][issues]. Make sure that you provide as much information as possible on how to reproduce the bug.
+Report a bug by submitting a [bug report](https://github.com/dell/dell-terraform-providers/issues/new?labels=type%2Fbug%2C+needs-triage&template=bug_report.md&title=%5BBUG%5D%3A). Make sure that you provide as much information as possible on how to reproduce the bug.
 
-When opening a Bug please include the following information to help with debugging:
+When opening a Bug please include this information to help with debugging:
 
-1. Version of relevant software: Terraform, provider, Golang and Unisphere versions.
+1. Version of relevant software: this software, Ansible, Python, SDK, etc.
 2. Details of the issue explaining the problem: what, when, where
 3. The expected outcome that was not met (if any)
 4. Supporting troubleshooting information. __Note: Do not provide private company information that could compromise your company's security.__
@@ -76,13 +64,13 @@ An Issue __must__ be created before submitting any pull request. Any pull reques
 
 ### Feature request
 
-If you have an idea of how to improve this project, submit a [feature request][issues]
+If you have an idea of how to improve this project, submit a [feature request](https://github.com/dell/dell-terraform-providers/issues/new?labels=type%2Ffeature-request%2C+needs-triage&template=feature_request.md&title=%5BFEATURE%5D%3A).
 
 ### Answering questions
 
-If you have a question and you can't find the answer in the documentation or issues, the next step is to submit a [question.][issues]
+If you have a question and you can't find the answer in the documentation or issues, the next step is to submit a [question.](https://github.com/dell/dell-terraform-providers/issues/new?labels=type%2Fquestion&template=ask-a-question.md&title=%5BQUESTION%5D%3A)
 
-We'd love your help answering questions being asked by other CSM users.
+We'd love your help answering questions being asked by other Terraform provider for Dell PowerMax users.
 
 ## Triage issues
 
@@ -93,7 +81,7 @@ Triage helps ensure that issues resolve quickly by:
 * Lowering the issue count by preventing duplicate issues.
 * Streamlining the development process by preventing duplicate discussions.
 
-If you don't have the knowledge or time to code, consider helping with _issue triage_. The Dell Terraform community will thank you for saving them time by spending some of yours.
+If you don't have the knowledge or time to code, consider helping with _issue triage_. The Terraform provider for Dell PowerMax community will thank you for saving them time by spending some of yours.
 
 Read more about the ways you can [Triage issues](ISSUE_TRIAGE.md).
 
@@ -101,35 +89,10 @@ Read more about the ways you can [Triage issues](ISSUE_TRIAGE.md).
 
 Unsure where to begin contributing? Start by browsing issues labeled `beginner friendly` or `help wanted`.
 
-* [Beginner-friendly][issues] issues are generally straightforward to complete.
-* [Help wanted][issues] issues are problems we would like the community to help us with regardless of complexity.
+* [Beginner-friendly](https://github.com/dell/dell-terraform-providers/issues?q=is%3Aopen+is%3Aissue+label%3A%22beginner+friendly%22) issues are generally straightforward to complete.
+* [Help wanted](https://github.com/dell/dell-terraform-providers/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) issues are problems we would like the community to help us with regardless of complexity.
 
 When you're ready to contribute, it's time to create a pull request.
-
-## Testing
-For running unit test, run the following command from the project root directory
-```
-go test -v ./client -cover -timeout 5m
-```
-
-For running acceptance/integration test, run the following command from the project root directory
-```
-go test -v ./powermax -cover -timeout 30m
-```
-
-**_Note:_** You need to set all the required environment variables for integration tests to run.
-```
-UNISPHERE_HOST = 198.168.0.1
-UNISPHERE_USERNAME = username
-UNISPHERE_PASSWORD = Password
-POWERMAX_SERIALNO = 000000000001
-HOST_INITIATOR_ID = 000000000000001
-TF_ACC = 1
-```
-
-## Debugging
-Please refer to [Developer Guide](DEVELOPER.md) and the terraform [docs](https://developer.hashicorp.com/terraform/plugin/framework/debugging).
-
 
 ## Signing your commits
 
@@ -141,7 +104,7 @@ GitHub will prevent a pull request from being merged if there are any unsigned c
 
 GPG (GNU Privacy Guard) will be used to sign commits.  Follow the instructions [here](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/signing-commits) to create a GPG key and configure your GitHub account to use that key.
 
-Make sure you have your user name and e-mail set.  This will be required for your signed commit to be properly verified.  Check the following references:
+Make sure you have your user name and e-mail set.  This will be required for your signed commit to be properly verified.  Check this references:
 
 * Setting up your github user name [reference](https://help.github.com/articles/setting-your-username-in-git/)
 * Setting up your e-mail address [reference](https://help.github.com/articles/setting-your-commit-email-address-in-git/)
@@ -155,9 +118,9 @@ $ git commit -S -m your commit message
 
 ### Commit message format
 
-This repository uses the guidelines for commit messages outlined in [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/)
+Terraform provider for Dell PowerMax uses the guidelines for commit messages outlined in [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/)
 
-## Pull Requests
+## Pull requests
 
 If this is your first time contributing to an open-source project on GitHub, make sure you read about [Creating a pull request](https://help.github.com/en/articles/creating-a-pull-request).
 
@@ -176,46 +139,21 @@ If the pull request fixes a bug:
 * The pull request description must include `Fixes #<issue number>`.
 * To avoid regressions, the pull request should include tests that replicate the fixed bug.
 
-The owning team _squashes_ all commits into one when we accept a pull request. The title of the pull request becomes the subject line of the squashed commit message. We still encourage contributors to write informative commit messages, as they becomes a part of the Git commit body.
+The team _squashes_ all commits into one when we accept a pull request. The title of the pull request becomes the subject line of the squashed commit message. We still encourage contributors to write informative commit messages, as they becomes a part of the Git commit body.
 
 We use the pull request title when we generate change logs for releases. As such, we strive to make the title as informative as possible.
 
 Make sure that the title for your pull request uses the same format as the subject line in the commit message.
 
-### Quality Gates for pull requests
+### Quality gates for pull requests
 
-GitHub Actions are used to enforce quality gates when a pull request is created or when any commit is made to the pull request. These GitHub Actions enforce our minimum code quality requirement for any code that get checked into the code repository. If any of the quality gates fail, it is expected that the contributor will look into the check log, understand the problem and resolve the issue. If help is needed, please feel free to reach out the maintainers of the project for [support](SUPPORT.md).
-
-#### Security scans
-
-* [Golang Security Checker](https://github.com/securego/gosec) inspects source code for security vulnerabilities by scanning the Go AST.
-* [Malware Scanner](https://github.com/dell/common-github-actions/tree/main/malware-scanner) inspects source code for malware.
-
-#### Code vetting
-
-[GitHub action](https://github.com/dell/common-github-actions/tree/main/go-code-formatter-linter-vetter) that analyzes source code to report suspicious constructs such as Printf calls whose arguments do not align with the format string, abnormal or not used code in pull requests. Please refer to [vet](https://golang.org/cmd/vet/) for more information.
-
-#### Code linting
-
-[GitHub action](https://github.com/dell/common-github-actions/tree/main/go-code-formatter-linter-vetter) that analyzes source code to flag programming errors, stylistics errors, and suspicious constructs. Please refer to [Go lint](https://github.com/golang/lint) for more information.
-
-#### Code formatting
-
-[GitHub action](https://github.com/dell/common-github-actions/tree/main/go-code-formatter-linter-vetter) that analyzes source code to flag formatting errors. Please refer to [gofmt](https://golang.org/cmd/gofmt/) for more information.
+GitHub Actions are used to enforce quality gates when a pull request is created or when any commit is made to the pull request. These GitHub Actions enforce our minimum code quality requirement for any code that get checked into the repository. If any of the quality gates fail, it is expected that the contributor will look into the check log, understand the problem and resolve the issue. If help is needed, please feel free to reach out the maintainers of the project for [support](SUPPORT.md).
 
 #### Code sanitization
 
 [GitHub action](https://github.com/dell/common-github-actions/tree/main/code-sanitizer) that analyzes source code for non-inclusive words and language.
 
-#### Code build/test/coverage
-
-[GitHub action](https://github.com/dell/common-github-actions/tree/main/go-code-tester) that runs Go unit tests and checks that the code coverage of each package meets a configured threshold (currently 90%). An error is flagged if a given pull request does not meet the test coverage threshold and blocks the pull request from being merged.
-
-#### Go generate
-
-[GitHub action](https://github.com/hashicorp/terraform-plugin-docs/) that runs go generate to identify Unexpected difference in directories after code generation.
-
-## Code Reviews
+## Code reviews
 
 All submissions, including submissions by project members, require review. We use GitHub pull requests for this purpose. Consult [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more information on using pull requests.
 
@@ -225,26 +163,10 @@ A pull request must satisfy following for it to be merged:
 * Maintainers must perform a review to ensure the changes adhere to guidelines laid out in this document.
 * If any commits are made after the PR has been approved, the PR approval will automatically be removed and the above process must happen again.
 
-## Code Style
+## Code style
 
-For the Go code in this repository, we expect the code styling outlined in [Effective Go](https://golang.org/doc/effective_go.html). In addition to this, we have the following supplements:
-
-### Handle Errors
-
-See [Effective Go](https://golang.org/doc/effective_go.html#errors) for details on handling errors.
-
-Do not discard errors using _ variables. If a function returns an error, check it to make sure the function succeeded.  Handle the error, return it, or, in truly exceptional situations, panic.  This can be checked using the errcheck tool if you have it installed locally.
-
-### Gofmt
-
-Run gofmt on your code to automatically fix the majority of mechanical style issues. Almost all Go code in the wild uses gofmt. The rest of this document addresses non-mechanical style points.
-
-An alternative is to use goimports, a superset of gofmt which additionally adds (and removes) import lines as necessary.
-
-A recommended approach is to ensure your editor supports running of goimports automatically on save.
+Ensure the added code has the required documenation, examples and unit tests.
 
 ### TODOs in the code
 
 We don't like TODOs in the code or documentation. It is really best if you sort out all issues you can see with the changes before we check the changes in.
-
-[issues]: https://eos2git.cec.lab.emc.com/Jason-jin1/terraform-provider-powermax-framework/issues
