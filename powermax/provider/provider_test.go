@@ -3,13 +3,15 @@ package provider
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"testing"
-
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/joho/godotenv"
+	"log"
+	"math/rand"
+	"os"
+	"testing"
+	"time"
 )
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
@@ -21,6 +23,10 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 var ProviderConfig = ""
+var FunctionMocker *Mocker
+
+// for acc test, avoid conflict of existing resources
+var ResourceSuffix = RandResNameSuffix(5)
 
 func init() {
 	err := godotenv.Load("powermax.env")
@@ -66,4 +72,15 @@ func testAccPreCheck(t *testing.T) {
 	}
 
 	t.Log(ProviderConfig)
+}
+
+func RandResNameSuffix(length int) string {
+	const charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	rand.Seed(time.Now().UnixNano())
+	// generate arr of bytes for ascii characters
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charSet[rand.Intn(len(charSet))]
+	}
+	return string(b)
 }

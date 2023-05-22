@@ -37,7 +37,7 @@ data "powermax_volume" "volume_datasource_test" {
     split_name             = "split_name"
     type                   = "TDEV"
     unreducible_data_gb    = "0"
-    cu_image_num           = 0
+    cu_image_num           = "0"
     cu_image_ssid          = "cu_image_ssid"
     rdf_group_number       = "0"
     oracle_instance_name   = "oracle_instance_name"
