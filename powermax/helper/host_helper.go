@@ -73,12 +73,12 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	}
 
 	if !CompareStringSlice(planInitiators, stateInitiators) {
-		hostResponse, err := client.PmaxClient.GetHostByID(ctx, client.SymmetrixID, state.HostID.String())
+		hostResponse, err := client.PmaxClient.GetHostByID(ctx, client.SymmetrixID, state.HostID.ValueString())
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "initiators")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s", "couldn't get the host data"))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s for %s", "couldn't get the host data", state.HostID.ValueString()))
 		}
-		// TBD :confirm the lower case logic of initiators
+
 		var planInitiatorsLowerCase []string
 		for _, planInitiator := range planInitiators {
 			planInitiatorsLowerCase = append(planInitiatorsLowerCase, strings.ToLower(planInitiator))
