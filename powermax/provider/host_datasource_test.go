@@ -42,7 +42,7 @@ data "powermax_host" "HostDs" {
 	filter {
 		# Optional list of IDs to filter
 		names = [
-		  "hostExample",
+		  "tfacc_host_test1",
 		]
 	}
 	
