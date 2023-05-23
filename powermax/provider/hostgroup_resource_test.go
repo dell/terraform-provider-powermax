@@ -27,7 +27,7 @@ func TestAccHostGroupResource(t *testing.T) {
 						}
 				  }
 				  # This will be updated once host code is integrated to remove this from being hardcoded
-				  host_ids = ["Terraform-Test-Do-Not-Remove"]
+				  host_ids = ["tfacc_host_group_host"]
 				  name     = "test_host_group"
 				}
 				`,
@@ -100,7 +100,7 @@ func TestAccHostGroupResource(t *testing.T) {
 						
 				  }
 				  # This will be updated once host code is integrated to remove this from being hardcoded
-				  host_ids = ["Terraform-Test-Do-Not-Remove", "Terraform-Test-Do-Not-Remove2"]
+				  host_ids = ["tfacc_host_group_host", "tfacc_host_group_host_2"]
 				  name     = "test_host_group_update"
 				}
 				`,
@@ -155,30 +155,22 @@ func TestAccHostGroupResourceError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: ProviderConfig + `
-				resource "powermax_hostgroup" "test_hostgroup_err" {
+				resource "powermax_hostgroup" "test_hostgroup_create_err" {
 					host_flags = {
 						avoid_reset_broadcast = {
 							enabled  = true
 							override = true
 						}
+						disable_q_reset_on_ua = {
+							enabled  = true
+							override = true
+						}
 				  }
-				  # This will be updated once host code is integrated to remove this from being hardcoded
-				  host_ids = ["Terraform-Test-Do-Not-Remove"]
-				  name     = "non-existent-host-group"
+				  host_ids = ["tfacc_host_group_host"]
+				  name     = "tfacc_host_group_err"
 				}
 				`,
-				ExpectError: regexp.MustCompile(`.*Unable to create host group*.`),
 			},
-		},
-	})
-}
-
-func TestAccHostGroupResourceImportError(t *testing.T) {
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
 			{
 				Config: ProviderConfig + `
 				resource "powermax_hostgroup" "test_hostgroup_err" {
@@ -187,16 +179,34 @@ func TestAccHostGroupResourceImportError(t *testing.T) {
 							enabled  = true
 							override = true
 						}
+						disable_q_reset_on_ua = {
+							enabled  = false
+							override = false
+						}
 				  }
-				  # This will be updated once host code is integrated to remove this from being hardcoded
-				  host_ids = ["Terraform-Test-Do-Not-Remove"]
-				  name     = "non-existent-host-group"
+				  host_ids = ["tfacc_host_group_host"]
+				  name     = "tfacc_host_group_err"
 				}
 				`,
-				ResourceName:  "powermax_hostgroup.test_hostgroup_err",
+				ExpectError: regexp.MustCompile(`.*Unable to create host group*.`),
+			},
+			{
+				Config: ProviderConfig + `
+				resource "powermax_hostgroup" "test_hostgroup_import_err" {
+					host_flags = {
+						avoid_reset_broadcast = {
+							enabled  = true
+							override = true
+						}
+				  }
+				  host_ids = ["tfacc_host_group_host"]
+				  name     = "tfacc_fake_host_group"
+				}
+				`,
+				ResourceName:  "powermax_hostgroup.test_hostgroup_import_err",
 				ImportState:   true,
 				ExpectError:   regexp.MustCompile(`.*Error reading hostgroup*`),
-				ImportStateId: "non-existent-host-group",
+				ImportStateId: "tfacc_fake_host_group",
 			},
 		},
 	})

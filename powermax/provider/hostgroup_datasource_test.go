@@ -18,7 +18,7 @@ func TestAccHostGroupDatasource(t *testing.T) {
 			{
 				Config: ProviderConfig + HostGroupDataSourceParamsAll,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.#", "4"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.#", "8"),
 					resource.TestCheckResourceAttr(hostGroupName, "filter.#", "0"),
 				),
 			},
@@ -38,10 +38,10 @@ func TestAccHostGroupDatasourceFiltered(t *testing.T) {
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.#", "2"),
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.consistent_lun", "false"),
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.#", "2"),
-					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.0.host_id", "81"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.0.host_id", "Example_1_host_host_group"),
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host.0.initiator.#", "1"),
-					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host_group_id", "host_group_example_1"),
-					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.name", "host_group_example_1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.host_group_id", "tfacc_host_group_example_1"),
+					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.name", "tfacc_host_group_example_1"),
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.num_of_hosts", "2"),
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.num_of_initiators", "1"),
 					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.0.num_of_masking_views", "1"),
@@ -70,7 +70,7 @@ var HostGroupDataSourceFilterError = `
 # List a specific hostgroup
 data "powermax_hostgroup" "groups" {
   filter {
-    names = ["non-existent-host-group"]
+    names = ["tfacc_fake_host_group"]
   }
 }
 
@@ -83,7 +83,7 @@ var HostGroupDataSourceParamsFiltered = `
 # List a specific hostgroup
 data "powermax_hostgroup" "groups" {
   filter {
-    names = ["host_group_example_1", "host_group_example_2"]
+    names = ["tfacc_host_group_example_1", "tfacc_host_group_example_2"]
   }
 }
 
