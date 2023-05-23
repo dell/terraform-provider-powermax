@@ -37,8 +37,8 @@ github.com/cucumber/messages-go/v10 v10.0.3 h1:m/9SD/K/A15WP7i1aemIv7cwvUw+viS51
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dell/gopowermax/v2 v2.2.1-0.20230421091154-f4c024856a2f h1:MjmHqz2eUW7cqzJtGK6EPDqq5oUwAwo+uww2ceGIPts=
-github.com/dell/gopowermax/v2 v2.2.1-0.20230421091154-f4c024856a2f/go.mod h1:06DoVqIp9Xt//mEqgSTzTbG2xXhWbT0mCjIjGrRRoAI=
+github.com/dell/gopowermax/v2 v2.2.1-0.20230515094200-4d5eb1408ea0 h1:909rPeRXVIRkdY9je4dA+z7PgzTjd1UrG1HAWRKkG04=
+github.com/dell/gopowermax/v2 v2.2.1-0.20230515094200-4d5eb1408ea0/go.mod h1:06DoVqIp9Xt//mEqgSTzTbG2xXhWbT0mCjIjGrRRoAI=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
