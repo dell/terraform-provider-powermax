@@ -90,7 +90,6 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 			"type": schema.StringAttribute{
 				Computed:            true,
-				Optional:            true,
 				Description:         "The type of the volume.",
 				MarkdownDescription: "The type of the volume.",
 			},

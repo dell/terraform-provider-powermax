@@ -42,7 +42,6 @@ Resource for managing Volumes in PowerMax array. Updates are supported for the f
 - `cap_unit` (String) The Capacity Unit corresponding to the size.
 - `mobility_id_enabled` (Boolean) States whether mobility ID is enabled on the volume.
 - `sg_name` (String) The name of the storage group. sg_name is required while creating the volume.
-- `type` (String) The type of the volume.
 
 ### Read-Only
 
@@ -66,6 +65,7 @@ Resource for managing Volumes in PowerMax array. Updates are supported for the f
 - `status` (String) The status of the volume.
 - `storage_groups` (Attributes List) List of storage groups which are associated with the volume. (see [below for nested schema](#nestedatt--storage_groups))
 - `symmetrix_port_key` (Attributes List) The symmetrix ports associated with the volume. (see [below for nested schema](#nestedatt--symmetrix_port_key))
+- `type` (String) The type of the volume.
 - `unreducible_data_gb` (Number) The amount of unreducible data in Gb.
 - `wwn` (String) The WWN of the volume.
 
