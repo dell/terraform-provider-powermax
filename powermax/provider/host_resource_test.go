@@ -26,8 +26,8 @@ func TestAccHostResource(t *testing.T) {
 							override = true
 						}
 				  }
-				  name     = "Test_Host"
-				  initiator = ["10000000c9959b8e"]
+				  name     = "tfacc_host_test_cr"
+				  initiator = ["100000109baa6f0d"]
 				}
 				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -57,7 +57,7 @@ func TestAccHostResource(t *testing.T) {
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.enabled", "false"),
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.override", "false"),
 					// Verify the name
-					resource.TestCheckResourceAttr(hostTerraformName, "name", "Test_Host"),
+					resource.TestCheckResourceAttr(hostTerraformName, "name", "tfacc_host_test_cr"),
 				),
 			},
 			// Import testing
@@ -89,8 +89,8 @@ func TestAccHostResource(t *testing.T) {
 						}
 						
 				  }
-				  name     = "Host_new_update"
-				  initiator = ["10000000c9959b8e"]
+				  name     = "tfacc_host_test_up"
+				  initiator = ["100000109baa6f0d"]
 				}
 				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -120,7 +120,7 @@ func TestAccHostResource(t *testing.T) {
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.enabled", "false"),
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.override", "false"),
 					// Verify the name
-					resource.TestCheckResourceAttr(hostTerraformName, "name", "Host_new_update"),
+					resource.TestCheckResourceAttr(hostTerraformName, "name", "tfacc_host_test_up"),
 				),
 			},
 			// auto checks delete to clean up the test
@@ -143,7 +143,7 @@ func TestAccHostResourceError(t *testing.T) {
 						}
 				  }
 				  name     = "non-existent-host"
-				  initiator = ["10000000c9959b8e"]
+				  initiator = [""]
 				}
 				`,
 				ExpectError: regexp.MustCompile(`.*Could not create host*.`),

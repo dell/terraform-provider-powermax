@@ -69,7 +69,8 @@ func UpdateVolResourceState(ctx context.Context, volState *models.VolumeResource
 	case CapacityUnitGb:
 		volState.Size = types.NumberValue(big.NewFloat(volResponse.CapacityGB))
 	case CapacityUnitMb:
-		volState.Size = types.NumberValue(big.NewFloat(volResponse.FloatCapacityMB))
+		// pmax returns 1 MB less than actual cap
+		volState.Size = types.NumberValue(big.NewFloat(volResponse.FloatCapacityMB - 1.0))
 	}
 	// Handle symmetrix port key
 	volState.SymmetrixPortKey, _ = GetSymmetrixPortKeyObjects(volResponse)

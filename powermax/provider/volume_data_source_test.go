@@ -2,9 +2,14 @@
 package provider
 
 import (
-	"testing"
-
+	"fmt"
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"regexp"
+	"terraform-provider-powermax/client"
+	"terraform-provider-powermax/powermax/helper"
+	"testing"
 )
 
 func TestAccVolumeDatasource(t *testing.T) {
@@ -14,51 +19,94 @@ func TestAccVolumeDatasource(t *testing.T) {
 		Steps: []resource.TestStep{
 			//Read testing
 			{
-				Config: ProviderConfig + VolumeDatasourceConfig,
+				Config: ProviderConfig + VolStorageGroupDSConfig + VolumeDatasourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "volumes.#", "1"),
-					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "volumes.0.id", "00160"),
 					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "volumes.0.type", "TDEV"),
-					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "filter.status", "Ready"),
-					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "filter.volume_identifier", "test_acc_create_volume_1"),
+					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "volumes.0.status", "Ready"),
+					resource.TestCheckResourceAttr("data.powermax_volume.volume_datasource_test", "filter.volume_identifier", datasourceVolName),
 				),
 			},
 		},
 	})
 }
 
-var VolumeDatasourceConfig = `
+func TestAccVolumeDatasourceInvalidFilter(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetVolumeFilterParam).Return(nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + VolStorageGroupDSConfig + VolumeDatasourceConfig,
+				ExpectError: regexp.MustCompile("mock error"),
+			},
+		},
+		CheckDestroy: func(_ *terraform.State) error {
+			if FunctionMocker != nil {
+				FunctionMocker.UnPatch()
+			}
+			return nil
+		},
+	})
+}
+
+func TestAccVolumeDatasourceWithErrorVolList(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(GetMethod(client.Client{}.PmaxClient, "GetVolumeIDListWithParams")).Return(nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + VolStorageGroupDSConfig + VolumeDatasourceConfig,
+				ExpectError: regexp.MustCompile("mock error"),
+			},
+		},
+		CheckDestroy: func(_ *terraform.State) error {
+			if FunctionMocker != nil {
+				FunctionMocker.UnPatch()
+			}
+			return nil
+		},
+	})
+}
+
+var datasourceVolSGName = fmt.Sprintf("tfacc_ds_vol_sg_%s", ResourceSuffix)
+var datasourceVolName = fmt.Sprintf("tfacc_ds_vol_%s", ResourceSuffix)
+
+var VolStorageGroupDSConfig = fmt.Sprintf(`
+resource "powermax_storagegroup" "sg_vol_ds_test" {
+  name             = "%s"
+  srp_id           = "SRP_1"
+  slo              = "Gold"
+}
+`, datasourceVolSGName)
+
+var VolumeDatasourceConfig = fmt.Sprintf(`
+resource "powermax_volume" "volume_ds_resource_test" {
+	sg_name = powermax_storagegroup.sg_vol_ds_test.name
+	vol_name = "%s"
+	size = 554
+	cap_unit = "MB"
+  	depends_on = [
+    	powermax_storagegroup.sg_vol_ds_test
+  	]
+}
+
 data "powermax_volume" "volume_datasource_test" {
 	filter {
-		storage_group_name = "terraform_vol_sg"
-		wwn = "60000970000197902572533030313630"
-		status = "Ready"
-		volume_identifier = "test_acc_create_volume_1"
-		allocated_percent = "0"
+		storage_group_name = powermax_volume.volume_ds_resource_test.sg_name
+		volume_identifier = powermax_volume.volume_ds_resource_test.vol_name
 		num_of_storage_groups = "1"
-		num_of_masking_views = "0"
-		num_of_front_end_paths = "0"
-		mobility_id_enabled = false
-		virtual_volumes = true
-		private_volumes = false
-		tdev = true
-		vdev = false
-		available_thin_volumes = false
-		gatekeeper = false
-		data_volume = false
-		dld = false
-		drv = false
-		encapsulated = false
-		associated = false
-		reserved = false
-		pinned = false
-		mapped = false
-		bound_tdev = true
-		emulation = "FBA"
-		has_effective_wwn = false
-		effective_wwn = "60000970000197902572533030313630"
 		type = "TDEV"
-		unreducible_data_gb = "0"
 	}
 }
-`
+`, datasourceVolName)
