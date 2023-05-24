@@ -28,9 +28,9 @@ func TestAccMaskingView_CreateMaskingViewWithHost(t *testing.T) {
 			{
 				Config: ProviderConfig + maskingViewCreateWithHost,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "TestHostMaskingView"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "TestnewSG"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "host_id", "IG_Dell_198151"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "tfacc_masking_view"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "tfacc_masking_view_sg"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "host_id", "tfacc_masking_view_host"),
 				),
 			},
 		},
@@ -46,9 +46,9 @@ func TestAccMaskingView_CreateMaskingViewWithHostGroup(t *testing.T) {
 			{
 				Config: ProviderConfig + maskingViewCreateWithHostGroup,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "name", "TestHostGroupMaskingView"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "storage_group_id", "TestnewSG"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "host_group_id", "TestHostGroup"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "name", "tfacc_masking_view_hg"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "storage_group_id", "tfacc_masking_view_sg"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_group_test", "host_group_id", "tfacc_masking_view_hg"),
 				),
 			},
 		},
@@ -64,8 +64,8 @@ func TestAccMaskingView_UpdateMaskingView(t *testing.T) {
 			{
 				Config: ProviderConfig + maskingViewCreateWithHost,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "TestHostMaskingView"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "TestnewSG"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "tfacc_masking_view"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "tfacc_masking_view_sg"),
 				),
 			},
 			{
@@ -75,8 +75,8 @@ func TestAccMaskingView_UpdateMaskingView(t *testing.T) {
 			{
 				Config: ProviderConfig + maskingViewUpdateRename,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "maskingViewUpdate"),
-					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "TestnewSG"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "name", "tfacc_masking_view_update"),
+					resource.TestCheckResourceAttr("powermax_maskingview.masking_view_create_with_host_test", "storage_group_id", "tfacc_masking_view_sg"),
 				),
 			},
 			{
@@ -103,8 +103,8 @@ func TestAccMaskingView_ImportSuccess(t *testing.T) {
 				ExpectError:       nil,
 				ImportStateVerify: true,
 				ImportStateCheck: func(s []*terraform.InstanceState) error {
-					assert.Equal(t, "TestHostMaskingView", s[0].Attributes["name"])
-					assert.Equal(t, "IG_Dell_198151", s[0].Attributes["host_id"])
+					assert.Equal(t, "tfacc_masking_view", s[0].Attributes["name"])
+					assert.Equal(t, "tfacc_masking_view_host", s[0].Attributes["host_id"])
 					return nil
 				},
 			},
@@ -131,70 +131,70 @@ func TestAccMaskingView_ImportFailure(t *testing.T) {
 
 var maskingViewCreateWithHost = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "TestHostMaskingView"
-	storage_group_id = "TestnewSG"
-	host_id = "IG_Dell_198151"
+	name = "tfacc_masking_view"
+	storage_group_id = "tfacc_masking_view_sg"
+	host_id = "tfacc_masking_view_host"
 	host_group_id = ""
-	port_group_id = "TestnewSG_PG"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
 
 var maskingViewCreateFailed = `
 resource "powermax_maskingview" "masking_view_create_failed_test" {
-	name = "TestHostMaskingView"
-	storage_group_id = "TestnewSG"
-	host_id = "IG_Dell_198151"
-	host_group_id = "test"
-	port_group_id = "TestnewSG_PG"
+	name = "tfacc_masking_view"
+	storage_group_id = "tfacc_masking_view_sg"
+	host_id = "tfacc_masking_view_host"
+	host_group_id = "tfacc_masking_view_hg"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
 
 var maskingViewCreateError = `
 resource "powermax_maskingview" "masking_view_create_failed_test" {
-	name = "CreateMaskingViewError"
-	storage_group_id = "TestnewSG"
-	host_id = "IG_Dell_198151"
+	name = "tfacc_masking_view_ds"
+	storage_group_id = "tfacc_masking_view_sg"
+	host_id = "tfacc_masking_view_host"
 	host_group_id = ""
-	port_group_id = "TestnewSG_PG"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
 
 var maskingViewCreateWithHostGroup = `
 resource "powermax_maskingview" "masking_view_create_with_host_group_test" {
-	name = "TestHostGroupMaskingView"
-	storage_group_id = "TestnewSG"
+	name = "tfacc_masking_view_hg"
+	storage_group_id = "tfacc_masking_view_sg"
 	host_id = ""
-	host_group_id = "TestHostGroup"
-	port_group_id = "TestnewSG_PG"
+	host_group_id = "tfacc_masking_view_hg"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
 
 var maskingViewUpdateRename = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "maskingViewUpdate"
-	storage_group_id = "TestnewSG"
-	host_id = "IG_Dell_198151"
+	name = "tfacc_masking_view_update"
+	storage_group_id = "tfacc_masking_view_sg"
+	host_id = "tfacc_masking_view_host"
 	host_group_id = ""
-	port_group_id = "TestnewSG_PG"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
 
 var maskingViewUpdateFailed = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "maskingViewUpdate"
-	storage_group_id = "TestnewSG_rename"
-	host_id = "IG_Dell_198151"
+	name = "tfacc_masking_view_update"
+	storage_group_id = "tfacc_masking_view_sg_update"
+	host_id = "tfacc_masking_view_host"
 	host_group_id = ""
-	port_group_id = "TestnewSG_PG"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
 
 var maskingViewUpdateError = `
 resource "powermax_maskingview" "masking_view_create_with_host_test" {
-	name = "maskingViewUpdateError"
-	storage_group_id = "TestnewSG"
-	host_id = "IG_Dell_198151"
+	name = "tfacc_masking_view_ds"
+	storage_group_id = "tfacc_masking_view_sg"
+	host_id = "tfacc_masking_view_host"
 	host_group_id = ""
-	port_group_id = "TestnewSG_PG"
+	port_group_id = "tfacc_masking_view_pg"
   }
 `
