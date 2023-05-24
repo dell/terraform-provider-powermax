@@ -178,25 +178,31 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 				}
 			}
 		}
+		if len(pgNames) != len(pgPlan.PgFilter.Names) {
+			resp.Diagnostics.AddError("Invalid name(s) provided.", "Name of already created portgroup must be provided.")
+			return
+		}
 	}
+	var portGroups []models.PortGroup
 
 	// iterate Portgroup IDs and GetPortGroup with each id
 	for _, elemid := range pgNames {
 		pgResponse, err := d.client.PmaxClient.GetPortGroupByID(ctx, d.client.SymmetrixID, elemid)
 		if err != nil || pgResponse == nil {
-			resp.Diagnostics.AddError("Error reading port group with id", err.Error())
-			continue
+			errStr := fmt.Sprintf("Error reading port group with id %s", elemid)
+			resp.Diagnostics.AddError(errStr, err.Error())
+			return
 		}
 		var pg models.PortGroup
 		// Copy fields from the provider client data into the Terraform state
 		helper.UpdatePGState(&pg, &pg, pgResponse)
 		if err != nil {
 			resp.Diagnostics.AddError("Error copying port group fields", err.Error())
-			continue
+			return
 		}
-		pgState.PortGroups = append(pgState.PortGroups, pg)
+		portGroups = append(portGroups, pg)
 	}
-
+	pgState.PortGroups = portGroups
 	//check if there is any error while getting the port group
 	pgState.ID = types.StringValue("1")
 	pgState.PgFilter = pgPlan.PgFilter

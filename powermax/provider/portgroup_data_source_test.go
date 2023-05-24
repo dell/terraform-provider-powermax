@@ -2,6 +2,7 @@
 package provider
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -17,21 +18,41 @@ func TestAccPortGroupDatasource(t *testing.T) {
 			{
 				Config: ProviderConfig + PortGroupDataSourceParamsAll,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(portGroupName, "port_groups.0.type", "Fibre"),
+					resource.TestCheckResourceAttr(portGroupName, "port_groups.0.type", "SCSI_FC"),
 				),
 			},
 		},
 	})
 }
+func TestAccPortGroupDatasourceFilteredError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      ProviderConfig + PortGroupDataSourceFilterError,
+				ExpectError: regexp.MustCompile(`.*Name of already created portgroup must be provided.*.`),
+			},
+		},
+	})
+}
+
+// List a specific portgroup
+var PortGroupDataSourceFilterError = `
+data "powermax_portgroups" "errgroups" {
+  filter {
+    names = ["tfacc_test1_fibre", "non-existant-port-group"]
+  }
+}`
 
 var PortGroupDataSourceParamsAll = `
 data "powermax_portgroups" "fibreportgroups" {
 	filter {
 		# Optional list of names to filter
-		names = [
-		  "test1_fibre",
-		  "test2_fibre",
-		]
+		#names = [
+		#  "tfacc_test1_fibre",
+		#  "tfacc_test2_fibre",
+		#]
 		type = "fibre"
 	}
 }

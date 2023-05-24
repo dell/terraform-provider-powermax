@@ -168,10 +168,6 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 
 	diags = resp.State.Set(ctx, pgState)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	tflog.Info(ctx, "create portgroup completed")
 }
 
 // Read PortGroup.

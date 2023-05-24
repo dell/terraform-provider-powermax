@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/bytedance/mockey v1.2.3
-	github.com/dell/gopowermax/v2 v2.2.1-0.20230421091154-f4c024856a2f
+	github.com/dell/gopowermax/v2 v2.2.1-0.20230515094200-4d5eb1408ea0
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-framework v1.2.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.10.0

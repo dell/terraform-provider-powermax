@@ -5,7 +5,6 @@ package helper
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
@@ -102,7 +101,7 @@ func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.Port
 func UpdatePortGroup(ctx context.Context, client client.Client, planPg, statePg models.PortGroup) (updatedParams []string, updateFailedParams []string, errorMessages []string) {
 	planPorts := GetPmaxPortsFromTfsdkPG(planPg)
 	statePorts := GetPmaxPortsFromTfsdkPG(statePg)
-	if !(len(planPorts) == 0 && len(statePorts) == 0) && !reflect.DeepEqual(planPorts, statePorts) {
+	if !(len(planPorts) == 0 && len(statePorts) == 0) {
 		_, err := client.PmaxClient.UpdatePortGroup(ctx, client.SymmetrixID, statePg.Name.ValueString(), planPorts)
 		if err != nil {
 			updateFailedParams = append(updateFailedParams, "ports")
