@@ -122,7 +122,7 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 		}
 	}
 
-	if planVol.Size.ValueBigFloat() != stateVol.Size.ValueBigFloat() || planVol.CapUnit.ValueString() != stateVol.CapUnit.ValueString() {
+	if planVol.Size.ValueBigFloat().Cmp(stateVol.Size.ValueBigFloat()) != 0 || planVol.CapUnit.ValueString() != stateVol.CapUnit.ValueString() {
 		size, err := GetVolumeSize(planVol)
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "size")
