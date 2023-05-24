@@ -45,6 +45,7 @@ Resource for managing StorageGroups in PowerMax array. Updates are supported for
 - `num_of_vols` (Number) The number of volumes associated with the storage group
 - `slo` (String) The service level associated with the storage group
 - `volume_ids` (List of String) The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.
+- `workload` (String) The workload associated with the storage group
 
 ### Read-Only
 
@@ -69,7 +70,6 @@ Resource for managing StorageGroups in PowerMax array. Updates are supported for
 - `unreducible_data_gb` (Number) SThe amount of unreducible data in Gb.
 - `uuid` (String) Storage Group UUID
 - `vp_saved_percent` (Number) VP saved percentage figure
-- `workload` (String) The workload associated with the storage group
 
 <a id="nestedatt--host_io_limit"></a>
 ### Nested Schema for `host_io_limit`

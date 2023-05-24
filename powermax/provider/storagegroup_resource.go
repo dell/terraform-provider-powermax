@@ -75,6 +75,7 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 				MarkdownDescription: "The service level associated with the storage group",
 			},
 			"workload": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The workload associated with the storage group",
 				MarkdownDescription: "The workload associated with the storage group",
