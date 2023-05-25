@@ -11,7 +11,6 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -61,7 +60,7 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 			Default:  booldefault.StaticBool(false),
 		},
 	}
-	objd, err := basetypes.NewObjectValue(
+	objd, _ := basetypes.NewObjectValue(
 		map[string]attr.Type{
 			"override": types.BoolType,
 			"enabled":  types.BoolType,
@@ -72,9 +71,68 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 		},
 	)
 
-	if err != nil {
-		return
-	}
+	hostDefaultObj, _ := basetypes.NewObjectValue(
+		map[string]attr.Type{
+			"volume_set_addressing": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"disable_q_reset_on_ua": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"environ_set": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"openvms": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"avoid_reset_broadcast": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"scsi_3": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"spc2_protocol_version": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"scsi_support1": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+		},
+		map[string]attr.Value{
+			"volume_set_addressing": objd,
+			"disable_q_reset_on_ua": objd,
+			"environ_set":           objd,
+			"openvms":               objd,
+			"avoid_reset_broadcast": objd,
+			"scsi_3":                objd,
+			"spc2_protocol_version": objd,
+			"scsi_support1":         objd,
+		},
+	)
 
 	hostFlagAttr := map[string]schema.Attribute{
 		"volume_set_addressing": schema.SingleNestedAttribute{
@@ -164,18 +222,20 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 				Description:         "A list of host ids associated with the hostgroup.",
 				MarkdownDescription: "The masking views associated with the hostgroup.",
 			},
-			"host_flags": schema.SingleNestedAttribute{
-				Description:         "Host Flags set for the hostgroup. When host_flags = {} then default flags will be considered.",
-				MarkdownDescription: "Host Flags set for the hostgroup. When host_flags = {} then default flags will be considered.",
-				Required:            true,
-				Attributes:          hostFlagAttr,
-			},
 			"consistent_lun": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				Default:             booldefault.StaticBool(false),
 				Description:         "It enables the rejection of any masking operation involving this hostgroup that would result in inconsistent LUN values.",
 				MarkdownDescription: "It enables the rejection of any masking operation involving this hostgroup that would result in inconsistent LUN values.",
+			},
+			"host_flags": schema.SingleNestedAttribute{
+				Description:         "Host Flags set for the hostgroup. When host_flags = {} or not set then default flags will be considered.",
+				MarkdownDescription: "Host Flags set for the hostgroup. When host_flags = {} or not set then default flags will be considered.",
+				Optional:            true,
+				Computed:            true,
+				Default:             objectdefault.StaticValue(hostDefaultObj),
+				Attributes:          hostFlagAttr,
 			},
 			"numofmaskingviews": schema.Int64Attribute{
 				Computed:            true,
@@ -243,6 +303,7 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	hostIds := make([]string, len(plan.HostIDs.Elements()))
 	diags := plan.HostIDs.ElementsAs(ctx, &hostIds, true)
 	resp.Diagnostics.Append(diags...)
@@ -250,41 +311,17 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 		return
 	}
 
-	hostFlags := pmaxTypes.HostFlags{
-		VolumeSetAddressing: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),
-			Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
-		},
-		DisableQResetOnUA: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
-			Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
-		},
-		EnvironSet: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
-			Override: plan.HostFlags.EnvironSet.Override.ValueBool(),
-		},
-		AvoidResetBroadcast: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(),
-			Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
-		},
-		OpenVMS: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
-			Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
-		},
-		SCSI3: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
-			Override: plan.HostFlags.SCSI3.Override.ValueBool(),
-		},
-		Spc2ProtocolVersion: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
-			Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
-		},
-		SCSISupport1: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
-			Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
-		},
-		ConsistentLUN: plan.ConsistentLun.ValueBool(),
+	if len(hostIds) > 0 {
+		for _, id := range hostIds {
+			if id == "" {
+				resp.Diagnostics.AddError("Invaid Configuration: ", "host_ids can not have an empty \"\" value")
+				return
+			}
+		}
 	}
+
+	hostFlags := helper.HandleHostFlag(plan)
+
 	tflog.Info(ctx, "calling create hostgroup with client", map[string]interface{}{
 		"symmetrixID": r.client.SymmetrixID,
 		"host":        plan.Name.ValueString(),

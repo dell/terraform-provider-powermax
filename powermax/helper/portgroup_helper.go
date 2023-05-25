@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// GetPmaxPortsFromTfsdkPG returns a slice of pmaxTypes.PortKey from a models.PortGroup
+// GetPmaxPortsFromTfsdkPG returns a slice of pmaxTypes.PortKey from a models.PortGroup.
 func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
 
 	if len(tfsdkPg.Ports) > 0 {
@@ -33,7 +33,7 @@ func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
 	return nil
 }
 
-// UpdatePGState updates the state of a PortGroup
+// UpdatePGState updates the state of a PortGroup.
 func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.PortGroup) {
 	pgState.ID = types.StringValue(pgResponse.PortGroupID)
 	pgState.Name = types.StringValue(pgResponse.PortGroupID)
@@ -97,7 +97,7 @@ func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.Port
 
 }
 
-// UpdatePortGroup updates a PortGroup and returns a slice of updated parameters, failed parameters and error messages
+// UpdatePortGroup updates a PortGroup and returns a slice of updated parameters, failed parameters and error messages.
 func UpdatePortGroup(ctx context.Context, client client.Client, planPg, statePg models.PortGroup) (updatedParams []string, updateFailedParams []string, errorMessages []string) {
 	planPorts := GetPmaxPortsFromTfsdkPG(planPg)
 	statePorts := GetPmaxPortsFromTfsdkPG(statePg)

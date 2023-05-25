@@ -34,13 +34,13 @@ Resource for managing HostGroups for a PowerMax Array
 
 ### Required
 
-- `host_flags` (Attributes) Host Flags set for the hostgroup. When host_flags = {} then default flags will be considered. (see [below for nested schema](#nestedatt--host_flags))
 - `host_ids` (Set of String) The masking views associated with the hostgroup.
 - `name` (String) The name of the hostgroup.
 
 ### Optional
 
 - `consistent_lun` (Boolean) It enables the rejection of any masking operation involving this hostgroup that would result in inconsistent LUN values.
+- `host_flags` (Attributes) Host Flags set for the hostgroup. When host_flags = {} or not set then default flags will be considered. (see [below for nested schema](#nestedatt--host_flags))
 
 ### Read-Only
 

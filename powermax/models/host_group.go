@@ -11,7 +11,7 @@ type HostGroupModel struct {
 	// Name - The name of the hostgroup
 	Name types.String `tfsdk:"name"`
 	// HostFlags - Specifies the flags set for a hostgroup
-	HostFlags HostFlags `tfsdk:"host_flags"`
+	HostFlags *HostFlags `tfsdk:"host_flags"`
 	// ConsistentLun - Specifies whether the consistent_lun flag is set or not for a hostgroup
 	ConsistentLun types.Bool `tfsdk:"consistent_lun"`
 	// HostIDs - Specifies the host IDs associated with the hostgroup

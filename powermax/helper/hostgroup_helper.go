@@ -75,22 +75,40 @@ func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupM
 }
 
 func setDefaultHostFlagsForHostGroup(hostState *models.HostGroupModel) {
-	hostState.HostFlags.VolumeSetAddressing.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.VolumeSetAddressing.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.DisableQResetOnUA.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.DisableQResetOnUA.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.AvoidResetBroadcast.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.AvoidResetBroadcast.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.EnvironSet.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.EnvironSet.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.OpenVMS.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.OpenVMS.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.SCSISupport1.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.SCSISupport1.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.SCSI3.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.SCSI3.Override = basetypes.NewBoolValue(false)
-	hostState.HostFlags.Spc2ProtocolVersion.Enabled = basetypes.NewBoolValue(false)
-	hostState.HostFlags.Spc2ProtocolVersion.Override = basetypes.NewBoolValue(false)
+	hostState.HostFlags = &models.HostFlags{
+		VolumeSetAddressing: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		DisableQResetOnUA: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		EnvironSet: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		AvoidResetBroadcast: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		OpenVMS: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		SCSI3: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		Spc2ProtocolVersion: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+		SCSISupport1: models.HostFlag{
+			Enabled:  basetypes.NewBoolValue(false),
+			Override: basetypes.NewBoolValue(false),
+		},
+	}
 }
 
 func saveHgListAttribute(hostGroupState *models.HostGroupModel, listAttribute []string, attributeName string) {
@@ -277,4 +295,80 @@ func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal
 		}
 	}
 	return model, err
+}
+
+// HandleHostFlag Sets the hostflag state in the plan if there is not one there by default, otherwise use what is in the plan.
+func HandleHostFlag(plan models.HostGroupModel) pmaxTypes.HostFlags {
+	if plan.HostFlags == nil {
+		return pmaxTypes.HostFlags{
+			VolumeSetAddressing: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			DisableQResetOnUA: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			EnvironSet: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			AvoidResetBroadcast: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			OpenVMS: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			SCSI3: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			Spc2ProtocolVersion: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			SCSISupport1: &pmaxTypes.HostFlag{
+				Enabled:  false,
+				Override: false,
+			},
+			ConsistentLUN: plan.ConsistentLun.ValueBool(),
+		}
+	}
+	return pmaxTypes.HostFlags{
+		VolumeSetAddressing: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),
+			Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
+		},
+		DisableQResetOnUA: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
+			Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
+		},
+		EnvironSet: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
+			Override: plan.HostFlags.EnvironSet.Override.ValueBool(),
+		},
+		AvoidResetBroadcast: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(),
+			Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
+		},
+		OpenVMS: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
+			Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
+		},
+		SCSI3: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
+			Override: plan.HostFlags.SCSI3.Override.ValueBool(),
+		},
+		Spc2ProtocolVersion: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
+			Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
+		},
+		SCSISupport1: &pmaxTypes.HostFlag{
+			Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
+			Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
+		},
+		ConsistentLUN: plan.ConsistentLun.ValueBool(),
+	}
 }

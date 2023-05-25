@@ -148,6 +148,64 @@ func TestAccHostGroupResource(t *testing.T) {
 	})
 }
 
+func TestAccHostGroupResourceEmptyHostIdInList(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: ProviderConfig + `
+				resource "powermax_hostgroup" "test_hostgroup_create_err" {
+					host_flags = {
+						avoid_reset_broadcast = {
+							enabled  = true
+							override = true
+						}
+						disable_q_reset_on_ua = {
+							enabled  = true
+							override = true
+						}
+				  }
+				  host_ids = [""]
+				  name     = "tfacc_host_group_err"
+				}
+				`,
+				ExpectError: regexp.MustCompile(`.*host_ids can not have an empty*.`),
+			},
+		},
+	})
+}
+
+func TestAccHostGroupResourceNoHostFlagShouldStillWork(t *testing.T) {
+	var hostGroupTerraformName = "powermax_hostgroup.test_hostgroup"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: ProviderConfig + `
+				resource "powermax_hostgroup" "test_hostgroup" {
+				  host_ids = ["tfacc_host_group_host"]
+				  name     = "test_host_group_no_flag"
+				}
+				`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "host_ids.#", "1"),
+					// Verify the name
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "name", "test_host_group_no_flag"),
+					// Verify Calculated values
+					// numofmaskingviews
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "numofmaskingviews", "0"),
+					// numofinitiators
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "numofinitiators", "0"),
+					// numofhosts
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "numofhosts", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccHostGroupResourceError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
