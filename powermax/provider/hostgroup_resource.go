@@ -332,7 +332,8 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 	newHostGroup, err := r.client.PmaxClient.CreateHostGroup(ctx, r.client.SymmetrixID, plan.Name.ValueString(), hostIds, &hostFlags)
 	if err != nil {
 		hostgroupID := plan.Name.ValueString()
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create host group, got error: %s", err.Error()))
+		resp.Diagnostics.AddError("Client Error", "Unable to create host group, please make sure only existing host(s) are set in the host_id flag")
+		tflog.Debug(ctx, err.Error())
 		//Attempt to remove any partially created obejcts if there are any
 		hostGroupResponse, getHostGroupErr := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostgroupID)
 		if hostGroupResponse != nil || getHostGroupErr == nil {

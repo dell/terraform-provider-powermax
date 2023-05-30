@@ -37,11 +37,11 @@ func TestAccPortGroupDatasourceFilteredError(t *testing.T) {
 	})
 }
 
-// List a specific portgroup
+// List a specific portgroup.
 var PortGroupDataSourceFilterError = `
 data "powermax_portgroups" "errgroups" {
   filter {
-    names = ["tfacc_test1_fibre", "non-existant-port-group"]
+    names = ["tfacc_test1_fibre", "non-existent-port-group"]
   }
 }`
 

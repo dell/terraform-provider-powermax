@@ -162,7 +162,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 		}
 	}
 
-	if plan.HostFlags != state.HostFlags || plan.ConsistentLun.ValueBool() != state.ConsistentLun.ValueBool() {
+	if *plan.HostFlags != *state.HostFlags || plan.ConsistentLun.ValueBool() != state.ConsistentLun.ValueBool() {
 		hostFlags := pmaxTypes.HostFlags{
 			VolumeSetAddressing: &pmaxTypes.HostFlag{
 				Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),

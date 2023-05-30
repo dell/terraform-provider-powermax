@@ -25,7 +25,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 var ProviderConfig = ""
 var FunctionMocker *Mocker
 
-// for acc test, avoid conflict of existing resources
+// for acc test, avoid conflict of existing resources.
 var ResourceSuffix = RandResNameSuffix(5)
 
 func init() {

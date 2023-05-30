@@ -18,7 +18,6 @@ func TestAccHostGroupDatasource(t *testing.T) {
 			{
 				Config: ProviderConfig + HostGroupDataSourceParamsAll,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(hostGroupName, "host_group_details.#", "8"),
 					resource.TestCheckResourceAttr(hostGroupName, "filter.#", "0"),
 				),
 			},

@@ -97,7 +97,7 @@ func TestAccPortGroupResourceError(t *testing.T) {
 	})
 }
 
-// List a specific portgroup
+// List a specific portgroup.
 var PortGroupRourceError = `
 resource "powermax_portgroup" "test_portgroup" {
 	name = "tfacc_error"

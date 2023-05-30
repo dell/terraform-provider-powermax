@@ -206,6 +206,44 @@ func TestAccHostGroupResourceNoHostFlagShouldStillWork(t *testing.T) {
 	})
 }
 
+func TestAccHostGroupResourceUpdateNoFlag(t *testing.T) {
+	var hostGroupTerraformName = "powermax_hostgroup.test_hostgroup"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: ProviderConfig + `
+				resource "powermax_hostgroup" "test_hostgroup" {
+				  host_ids = ["tfacc_host_group_host"]
+				  name     = "test_host_group_no_flag"
+				}
+				`,
+			},
+			{
+				Config: ProviderConfig + `
+				resource "powermax_hostgroup" "test_hostgroup" {
+				  host_ids = ["tfacc_host_group_host", "tfacc_host_group_host_2"]
+				  name     = "tfacc_host_group_update_no_flag"
+				}
+				`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "host_ids.#", "2"),
+					// Verify the name
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "name", "tfacc_host_group_update_no_flag"),
+					// Verify Calculated values
+					// numofmaskingviews
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "numofmaskingviews", "0"),
+					// numofinitiators
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "numofinitiators", "0"),
+					// numofhosts
+					resource.TestCheckResourceAttr(hostGroupTerraformName, "numofhosts", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccHostGroupResourceError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
