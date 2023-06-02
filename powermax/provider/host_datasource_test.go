@@ -36,6 +36,34 @@ func TestAccHostDatasourceFilteredError(t *testing.T) {
 		},
 	})
 }
+func TestAccHostDatasourceFilterEmpty(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: ProviderConfig + HostDataSourceFilterEmpty,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.powermax_host.hostEmptyFilter", "hosts.#"),
+				),
+			},
+		},
+	})
+}
+func TestAccHostDatasourceGetAll(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: ProviderConfig + HostDataSourceGetAll,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.powermax_host.hostGetAll", "hosts.#"),
+				),
+			},
+		},
+	})
+}
 
 var HostDataSourceParamsAll = `
 data "powermax_host" "HostDs" {
@@ -64,3 +92,13 @@ output "hosts" {
   value = data.powermax_host.hosts
 }
 `
+var HostDataSourceFilterEmpty = `
+data "powermax_host" "hostEmptyFilter" {
+	   filter {
+    		names = []
+	   }
+}`
+
+var HostDataSourceGetAll = `
+data "powermax_host" "hostGetAll" {
+}`
