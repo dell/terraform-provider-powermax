@@ -43,7 +43,8 @@ func TestAccHostResource(t *testing.T) {
 						}
 				  }
 				  name     = "tfacc_host_test_cr"
-				  initiator = ["100000109baa6f0d"]
+				  initiator = ["21000024ff3efed6"]
+				  consistent_lun = false
 				}
 				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -106,7 +107,8 @@ func TestAccHostResource(t *testing.T) {
 						
 				  }
 				  name     = "tfacc_host_test_up"
-				  initiator = ["100000109baa6f0d"]
+				  initiator = ["21000024ff3efed6"]
+				  consistent_lun = true
 				}
 				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -137,6 +139,8 @@ func TestAccHostResource(t *testing.T) {
 					resource.TestCheckResourceAttr(hostTerraformName, "host_flags.volume_set_addressing.override", "false"),
 					// Verify the name
 					resource.TestCheckResourceAttr(hostTerraformName, "name", "tfacc_host_test_up"),
+					// Verify Consistent_Lun flag
+					resource.TestCheckResourceAttr(hostTerraformName, "consistent_lun", "true"),
 				),
 			},
 			// auto checks delete to clean up the test

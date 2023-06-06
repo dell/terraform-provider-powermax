@@ -42,7 +42,7 @@ func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostR
 	hostState.BWLimit = types.Int64Value(int64(hostResponse.BWLimit))
 	hostState.HostType = types.StringValue(hostResponse.HostType)
 	hostState.PortFlagsOverride = types.BoolValue(hostResponse.PortFlagsOverride)
-	hostState.ConsistentLun = types.BoolValue(hostResponse.PortFlagsOverride)
+	hostState.ConsistentLun = types.BoolValue(hostResponse.ConsistentLun)
 
 	iniAttributeList := []attr.Value{}
 	for _, ini := range hostResponse.Initiators {
