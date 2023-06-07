@@ -220,7 +220,7 @@ func (d *StorageGroupDataSource) Schema(ctx context.Context, req datasource.Sche
 						"unreducible_data_gb": schema.NumberAttribute{
 							Computed:            true,
 							Description:         "The amount of unreducible data in Gb.",
-							MarkdownDescription: "SThe amount of unreducible data in Gb.",
+							MarkdownDescription: "The amount of unreducible data in Gb.",
 						},
 						"volume_ids": schema.ListAttribute{
 							ElementType:         types.StringType,
