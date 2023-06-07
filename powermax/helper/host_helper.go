@@ -58,7 +58,7 @@ func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostR
 
 	powerPathAttributeList := []attr.Value{}
 	for _, id := range hostResponse.PowerPathHosts {
-		powerPathAttributeList = append(maskViewAttributeList, types.StringValue(id))
+		powerPathAttributeList = append(powerPathAttributeList, types.StringValue(id))
 	}
 	hostState.PowerPathHosts, _ = types.ListValue(types.StringType, powerPathAttributeList)
 	setDefaultHostFlags(hostState)
