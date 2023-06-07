@@ -136,7 +136,7 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 				Computed:            true,
 				Description:         "It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values.",
 				MarkdownDescription: "It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values.",
-				PlanModifiers:       []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+				Default:             booldefault.StaticBool(false),
 			},
 			"type": schema.StringAttribute{
 				Computed:            true,
