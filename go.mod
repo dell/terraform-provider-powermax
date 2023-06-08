@@ -3,6 +3,7 @@ module terraform-provider-powermax
 go 1.19
 
 require (
+	dell/powermax-go-client v0.0.0
 	github.com/bytedance/mockey v1.2.3
 	github.com/dell/gopowermax/v2 v2.2.1-0.20230515094200-4d5eb1408ea0
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
@@ -84,3 +85,7 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace dell/powermax-go-client => ../powermax-go-client
+
+replace github.com/dell/powermax-go-client => ../powermax-go-client
