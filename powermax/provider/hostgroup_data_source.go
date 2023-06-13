@@ -20,6 +20,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/helper"
@@ -194,11 +195,19 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	// Get details of each of the hostgroups
 	for _, hostGroupID := range hostGroupIDs {
 		tflog.Debug(ctx, hostGroupID)
-		groupDetail, err := d.client.PmaxClient.GetHostGroupByID(ctx, d.client.SymmetrixID, hostGroupID)
+		groupDetailModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, d.client.SymmetrixID, hostGroupID)
+		groupDetail, resp1, err := groupDetailModel.Execute()
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error getting the details of host group: "+hostGroupID,
 				constants.ReadHostGroupListDetailsErrorMsg+"with error: "+err.Error(),
+			)
+			return
+		}
+		if resp1.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(
+				"Unable to Read PowerMax Host Groups. Got http error:",
+				resp1.Status,
 			)
 			return
 		}

@@ -19,7 +19,9 @@ package provider
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	"fmt"
+	"net/http"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
@@ -344,15 +346,25 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 		"hostFlags":   hostFlags,
 	})
 
-	newHostGroup, err := r.client.PmaxClient.CreateHostGroup(ctx, r.client.SymmetrixID, plan.Name.ValueString(), hostIds, &hostFlags)
+	newHgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateHostGroup(ctx, r.client.SymmetrixID)
+	create := powermax.NewCreateHostGroupParam(plan.Name.ValueString())
+	create.SetHostFlags(hostFlags)
+	create.SetHostId(hostIds)
+	newHgModel = newHgModel.CreateHostGroupParam(*create)
+	newHostGroup, _, err := newHgModel.Execute()
+
 	if err != nil {
 		hostgroupID := plan.Name.ValueString()
 		resp.Diagnostics.AddError("Client Error", "Unable to create host group, please make sure only existing host(s) are set in the host_id flag")
-		tflog.Debug(ctx, err.Error())
+		if err != nil {
+			tflog.Debug(ctx, err.Error())
+		}
 		//Attempt to remove any partially created obejcts if there are any
-		hostGroupResponse, getHostGroupErr := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostgroupID)
+		hgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, r.client.SymmetrixID, hostgroupID)
+		hostGroupResponse, _, getHostGroupErr := hgModel.Execute()
 		if hostGroupResponse != nil || getHostGroupErr == nil {
-			err := r.client.PmaxClient.DeleteHost(ctx, r.client.SymmetrixID, hostgroupID)
+			deleteModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHostGroup(ctx, r.client.SymmetrixID, hostgroupID)
+			_, err := deleteModel.Execute()
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Error deleting the invalid hostGroup, This may be a dangling resource and needs to be deleted manually",
@@ -393,8 +405,8 @@ func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		"symmetricxId": r.client.SymmetrixID,
 		"hostGroupID":  hostGroupID,
 	})
-
-	hgResponse, err := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostGroupID)
+	hgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
+	hgResponse, resp1, err := hgModel.Execute()
 	tflog.Debug(ctx, "Get HostGroup By ID response", map[string]interface{}{
 		"HostGroup Response": hgResponse,
 	})
@@ -402,6 +414,13 @@ func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		resp.Diagnostics.AddError(
 			"Error reading hostGroup",
 			constants.ReadHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+		)
+		return
+	}
+	if resp1.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"Unable to Read PowerMax Host Groups. Got http error:",
+			resp1.Status,
 		)
 		return
 	}
@@ -460,11 +479,19 @@ func (r *HostGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 		"SymmetrixID": r.client.SymmetrixID,
 		"hostgroupID": hostGroupID,
 	})
-	hostGroupResponse, err := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostGroupID)
+	hgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
+	hostGroupResponse, resp1, err := hgModel.Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading hostgroup",
 			constants.ReadHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+		)
+		return
+	}
+	if resp1.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"Unable to Read PowerMax Host Groups. Got http error:",
+			resp1.Status,
 		)
 		return
 	}
@@ -496,7 +523,8 @@ func (r *HostGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 		"symmetrixID": r.client.SymmetrixID,
 		"hostGroupID": hostGroupID,
 	})
-	err := r.client.PmaxClient.DeleteHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
+	deleteModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
+	_, err := deleteModel.Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleting hostGroup",
@@ -516,11 +544,19 @@ func (r *HostGroup) ImportState(ctx context.Context, req resource.ImportStateReq
 		"symmetrixID": r.client.SymmetrixID,
 		"hostID":      hostGroupID,
 	})
-	hostGroupResponse, err := r.client.PmaxClient.GetHostGroupByID(ctx, r.client.SymmetrixID, hostGroupID)
+	hgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
+	hostGroupResponse, resp1, err := hgModel.Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading hostgroup",
 			constants.ImportHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+		)
+		return
+	}
+	if resp1.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"Unable to Read PowerMax Host Groups. Got http error:",
+			resp1.Status,
 		)
 		return
 	}

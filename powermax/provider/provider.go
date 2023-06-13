@@ -129,6 +129,7 @@ func (p *PmaxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 
 	// Configuration values are now available.
 	pmaxClient, err := client.NewClient(
+		ctx,
 		data.Endpoint.ValueString(),
 		data.Username.ValueString(),
 		data.Password.ValueString(),
