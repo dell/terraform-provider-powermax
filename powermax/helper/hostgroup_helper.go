@@ -19,40 +19,47 @@ package helper
 
 import (
 	"context"
+	"dell/powermax-go-client"
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/models"
 
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // UpdateHostGroupState update host group state.
-func UpdateHostGroupState(hostGroupState *models.HostGroupModel, hostGroupResponse *pmaxTypes.HostGroup) {
-	hostGroupState.ID = types.StringValue(hostGroupResponse.HostGroupID)
-	hostGroupState.Name = types.StringValue(hostGroupResponse.HostGroupID)
-	hostGroupState.NumOfHosts = types.Int64Value(hostGroupResponse.NumOfHosts)
-	hostGroupState.NumOfInitiators = types.Int64Value(hostGroupResponse.NumberInitiators)
-	hostGroupState.NumOfMaskingViews = types.Int64Value(hostGroupResponse.NumberMaskingViews)
-	hostGroupState.Type = types.StringValue(hostGroupResponse.HostGroupType)
-	hostGroupState.PortFlagsOverride = types.BoolValue(hostGroupResponse.PortFlagsOverride)
-	hostGroupState.ConsistentLun = types.BoolValue(hostGroupResponse.ConsistentLun)
+func UpdateHostGroupState(hostGroupState *models.HostGroupModel, hostGroupResponse *powermax.HostGroup) {
+	hostGroupState.ID = types.StringValue(hostGroupResponse.HostGroupId)
+	hostGroupState.Name = types.StringValue(hostGroupResponse.HostGroupId)
+	hostGroupState.NumOfHosts = types.Int64Value(int64(*hostGroupResponse.NumOfHosts))
+	hostGroupState.NumOfInitiators = types.Int64Value(int64(*hostGroupResponse.NumOfInitiators))
+	hostGroupState.NumOfMaskingViews = types.Int64Value(*hostGroupResponse.NumOfMaskingViews)
+	hostGroupState.Type = types.StringValue(*hostGroupResponse.Type)
+	hostGroupState.PortFlagsOverride = types.BoolValue(*hostGroupResponse.PortFlagsOverride)
+	hostGroupState.ConsistentLun = types.BoolValue(*hostGroupResponse.ConsistentLun)
 
 	responseHostIDs := []string{}
-	for _, hostSummary := range hostGroupResponse.Hosts {
-		responseHostIDs = append(responseHostIDs, hostSummary.HostID)
+	for _, hostSummary := range hostGroupResponse.Host {
+		responseHostIDs = append(responseHostIDs, hostSummary.HostId)
 	}
 
 	saveHgListAttribute(hostGroupState, responseHostIDs, "hostIDs")
-	saveHgListAttribute(hostGroupState, hostGroupResponse.MaskingviewIDs, "maskingViews")
+	saveHgListAttribute(hostGroupState, hostGroupResponse.Maskingview, "maskingViews")
 	setDefaultHostFlagsForHostGroup(hostGroupState)
-	setHostFlagsInHg(hostGroupResponse.EnabledFlags, true, hostGroupState)
-	setHostFlagsInHg(hostGroupResponse.DisabledFlags, false, hostGroupState)
+	if hostGroupResponse.EnabledFlags != nil {
+		setHostFlagsInHg(*hostGroupResponse.EnabledFlags, true, hostGroupState)
+	}
+	if hostGroupResponse.DisabledFlags != nil {
+		setHostFlagsInHg(*hostGroupResponse.DisabledFlags, false, hostGroupState)
+	}
 }
 
 func setHostFlagsInHg(flags string, isEnabled bool, hostState *models.HostGroupModel) {
@@ -167,54 +174,78 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 	}
 
 	if !CompareStringSlice(planHostIDs, stateHostIDs) {
-		hostGroupID := state.ID.ValueString()
-		_, err := client.PmaxClient.UpdateHostGroupHosts(ctx, client.SymmetrixID, hostGroupID, planHostIDs)
-		if err != nil {
+
+		var add []string
+		var remove []string
+
+		// Host to Add
+		for _, hostID := range planHostIDs {
+			// if this host is not in the list of current hosts, add it
+			if !stringInSlice(hostID, stateHostIDs) {
+				tflog.Debug(ctx, fmt.Sprintf("Appending hosts to host group : %s", hostID))
+				add = append(add, hostID)
+			}
+		}
+
+		edit := &powermax.EditHostGroupActionParam{
+			AddHostParam: &powermax.AddHostParam{
+				Host: add,
+			},
+		}
+
+		_, doReturn, err := ModifyHostGroup(client, ctx, state.ID.ValueString(), *edit)
+
+		if doReturn {
 			updateFailedParameters = append(updateFailedParameters, "host_ids")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify host_ids: %s", err.Error()))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to Add host_ids: %s", err.Error()))
+		} else {
+			updatedParameters = append(updatedParameters, "host_ids")
+		}
+
+		// Hosts to remove
+		for _, hostID := range stateHostIDs {
+			// if this host is not in the list of current hosts, remove it
+			if !stringInSlice(hostID, planHostIDs) {
+				tflog.Debug(ctx, fmt.Sprintf("Removing hosts from host group : %s", hostID))
+				remove = append(remove, hostID)
+			}
+		}
+
+		editRemove := &powermax.EditHostGroupActionParam{
+			RemoveHostParam: &powermax.RemoveHostParam{
+				Host: remove,
+			},
+		}
+
+		_, doReturnRemove, errRemove := ModifyHostGroup(client, ctx, state.ID.ValueString(), *editRemove)
+
+		if doReturnRemove {
+			updateFailedParameters = append(updateFailedParameters, "host_ids")
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to Remove host_ids: %s", errRemove.Error()))
 		} else {
 			updatedParameters = append(updatedParameters, "host_ids")
 		}
 	}
 
 	if *plan.HostFlags != *state.HostFlags || plan.ConsistentLun.ValueBool() != state.ConsistentLun.ValueBool() {
-		hostFlags := pmaxTypes.HostFlags{
-			VolumeSetAddressing: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),
-				Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
-			},
-			DisableQResetOnUA: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
-				Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
-			},
-			EnvironSet: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
-				Override: plan.HostFlags.EnvironSet.Override.ValueBool(),
-			},
-			AvoidResetBroadcast: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(),
-				Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
-			},
-			OpenVMS: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
-				Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
-			},
-			SCSI3: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
-				Override: plan.HostFlags.SCSI3.Override.ValueBool(),
-			},
-			Spc2ProtocolVersion: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
-				Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
-			},
-			SCSISupport1: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
-				Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
-			},
-			ConsistentLUN: plan.ConsistentLun.ValueBool(),
+		flags := powermax.NewHostFlags(
+			*powermax.NewVolumeSetAddressing(plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(), plan.HostFlags.VolumeSetAddressing.Override.ValueBool()),
+			*powermax.NewDisableQResetOnUa(plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(), plan.HostFlags.DisableQResetOnUA.Override.ValueBool()),
+			*powermax.NewEnvironSet(plan.HostFlags.EnvironSet.Enabled.ValueBool(), plan.HostFlags.EnvironSet.Override.ValueBool()),
+			*powermax.NewAvoidResetBroadcast(plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(), plan.HostFlags.AvoidResetBroadcast.Override.ValueBool()),
+			*powermax.NewOpenvms(plan.HostFlags.OpenVMS.Enabled.ValueBool(), plan.HostFlags.OpenVMS.Override.ValueBool()),
+			*powermax.NewScsi3(plan.HostFlags.SCSI3.Enabled.ValueBool(), plan.HostFlags.SCSI3.Override.ValueBool()),
+			*powermax.NewSpc2ProtocolVersion(plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(), plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool()),
+			*powermax.NewScsiSupport1(plan.HostFlags.SCSISupport1.Enabled.ValueBool(), plan.HostFlags.SCSISupport1.Override.ValueBool()),
+			plan.ConsistentLun.ValueBool(),
+		)
+		flagsParam := powermax.NewSetHostGroupFlagsParam(*flags)
+		edit := &powermax.EditHostGroupActionParam{
+			SetHostGroupFlagsParam: flagsParam,
 		}
-		_, err := client.PmaxClient.UpdateHostGroupFlags(ctx, client.SymmetrixID, state.Name.ValueString(), &hostFlags)
-		if err != nil {
+		_, doReturn, err := ModifyHostGroup(client, ctx, state.ID.ValueString(), *edit)
+
+		if doReturn {
 			updateFailedParameters = append(updateFailedParameters, "host_flags")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", err.Error()))
 		} else {
@@ -223,8 +254,17 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 	}
 
 	if plan.Name.ValueString() != state.Name.ValueString() {
-		_, err := client.PmaxClient.UpdateHostGroupName(ctx, client.SymmetrixID, state.ID.ValueString(), plan.Name.ValueString())
-		if err != nil {
+
+		RenameHostGroupParam := powermax.RenameHostGroupParam{
+			NewHostGroupName: plan.Name.ValueStringPointer(),
+		}
+
+		edit := powermax.EditHostGroupActionParam{
+			RenameHostGroupParam: &RenameHostGroupParam,
+		}
+		_, shouldReturn, err := ModifyHostGroup(client, ctx, state.Name.ValueString(), edit)
+
+		if shouldReturn {
 			updateFailedParameters = append(updateFailedParameters, "name")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename hostGroup: %s", err.Error()))
 		} else {
@@ -235,15 +275,40 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
+func ModifyHostGroup(client client.Client, ctx context.Context, hostGroupId string, edit powermax.EditHostGroupActionParam) (*powermax.HostGroup, bool, error) {
+	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostGroup(ctx, client.SymmetrixID, hostGroupId)
+	editParam := powermax.NewEditHostGroupParam(edit)
+	modifyParam = modifyParam.EditHostGroupParam(*editParam)
+	hgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostGroupExecute(modifyParam)
+	if err != nil {
+		return hgResponse, true, err
+	}
+	if resp1.StatusCode != http.StatusOK {
+		err1 := errors.New(
+			"Unable to Read PowerMax Host Groups. Got http error - " +
+				resp1.Status,
+		)
+		return hgResponse, true, err1
+	}
+	tflog.Debug(ctx, "get host group by ID response", map[string]interface{}{
+		"hgResponse": hgResponse,
+	})
+	return hgResponse, false, nil
+}
+
 // FilterHostGroupIds Based on state either use the filtered list of host groups or get all host groups.
 func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceModel, plan *models.HostGroupDataSourceModel, client client.Client) ([]string, error) {
 	var hostgroupIds []string
 	if plan.HostGroupFilter == nil || len(plan.HostGroupFilter.IDs) == 0 {
-		hostGroupResponse, err := client.PmaxClient.GetHostGroupList(ctx, client.SymmetrixID)
+		hostGroupReq := client.PmaxOpenapiClient.SLOProvisioningApi.ListHostGroups(ctx, client.SymmetrixID)
+		hostGroupResponse, resp1, err := hostGroupReq.Execute()
 		if err != nil {
 			return hostgroupIds, err
 		}
-		hostgroupIds = hostGroupResponse.HostGroupIDs
+		if resp1.StatusCode != http.StatusOK {
+			return hostgroupIds, fmt.Errorf("Unable to read PowerMax Hostgroups - %s", resp1.Status)
+		}
+		hostgroupIds = hostGroupResponse.GetHostGroupId()
 	} else {
 		for _, hg := range plan.HostGroupFilter.IDs {
 			hostgroupIds = append(hostgroupIds, hg.ValueString())
@@ -253,28 +318,28 @@ func FilterHostGroupIds(ctx context.Context, state *models.HostGroupDataSourceMo
 }
 
 // HostGroupDetailMapper convert pmaxTypes.HostGroup to models.HostGroupDetailModal.
-func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal, diag.Diagnostics) {
+func HostGroupDetailMapper(hg *powermax.HostGroup) (models.HostGroupDetailModal, diag.Diagnostics) {
 	model := models.HostGroupDetailModal{
-		HostGroupID:       types.StringValue(hg.HostGroupID),
-		Name:              types.StringValue(hg.HostGroupID),
-		ConsistentLun:     types.BoolValue(hg.ConsistentLun),
-		PortFlagsOverride: types.BoolValue(hg.PortFlagsOverride),
-		NumOfMaskingViews: types.Int64Value(hg.NumberMaskingViews),
-		NumOfHosts:        types.Int64Value(hg.NumOfHosts),
-		NumOfInitiators:   types.Int64Value(hg.NumberInitiators),
-		Type:              types.StringValue(hg.HostGroupType),
+		HostGroupID:       types.StringValue(hg.HostGroupId),
+		Name:              types.StringValue(hg.HostGroupId),
+		ConsistentLun:     types.BoolValue(*hg.ConsistentLun),
+		PortFlagsOverride: types.BoolValue(*hg.PortFlagsOverride),
+		NumOfMaskingViews: types.Int64Value(*hg.NumOfMaskingViews),
+		NumOfHosts:        types.Int64Value(int64(*hg.NumOfHosts)),
+		NumOfInitiators:   types.Int64Value(int64(*hg.NumOfInitiators)),
+		Type:              types.StringValue(*hg.Type),
 	}
 	var hosts []models.HostGroupHostDetailModal
 	var err diag.Diagnostics
-	for _, host := range hg.Hosts {
+	for _, host := range hg.Host {
 		var intiators types.List
 
 		tempHost := models.HostGroupHostDetailModal{
-			HostID: types.StringValue(host.HostID),
+			HostID: types.StringValue(host.HostId),
 		}
-		if len(host.Initiators) > 0 {
+		if len(host.Initiator) > 0 {
 			var attributeList []attr.Value
-			for _, attribute := range host.Initiators {
+			for _, attribute := range host.Initiator {
 				attributeList = append(attributeList, types.StringValue(attribute))
 			}
 			intiators, err = types.ListValue(types.StringType, attributeList)
@@ -293,9 +358,9 @@ func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal
 		model.Host = hosts
 	}
 
-	if len(hg.MaskingviewIDs) > 0 {
+	if len(hg.Maskingview) > 0 {
 		var attributeList []attr.Value
-		for _, attribute := range hg.MaskingviewIDs {
+		for _, attribute := range hg.Maskingview {
 			attributeList = append(attributeList, types.StringValue(attribute))
 		}
 		model.Maskingview, err = types.ListValue(types.StringType, attributeList)
@@ -313,77 +378,39 @@ func HostGroupDetailMapper(hg *pmaxTypes.HostGroup) (models.HostGroupDetailModal
 }
 
 // HandleHostFlag Sets the hostflag state in the plan if there is not one there by default, otherwise use what is in the plan.
-func HandleHostFlag(plan models.HostGroupModel) pmaxTypes.HostFlags {
+func HandleHostFlag(plan models.HostGroupModel) powermax.HostFlags {
 	if plan.HostFlags == nil {
-		return pmaxTypes.HostFlags{
-			VolumeSetAddressing: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			DisableQResetOnUA: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			EnvironSet: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			AvoidResetBroadcast: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			OpenVMS: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			SCSI3: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			Spc2ProtocolVersion: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			SCSISupport1: &pmaxTypes.HostFlag{
-				Enabled:  false,
-				Override: false,
-			},
-			ConsistentLUN: plan.ConsistentLun.ValueBool(),
+		return *powermax.NewHostFlags(
+			*powermax.NewVolumeSetAddressing(false, false),
+			*powermax.NewDisableQResetOnUa(false, false),
+			*powermax.NewEnvironSet(false, false),
+			*powermax.NewAvoidResetBroadcast(false, false),
+			*powermax.NewOpenvms(false, false),
+			*powermax.NewScsi3(false, false),
+			*powermax.NewSpc2ProtocolVersion(false, false),
+			*powermax.NewScsiSupport1(false, false),
+			false,
+		)
+	}
+
+	return *powermax.NewHostFlags(
+		*powermax.NewVolumeSetAddressing(plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(), plan.HostFlags.VolumeSetAddressing.Override.ValueBool()),
+		*powermax.NewDisableQResetOnUa(plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(), plan.HostFlags.DisableQResetOnUA.Override.ValueBool()),
+		*powermax.NewEnvironSet(plan.HostFlags.EnvironSet.Enabled.ValueBool(), plan.HostFlags.EnvironSet.Override.ValueBool()),
+		*powermax.NewAvoidResetBroadcast(plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(), plan.HostFlags.AvoidResetBroadcast.Override.ValueBool()),
+		*powermax.NewOpenvms(plan.HostFlags.OpenVMS.Enabled.ValueBool(), plan.HostFlags.OpenVMS.Override.ValueBool()),
+		*powermax.NewScsi3(plan.HostFlags.SCSI3.Enabled.ValueBool(), plan.HostFlags.SCSI3.Override.ValueBool()),
+		*powermax.NewSpc2ProtocolVersion(plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(), plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool()),
+		*powermax.NewScsiSupport1(plan.HostFlags.SCSISupport1.Enabled.ValueBool(), plan.HostFlags.SCSISupport1.Override.ValueBool()),
+		plan.ConsistentLun.ValueBool(),
+	)
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
 		}
 	}
-	return pmaxTypes.HostFlags{
-		VolumeSetAddressing: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),
-			Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
-		},
-		DisableQResetOnUA: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
-			Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
-		},
-		EnvironSet: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
-			Override: plan.HostFlags.EnvironSet.Override.ValueBool(),
-		},
-		AvoidResetBroadcast: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(),
-			Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
-		},
-		OpenVMS: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
-			Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
-		},
-		SCSI3: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
-			Override: plan.HostFlags.SCSI3.Override.ValueBool(),
-		},
-		Spc2ProtocolVersion: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
-			Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
-		},
-		SCSISupport1: &pmaxTypes.HostFlag{
-			Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
-			Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
-		},
-		ConsistentLUN: plan.ConsistentLun.ValueBool(),
-	}
+	return false
 }
