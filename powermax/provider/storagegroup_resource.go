@@ -19,12 +19,11 @@ package provider
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	"fmt"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
-
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -82,8 +81,8 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"srp_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The SRP to be associated with the Storage Group. An existing SRP or 'none' must be specified",
-				MarkdownDescription: "The SRP to be associated with the Storage Group. An existing SRP or 'none' must be specified",
+				Description:         "The Srp to be associated with the Storage Group. An existing Srpor 'none' must be specified",
+				MarkdownDescription: "The Srp to be associated with the Storage Group. An existing Srpor 'none' must be specified",
 			},
 			"service_level": schema.StringAttribute{
 				Computed:            true,
@@ -270,16 +269,20 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	optionalPayload := make(map[string]interface{})
-	hostIOLimit := helper.ConstructHostIOLimit(plan)
-	if hostIOLimit != nil {
-		optionalPayload["hostLimits"] = hostIOLimit
-	}
-
-	sg, err := r.client.PmaxClient.CreateStorageGroup(ctx, r.client.SymmetrixID, plan.StorageGroupID.ValueString(), plan.SRP.ValueString(), plan.SLO.ValueString(), false, optionalPayload)
+	sgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateStorageGroup(ctx, r.client.SymmetrixID)
+	create := powermax.NewCreateStorageGroupParam(plan.StorageGroupId.ValueString())
+	create.SetSrpId(plan.Srp.ValueString())
+	create.SetSloBasedStorageGroupParam(helper.CreateSloParam(plan))
+	sgModel = sgModel.CreateStorageGroupParam(*create)
+	sg, _, err := sgModel.Execute()
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create storage group, got error: %s", err.Error()))
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create storage group, got error: %s", message))
+		} else {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create storage group, got error: %s", err.Error()))
+		}
 		return
 	}
 
@@ -288,15 +291,27 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 
 	// Add or remove existing volumes to the storage group based on volume attributes
-	err = helper.AddRemoveVolume(ctx, &plan, &state, r.client)
+	err = helper.AddRemoveVolume(ctx, &plan, &state, r.client, plan.StorageGroupId.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to update volume", err.Error())
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Failed to update volume", message)
+		} else {
+			resp.Diagnostics.AddError("Failed to update volume", err.Error())
+		}
 		return
 	}
 
-	err = helper.UpdateSgState(ctx, r.client, plan.StorageGroupID.ValueString(), &state)
+	err = helper.UpdateSgState(ctx, r.client, plan.StorageGroupId.ValueString(), &state)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error updating state for storage group", message)
+		} else {
+			resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		}
 		return
 	}
 
@@ -318,9 +333,15 @@ func (r *StorageGroup) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	err := helper.UpdateSgState(ctx, r.client, state.StorageGroupID.ValueString(), &state)
+	err := helper.UpdateSgState(ctx, r.client, state.StorageGroupId.ValueString(), &state)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error updating state for storage group", message)
+		} else {
+			resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		}
 		return
 	}
 
@@ -345,27 +366,37 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 	// Read Storage Group ID from state in case of renaming
-	stateID := state.StorageGroupID.ValueString()
+	stateID := state.StorageGroupId.ValueString()
 	sgID := stateID
-	payload := pmaxTypes.UpdateStorageGroupPayload{ExecutionOption: pmaxTypes.ExecutionOptionSynchronous}
+	payload := r.client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, r.client.SymmetrixID, sgID)
 
 	// Storage Group update need to be done separately because only one payload is accepted by the REST API
 	// Rename
-	planID := plan.StorageGroupID.ValueString()
+	planID := plan.StorageGroupId.ValueString()
 	if stateID != planID {
-		payload.EditStorageGroupActionParam = pmaxTypes.EditStorageGroupActionParam{
-			RenameStorageGroupParam: &pmaxTypes.RenameStorageGroupParam{
-				NewStorageGroupName: planID,
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				RenameStorageGroupParam: &powermax.RenameStorageGroupParam{
+					NewStorageGroupName: planID,
+				},
 			},
-		}
-		err := r.client.PmaxClient.UpdateStorageGroupS(ctx, r.client.SymmetrixID, sgID, payload)
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update Storage Group ID(name): %s", err.Error()))
-			resp.Diagnostics.AddError("Failed to update Storage Group ID(name)", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Failed to update Storage Group ID(name)", message)
+				tflog.Error(ctx, fmt.Sprintf("Failed to update Storage Group ID(name): %s", err.Error()))
+			} else {
+				tflog.Error(ctx, fmt.Sprintf("Failed to update Storage Group ID(name): %s", err.Error()))
+				resp.Diagnostics.AddError("Failed to update Storage Group ID(name)", err.Error())
+			}
+
 		} else {
 			tflog.Debug(ctx, fmt.Sprintf("Update Storage Group ID(name): %s", planID))
 			sgID = planID
-			state.StorageGroupID = types.StringValue(planID)
+			state.StorageGroupId = types.StringValue(planID)
 		}
 	}
 
@@ -373,15 +404,24 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 	planCompression := plan.Compression.ValueBool()
 	stateCompression := state.Compression.ValueBool()
 	if planCompression != stateCompression {
-		payload.EditStorageGroupActionParam = pmaxTypes.EditStorageGroupActionParam{
-			EditCompressionParam: &pmaxTypes.EditCompressionParam{
-				Compression: &planCompression,
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				EditCompressionParam: &powermax.EditCompressionParam{
+					Compression: &planCompression,
+				},
 			},
-		}
-		err := r.client.PmaxClient.UpdateStorageGroupS(ctx, r.client.SymmetrixID, sgID, payload)
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update compression: %s", err.Error()))
-			resp.Diagnostics.AddError("Failed to update compression", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Failed to update compression:", message)
+				tflog.Error(ctx, fmt.Sprintf("Failed to update compression: %s", err.Error()))
+			} else {
+				tflog.Error(ctx, fmt.Sprintf("Failed to update compression: %s", err.Error()))
+				resp.Diagnostics.AddError("Failed to update compression", err.Error())
+			}
 		} else {
 			tflog.Debug(ctx, fmt.Sprintf("Update compression: %t", planCompression))
 			state.Compression = types.BoolValue(planCompression)
@@ -390,13 +430,28 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	// SetHostIOLimit
 	if !plan.HostIOLimit.IsNull() && !plan.HostIOLimit.Equal(state.HostIOLimit) {
-		payload.EditStorageGroupActionParam = pmaxTypes.EditStorageGroupActionParam{
-			SetHostIOLimitsParam: helper.ConstructHostIOLimit(plan),
-		}
-		err := r.client.PmaxClient.UpdateStorageGroupS(ctx, r.client.SymmetrixID, sgID, payload)
+		hostIOLimit := helper.ConstructHostIOLimit(plan)
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				SetHostIOLimitsParam: &powermax.SetHostIOLimitsParam{
+					HostIoLimitMbSec:    &hostIOLimit.HostIOLimitMBSec,
+					HostIoLimitIoSec:    &hostIOLimit.HostIOLimitIOSec,
+					DynamicDistribution: &hostIOLimit.DynamicDistribution,
+				},
+			},
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update hostIOLimit: %s", err.Error()))
-			resp.Diagnostics.AddError("Failed to update hostIOLimit", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Failed to update hostIOLimit:", message)
+				tflog.Error(ctx, fmt.Sprintf("Failed to update hostIOLimit: %s", err.Error()))
+			} else {
+				tflog.Error(ctx, fmt.Sprintf("Failed to update hostIOLimit: %s", err.Error()))
+				resp.Diagnostics.AddError("Failed to update hostIOLimit", err.Error())
+			}
+
 		} else {
 			tflog.Debug(ctx, fmt.Sprintf("Update hostIOLimit: %v", plan.HostIOLimit))
 		}
@@ -406,72 +461,112 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 	planWorkload := plan.Workload.ValueString()
 	stateWorkload := state.Workload.ValueString()
 	if planWorkload != stateWorkload {
-		payload.EditStorageGroupActionParam = pmaxTypes.EditStorageGroupActionParam{
-			EditStorageGroupWorkloadParam: &pmaxTypes.EditStorageGroupWorkloadParam{
-				WorkloadSelection: planWorkload,
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				EditStorageGroupWorkloadParam: &powermax.EditStorageGroupWorkloadParam{
+					WorkloadSelection: planWorkload,
+				},
 			},
-		}
-		err := r.client.PmaxClient.UpdateStorageGroupS(ctx, r.client.SymmetrixID, sgID, payload)
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update workload: %s", err.Error()))
-			resp.Diagnostics.AddError("Failed to update workload", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Failed to update workload:", message)
+				tflog.Error(ctx, fmt.Sprintf("Failed to update workload: %s", err.Error()))
+			} else {
+				tflog.Error(ctx, fmt.Sprintf("Failed to update workload: %s", err.Error()))
+				resp.Diagnostics.AddError("Failed to update workload", err.Error())
+			}
 		} else {
 			tflog.Debug(ctx, fmt.Sprintf("Update workload: %s", planWorkload))
 			state.Workload = types.StringValue(planWorkload)
 		}
 	}
 
-	// Edit SLO
-	planSLO := plan.SLO.ValueString()
-	stateSLO := state.SLO.ValueString()
+	// Edit Slo
+	planSLO := plan.Slo.ValueString()
+	stateSLO := state.Slo.ValueString()
 	if planSLO != stateSLO {
-		payload.EditStorageGroupActionParam = pmaxTypes.EditStorageGroupActionParam{
-			EditStorageGroupSLOParam: &pmaxTypes.EditStorageGroupSLOParam{
-				SLOID: planSLO,
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				EditStorageGroupSLOParam: &powermax.EditStorageGroupSLOParam{
+					SloId: planSLO,
+				},
 			},
-		}
-		err := r.client.PmaxClient.UpdateStorageGroupS(ctx, r.client.SymmetrixID, sgID, payload)
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update SLO: %s", err.Error()))
-			resp.Diagnostics.AddError("Failed to update SLO", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Failed to update Slo:", message)
+				tflog.Error(ctx, fmt.Sprintf("Failed to update Slo: %s", err.Error()))
+			} else {
+				tflog.Error(ctx, fmt.Sprintf("Failed to update Slo: %s", err.Error()))
+				resp.Diagnostics.AddError("Failed to update Slo", err.Error())
+			}
 		} else {
-			tflog.Debug(ctx, fmt.Sprintf("Update SLO: %s", planSLO))
-			state.SLO = types.StringValue(planSLO)
+			tflog.Debug(ctx, fmt.Sprintf("Update Slo: %s", planSLO))
+			state.Slo = types.StringValue(planSLO)
 		}
 	}
 
-	// Edit SRP
-	planSRP := plan.SRP.ValueString()
-	stateSRP := state.SRP.ValueString()
+	// Edit Srp
+	planSRP := plan.Srp.ValueString()
+	stateSRP := state.Srp.ValueString()
 	if planSRP != stateSRP {
-		payload.EditStorageGroupActionParam = pmaxTypes.EditStorageGroupActionParam{
-			EditStorageGroupSRPParam: &pmaxTypes.EditStorageGroupSRPParam{
-				SRPID: planSRP,
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				EditStorageGroupSRPParam: &powermax.EditStorageGroupSRPParam{
+					SrpId: planSRP,
+				},
 			},
-		}
-		err := r.client.PmaxClient.UpdateStorageGroupS(ctx, r.client.SymmetrixID, sgID, payload)
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update SRP: %s", err.Error()))
-			resp.Diagnostics.AddError("Failed to update SRP", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Failed to update Srp:", message)
+				tflog.Error(ctx, fmt.Sprintf("Failed to update Srp: %s", err.Error()))
+			} else {
+				tflog.Error(ctx, fmt.Sprintf("Failed to update Srp: %s", err.Error()))
+				resp.Diagnostics.AddError("Failed to update Srp", err.Error())
+			}
 		} else {
-			tflog.Debug(ctx, fmt.Sprintf("Update SRP: %s", planSLO))
-			state.SRP = types.StringValue(planSRP)
+			tflog.Debug(ctx, fmt.Sprintf("Update Srp: %s", planSLO))
+			state.Srp = types.StringValue(planSRP)
 		}
 	}
 
 	// Update Volume
-	err := helper.AddRemoveVolume(ctx, &plan, &state, r.client)
+	err := helper.AddRemoveVolume(ctx, &plan, &state, r.client, sgID)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to update volume", err.Error())
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Failed to update volume:", message)
+		} else {
+			resp.Diagnostics.AddError("Failed to update volume", err.Error())
+		}
 		return
 	}
 
 	err = helper.UpdateSgState(ctx, r.client, sgID, &state)
 	if err != nil {
-		resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error updating state for storage group:", message)
+		} else {
+			resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		}
 		return
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("Applying this State!!! %v", state))
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -487,10 +582,16 @@ func (r *StorageGroup) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	err := r.client.PmaxClient.DeleteStorageGroup(ctx, r.client.SymmetrixID, data.StorageGroupID.ValueString())
+	deletePayload := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteStorageGroup(ctx, r.client.SymmetrixID, data.StorageGroupId.ValueString())
+	_, err := deletePayload.Execute()
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete storage group, got error: %s", err))
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete storage group, got error: %s", message))
+		} else {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete storage group, got error: %s", err))
+		}
 		return
 	}
 
