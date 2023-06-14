@@ -122,7 +122,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 		hostResponse, _, err := getReq.Execute()
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "initiators")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s for %s %s", "couldn't get the host data", state.HostID.ValueString(), hostResponse))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s for %s %v", "couldn't get the host data", state.HostID.ValueString(), hostResponse))
 		}
 
 		var planInitiatorsLowerCase []string

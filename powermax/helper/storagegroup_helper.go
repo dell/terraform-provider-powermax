@@ -19,13 +19,15 @@ package helper
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	"fmt"
+	"terraform-provider-powermax/client"
+	"terraform-provider-powermax/powermax/models"
+
 	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"terraform-provider-powermax/client"
-	"terraform-provider-powermax/powermax/models"
 )
 
 // constants to annotate if a volume should be added or removed.
@@ -36,7 +38,8 @@ const (
 )
 
 // AddRemoveVolume add or remove a volume based on the config of plan and current state.
-func AddRemoveVolume(ctx context.Context, plan, state *models.StorageGroupResourceModel, client *client.Client) error {
+func AddRemoveVolume(ctx context.Context, plan *models.StorageGroupResourceModel, state *models.StorageGroupResourceModel, client *client.Client, sgId string) error {
+
 	var planVolumeIDs []string
 	var stateVolumeIDs []string
 
@@ -66,6 +69,7 @@ func AddRemoveVolume(ctx context.Context, plan, state *models.StorageGroupResour
 		return nil
 	}
 
+	payload := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, client.SymmetrixID, sgId)
 	// Add or remove existing volumes to the storage group based on the attribute "volume_ids"
 	volumeIDMap := make(map[string]int)
 	for _, elem := range planVolumeIDs {
@@ -88,13 +92,29 @@ func AddRemoveVolume(ctx context.Context, plan, state *models.StorageGroupResour
 		}
 	}
 	if len(addVolumeArr) > 0 {
-		err := client.PmaxClient.AddVolumesToStorageGroupS(ctx, client.SymmetrixID, plan.StorageGroupID.ValueString(), false, addVolumeArr...)
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				ExpandStorageGroupParam: &powermax.ExpandStorageGroupParam{
+					AddSpecificVolumeParam: &powermax.AddSpecificVolumeParam{
+						VolumeId: addVolumeArr,
+					},
+				},
+			},
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
 			return err
 		}
 	}
 	if len(removeVolumeArr) > 0 {
-		_, err := client.PmaxClient.RemoveVolumesFromStorageGroup(ctx, client.SymmetrixID, plan.StorageGroupID.ValueString(), false, removeVolumeArr...)
+		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				RemoveVolumeParam: &powermax.RemoveVolumeParam{
+					VolumeId: removeVolumeArr,
+				},
+			},
+		})
+		_, _, err := payload.Execute()
 		if err != nil {
 			return err
 		}
@@ -103,10 +123,57 @@ func AddRemoveVolume(ctx context.Context, plan, state *models.StorageGroupResour
 	return nil
 }
 
+func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedStorageGroupParam {
+
+	hostIOLimit := ConstructHostIOLimit(plan)
+	workload := "None"
+	thickVolumes := false
+
+	if hostIOLimit != nil {
+		return []powermax.SloBasedStorageGroupParam{
+			{
+				SloId:                      plan.Slo.ValueStringPointer(),
+				WorkloadSelection:          &workload,
+				AllocateCapacityForEachVol: &thickVolumes,
+				NoCompression:              &thickVolumes,
+				VolumeAttributes: []powermax.VolumeAttribute{
+					{
+						VolumeSize:   "0",
+						CapacityUnit: "CYL",
+						NumOfVols:    0,
+					},
+				},
+				SetHostIOLimitsParam: &powermax.SetHostIOLimitsParam{
+					HostIoLimitMbSec:    &hostIOLimit.HostIOLimitMBSec,
+					HostIoLimitIoSec:    &hostIOLimit.HostIOLimitIOSec,
+					DynamicDistribution: &hostIOLimit.DynamicDistribution,
+				},
+			},
+		}
+	} else {
+		return []powermax.SloBasedStorageGroupParam{
+			{
+				SloId:                      plan.Slo.ValueStringPointer(),
+				WorkloadSelection:          &workload,
+				AllocateCapacityForEachVol: &thickVolumes,
+				NoCompression:              &thickVolumes,
+				VolumeAttributes: []powermax.VolumeAttribute{
+					{
+						VolumeSize:   "0",
+						CapacityUnit: "CYL",
+						NumOfVols:    0,
+					},
+				},
+			},
+		}
+	}
+}
+
 // UpdateSgState update the state of storage group based on the current state of the storage group.
 func UpdateSgState(ctx context.Context, client *client.Client, sgID string, state *models.StorageGroupResourceModel) error {
 	// Update all fields of state
-	storageGroup, err := client.PmaxClient.GetStorageGroup(ctx, client.SymmetrixID, sgID)
+	sgModel := client.PmaxOpenapiClient.SLOProvisioningApi.GetStorageGroup2(ctx, client.SymmetrixID, sgID)
+	storageGroup, _, err := sgModel.Execute()
 	if err != nil {
 		return err
 	}
@@ -125,9 +192,9 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 				"dynamic_distribution": types.StringType,
 			},
 			map[string]attr.Value{
-				"host_io_limit_io_sec": types.StringValue(storageGroup.HostIOLimit.HostIOLimitIOSec),
-				"host_io_limit_mb_sec": types.StringValue(storageGroup.HostIOLimit.HostIOLimitMBSec),
-				"dynamic_distribution": types.StringValue(storageGroup.HostIOLimit.DynamicDistribution),
+				"host_io_limit_io_sec": types.StringValue(*storageGroup.HostIOLimit.HostIoLimitIoSec),
+				"host_io_limit_mb_sec": types.StringValue(*storageGroup.HostIOLimit.HostIoLimitMbSec),
+				"dynamic_distribution": types.StringValue(*storageGroup.HostIOLimit.DynamicDistribution),
 			})
 	} else {
 		state.HostIOLimit, _ = types.ObjectValue(
@@ -144,14 +211,23 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 	}
 
 	// Read volume list in storage group
-	volumeIDListInStorageGroup, err := client.PmaxClient.GetVolumeIDListInStorageGroup(ctx, client.SymmetrixID, state.StorageGroupID.ValueString())
+	volIdModel := client.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, client.SymmetrixID)
+	// Set the storage group id
+	volIdModel = volIdModel.StorageGroupId(storageGroup.StorageGroupId)
+	volumeIDListInStorageGroup, _, err := volIdModel.Execute()
+	vol := make([]string, 0, len(volumeIDListInStorageGroup.GetResultList().Result))
+	for _, v := range volumeIDListInStorageGroup.ResultList.Result {
+		for _, v2 := range v {
+			vol = append(vol, fmt.Sprint(v2))
+		}
+	}
 	if err != nil {
 		return err
 	}
-	state.VolumeIDs, _ = types.ListValueFrom(ctx, types.StringType, volumeIDListInStorageGroup)
 
+	state.VolumeIDs, _ = types.ListValueFrom(ctx, types.StringType, vol)
 	// set ID
-	state.ID = types.StringValue(storageGroup.StorageGroupID)
+	state.ID = types.StringValue(storageGroup.StorageGroupId)
 
 	return nil
 }

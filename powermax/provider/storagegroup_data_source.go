@@ -19,11 +19,13 @@ package provider
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -281,12 +283,19 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 	var sgIDs []string
 	// Get storage group IDs from config or query all if not specified
 	if data.StorageGroupFilter == nil || len(data.StorageGroupFilter.IDs) == 0 {
-		storageGroupIDList, err := d.client.PmaxClient.GetStorageGroupIDList(ctx, d.client.SymmetrixID, "", false)
+		sgModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListStorageGroups(ctx, d.client.SymmetrixID)
+		storageGroupIDList, _, err := sgModel.Execute()
 		if err != nil {
-			resp.Diagnostics.AddError("Error reading storage group ids", err.Error())
+			err1, ok := err.(*powermax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Error reading storage group ids:", message)
+			} else {
+				resp.Diagnostics.AddError("Error reading storage group ids", err.Error())
+			}
 			return
 		}
-		sgIDs = storageGroupIDList.StorageGroupIDs
+		sgIDs = storageGroupIDList.StorageGroupId
 	} else {
 		// get ids from data.StorageGroupFilter.IDs and assign to sgIDs
 		for _, sg := range data.StorageGroupFilter.IDs {
@@ -306,6 +315,9 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 	state.ID = types.StringValue("storage-group-data-source")
 	state.StorageGroupFilter = data.StorageGroupFilter
+
+	tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0]))
+	tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0].VolumeIDs))
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
