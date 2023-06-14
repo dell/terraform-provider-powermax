@@ -19,6 +19,7 @@ package helper
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -178,6 +179,20 @@ func ParseBody(body []byte) (string, error) {
 		return "", fmt.Errorf("No message field found in body")
 	}
 	return message, nil
+}
+
+func GetErrorString(err error, errStr string) string {
+	err1, ok := err.(*pmax.GenericOpenAPIError)
+	message := ""
+	msgStr := ""
+	if ok {
+		message, _ := ParseBody(err1.Body())
+		errStr = errStr + message
+	}
+	if message == "" {
+		errStr = errStr + err.Error()
+	}
+	return msgStr
 }
 
 func StringInSlice(a string, list []string) bool {

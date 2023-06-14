@@ -19,26 +19,31 @@ package helper
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
+	"regexp"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
+	pmax "dell/powermax-go-client"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // GetPmaxPortsFromTfsdkPG returns a slice of pmaxTypes.PortKey from a models.PortGroup.
-func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
+func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmax.SymmetrixPortKey {
 
 	if len(tfsdkPg.Ports) > 0 {
-		pmaxPorts := make([]pmaxTypes.PortKey, 0)
+		pmaxPorts := make([]pmax.SymmetrixPortKey, 0)
 
 		for _, port := range tfsdkPg.Ports {
-			portmap := pmaxTypes.PortKey{
-				DirectorID: port.DirectorID.ValueString(),
-				PortID:     port.PortID.ValueString(),
+			portmap := pmax.SymmetrixPortKey{
+				DirectorId: port.DirectorID.ValueString(),
+				PortId:     port.PortID.ValueString(),
 			}
 			pmaxPorts = append(pmaxPorts, portmap)
 		}
@@ -49,23 +54,29 @@ func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmaxTypes.PortKey {
 }
 
 // UpdatePGState updates the state of a PortGroup.
-func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.PortGroup) {
-	pgState.ID = types.StringValue(pgResponse.PortGroupID)
-	pgState.Name = types.StringValue(pgResponse.PortGroupID)
-	if pgResponse.PortGroupProtocol == "" {
-		pgState.Protocol = pgPlan.Protocol
+func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmax.PortGroup) {
+	pgState.ID = types.StringValue(pgResponse.PortGroupId)
+	pgState.Name = types.StringValue(pgResponse.PortGroupId)
+	if portGroupProtocol, ok := pgResponse.GetPortGroupProtocolOk(); ok {
+		pgState.Protocol = types.StringValue(*portGroupProtocol)
 	} else {
-		pgState.Protocol = types.StringValue(pgResponse.PortGroupProtocol)
+		pgState.Protocol = pgPlan.Protocol
 	}
 
-	pgState.NumOfMaskingViews = types.Int64Value(pgResponse.NumberMaskingViews)
-	pgState.NumOfPorts = types.Int64Value(pgResponse.NumberPorts)
-	pgState.Type = types.StringValue(pgResponse.PortGroupType)
+	if portGroupNoMaskingview, ok := pgResponse.GetNumOfMaskingViewsOk(); ok {
+		pgState.NumOfMaskingViews = types.Int64Value(*portGroupNoMaskingview)
+	}
+	if numOfPorts, ok := pgResponse.GetNumOfPortsOk(); ok {
+		pgState.NumOfPorts = types.Int64Value(int64(*numOfPorts))
+	}
+	if pgtype, ok := pgResponse.GetTypeOk(); ok {
+		pgState.Type = types.StringValue(*pgtype)
+	}
 
 	var attributeListType types.List
-	if len(pgResponse.MaskingView) > 0 {
+	if portGroupMaskingview, ok := pgResponse.GetMaskingviewOk(); ok {
 		var attributeList []attr.Value
-		for _, attribute := range pgResponse.MaskingView {
+		for _, attribute := range portGroupMaskingview {
 			attributeList = append(attributeList, types.StringValue(attribute))
 		}
 		attributeListType, _ = types.ListValue(
@@ -85,12 +96,12 @@ func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmaxTypes.Port
 	symmetrixPortkeyDetails := make([]models.PortKey, 0)
 	pmaxPortKeysToTfsdkPorts := make(map[string]models.PortKey)
 	for _, symmetrixPortkey := range pgResponse.SymmetrixPortKey {
-		director := strings.ToUpper(symmetrixPortkey.DirectorID)
-		port := strings.ToLower(symmetrixPortkey.PortID)
+		director := strings.ToUpper(symmetrixPortkey.DirectorId)
+		port := strings.ToLower(symmetrixPortkey.PortId)
 		key := fmt.Sprintf("%s/%s", director, port)
 		pmaxPortKeysToTfsdkPorts[key] = models.PortKey{
-			DirectorID: types.StringValue(symmetrixPortkey.DirectorID),
-			PortID:     types.StringValue(symmetrixPortkey.PortID),
+			DirectorID: types.StringValue(symmetrixPortkey.DirectorId),
+			PortID:     types.StringValue(symmetrixPortkey.PortId),
 		}
 	}
 
@@ -117,7 +128,7 @@ func UpdatePortGroup(ctx context.Context, client client.Client, planPg, statePg 
 	planPorts := GetPmaxPortsFromTfsdkPG(planPg)
 	statePorts := GetPmaxPortsFromTfsdkPG(statePg)
 	if !(len(planPorts) == 0 && len(statePorts) == 0) {
-		_, err := client.PmaxClient.UpdatePortGroup(ctx, client.SymmetrixID, statePg.Name.ValueString(), planPorts)
+		_, err := updatePortGroupParams(ctx, client, statePg.Name.ValueString(), planPorts)
 		if err != nil {
 			updateFailedParams = append(updateFailedParams, "ports")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to update ports: %s", err.Error()))
@@ -128,7 +139,7 @@ func UpdatePortGroup(ctx context.Context, client client.Client, planPg, statePg 
 	}
 
 	if planPg.Name.ValueString() != statePg.Name.ValueString() {
-		_, err := client.PmaxClient.RenamePortGroup(ctx, client.SymmetrixID, statePg.ID.ValueString(), planPg.Name.ValueString())
+		_, err := RenamePortGroup(ctx, client, client.SymmetrixID, statePg.ID.ValueString(), planPg.Name.ValueString())
 		if err != nil {
 			updateFailedParams = append(updateFailedParams, "name")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename PortGroup: %s", err.Error()))
@@ -137,4 +148,154 @@ func UpdatePortGroup(ctx context.Context, client client.Client, planPg, statePg 
 		}
 	}
 	return updatedParams, updateFailedParams, errorMessages
+}
+
+// UpdatePortGroup - Update the PortGroup based on the 'ports' slice. The slice represents the intended
+// configuration of the PortGroup after successful completion of the request.
+// based on the passed in 'ports' the implementation will determine how to update
+// the PortGroup and make appropriate REST calls sequentially. Take this into
+// consideration when making parallel calls.
+func updatePortGroupParams(ctx context.Context, client client.Client, portGroupID string, ports []pmax.SymmetrixPortKey) (*pmax.PortGroup, error) {
+
+	// Create map of string "<DIRECTOR ID>/<PORT ID>" to a SymmetrixPortKeyType object based on the passed in 'ports'
+	inPorts := make(map[string]*pmax.SymmetrixPortKey)
+	for _, port := range ports {
+		director := strings.ToUpper(port.DirectorId)
+		port := strings.ToLower(port.PortId)
+		key := fmt.Sprintf("%s/%s", director, port)
+		if inPorts[key] == nil {
+			inPorts[key] = &pmax.SymmetrixPortKey{
+				DirectorId: director,
+				PortId:     port,
+			}
+		}
+	}
+	pg, shouldReturn, returnValue := ReadPortgroupById(client, ctx, portGroupID)
+	if shouldReturn {
+		return pg, returnValue
+	}
+
+	portIDRegex, _ := regexp.Compile(`\\w+:(\\d+)`)
+
+	// Create map of string "<DIRECTOR ID>/<PORT ID>" to a SymmetrixPortKeyType object based on what's found
+	// in the PortGroup
+	pgPorts := make(map[string]*pmax.SymmetrixPortKey)
+	for _, p := range pg.SymmetrixPortKey {
+		director := strings.ToUpper(p.DirectorId)
+		// PortID string may come as a combination of directory + port_number
+		// Extract just the port_number part
+		port := strings.ToLower(p.PortId)
+		submatch := portIDRegex.FindAllStringSubmatch(port, -1)
+		if len(submatch) > 0 {
+			port = submatch[0][1]
+		}
+		key := fmt.Sprintf("%s/%s", director, port)
+		pgPorts[key] = &pmax.SymmetrixPortKey{
+			DirectorId: director,
+			PortId:     port,
+		}
+	}
+
+	// Diff ports in request with ones in PortGroup --> ports to add
+	var added []pmax.SymmetrixPortKey
+	for k, v := range inPorts {
+		if pgPorts[k] == nil {
+			added = append(added, *v)
+		}
+	}
+
+	// Diff ports in PortGroup with ones in request --> ports to remove
+	var removed []pmax.SymmetrixPortKey
+	for k, v := range pgPorts {
+		if inPorts[k] == nil {
+			removed = append(removed, *v)
+		}
+	}
+
+	if len(added) > 0 {
+		tflog.Info(ctx, fmt.Sprintf("Adding ports %v", added))
+
+		edit := &pmax.EditPortGroupActionParam{
+			AddPortParam: &pmax.AddPortParam{
+				Port: added,
+			},
+		}
+		pgResponse, shouldReturn, err1 := ModifyPortGroup(client, ctx, portGroupID, *edit)
+		if shouldReturn {
+			return pgResponse, err1
+		}
+	}
+
+	if len(removed) > 0 {
+		tflog.Info(ctx, fmt.Sprintf("Removing ports %v", removed))
+		edit := &pmax.EditPortGroupActionParam{
+			RemovePortParam: &pmax.RemovePortParam{
+				Port: removed,
+			},
+		}
+		pgResponse, shouldReturn, err1 := ModifyPortGroup(client, ctx, portGroupID, *edit)
+		if shouldReturn {
+			return pgResponse, err1
+		}
+	}
+	return pg, nil
+}
+
+func ModifyPortGroup(client client.Client, ctx context.Context, portGroupID string, edit pmax.EditPortGroupActionParam) (*pmax.PortGroup, bool, error) {
+	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroup(ctx, client.SymmetrixID, portGroupID)
+	editParam := pmax.NewEditPortGroupParam(edit)
+	modifyParam.EditPortGroupParam(*editParam)
+	pgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroupExecute(modifyParam)
+	if err != nil {
+		return pgResponse, true, err
+	}
+	if resp1.StatusCode != http.StatusOK {
+		err1 := errors.New(
+			"Unable to Read PowerMax Port Groups. Got http error - " +
+				resp1.Status,
+		)
+		return pgResponse, true, err1
+	}
+	tflog.Debug(ctx, "get port group by ID response", map[string]interface{}{
+		"pgResponse": pgResponse,
+	})
+	return pgResponse, false, nil
+}
+
+// RenamePortGroup - Renames a port group.
+func RenamePortGroup(ctx context.Context, client client.Client, symID string, portGroupID string, newName string) (*pmax.PortGroup, error) {
+
+	RenamePortGroupParam := pmax.RenamePortGroupParam{
+		NewPortGroupName: newName,
+	}
+
+	edit := pmax.EditPortGroupActionParam{
+		RenamePortGroupParam: &RenamePortGroupParam,
+	}
+	pgResponse, shouldReturn, err1 := ModifyPortGroup(client, ctx, portGroupID, edit)
+	if shouldReturn {
+		return pgResponse, err1
+	}
+	return pgResponse, nil
+}
+
+// Read PortGroup by ID.
+func ReadPortgroupById(client client.Client, ctx context.Context, portGroupID string) (*pmax.PortGroup, bool, error) {
+	portGroups := client.PmaxOpenapiClient.SLOProvisioningApi.GetPortGroup(ctx, client.SymmetrixID, portGroupID)
+	pgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.GetPortGroupExecute(portGroups)
+
+	if err != nil {
+		return pgResponse, true, err
+	}
+	if resp1.StatusCode != http.StatusOK {
+		err1 := errors.New(
+			"Unable to Read PowerMax Port Groups. Got http error - " +
+				resp1.Status,
+		)
+		return pgResponse, true, err1
+	}
+	tflog.Debug(ctx, "get port group by ID response", map[string]interface{}{
+		"pgResponse": pgResponse,
+	})
+	return pgResponse, false, nil
 }
