@@ -19,7 +19,9 @@ package provider
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
 	"fmt"
+	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -126,7 +128,12 @@ func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 							Description:         "The initiators associated with the host.",
 							MarkdownDescription: "The initiators associated with the host.",
 						},
-
+						"hostgroup": schema.ListAttribute{
+							ElementType:         types.StringType,
+							Computed:            true,
+							Description:         "The host group associated with the host.",
+							MarkdownDescription: "The host group associated with the host.",
+						},
 						"maskingview": schema.ListAttribute{
 							ElementType:         types.StringType,
 							Computed:            true,
@@ -263,12 +270,25 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	// Get host IDs from config or query all if not specified
 	if plan.HostFilter == nil || len(plan.HostFilter.Names) == 0 {
 		// Read all the hosts
-		hostIDList, err := d.client.PmaxClient.GetHostList(ctx, d.client.SymmetrixID)
+		hosts := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHosts(ctx, d.client.SymmetrixID)
+		hostIDList, response, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHostsExecute(hosts)
+
 		if err != nil {
-			resp.Diagnostics.AddError("Error reading host ids", err.Error())
+			err1, ok := err.(*pmax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Error reading host ids", message)
+			}
 			return
 		}
-		hostIds = hostIDList.HostIDs
+		if response.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(
+				"Unable to Read PowerMax Host List. Got http error - %s",
+				response.Status,
+			)
+			return
+		}
+		hostIds = hostIDList.HostId
 	} else {
 		// get ids from filter and assign to hostIds
 		for _, ids := range plan.HostFilter.Names {
@@ -278,10 +298,22 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	// iterate Host IDs and Get Host with each id
 	for _, id := range hostIds {
-		hostResponse, err := d.client.PmaxClient.GetHostByID(ctx, d.client.SymmetrixID, id)
+		getHostReq := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, d.client.SymmetrixID, id)
+		hostResponse, response1, err := getHostReq.Execute()
 		if err != nil || hostResponse == nil {
-			resp.Diagnostics.AddError("Error reading host with id", err.Error())
+			err1, ok := err.(*pmax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Error reading host with id", message)
+			}
 			continue
+		}
+		if response1.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(
+				"Unable to Read PowerMax Host. Got http error - %s",
+				response1.Status,
+			)
+			return
 		}
 		var host models.HostModel
 		tflog.Debug(ctx, "Updating host state")

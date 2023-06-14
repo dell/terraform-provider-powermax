@@ -19,6 +19,7 @@ package helper
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"reflect"
@@ -164,4 +165,26 @@ func copySliceToTargetField(ctx context.Context, fields interface{}) attr.Value 
 		return listValue
 	}
 	return nil
+}
+
+func ParseBody(body []byte) (string, error) {
+	var parsedData map[string]string
+	err := json.Unmarshal(body, &parsedData)
+	if err != nil {
+		return "", err
+	}
+	message, ok := parsedData["message"]
+	if !ok {
+		return "", fmt.Errorf("No message field found in body")
+	}
+	return message, nil
+}
+
+func StringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
