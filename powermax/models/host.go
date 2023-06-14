@@ -32,6 +32,7 @@ type HostModel struct {
 	Initiators         types.List   `tfsdk:"initiator"`
 	MaskingviewIDs     types.List   `tfsdk:"maskingview"`
 	PowerPathHosts     types.List   `tfsdk:"powerpathhosts"`
+	HostGroup          types.List   `tfsdk:"hostgroup"`
 	NumPowerPathHosts  types.Int64  `tfsdk:"numofpowerpathhosts"`
 	BWLimit            types.Int64  `tfsdk:"bw_limit"`
 	// HostFlags - Specifies the flags set for a host

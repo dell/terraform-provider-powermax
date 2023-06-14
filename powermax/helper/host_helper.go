@@ -19,51 +19,81 @@ package helper
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
+	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/models"
 
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // UpdateHostState update host state.
-func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostResponse *pmaxTypes.Host) {
-	hostState.HostID = types.StringValue(hostResponse.HostID)
-	hostState.Name = types.StringValue(hostResponse.HostID)
-	hostState.NumberHostGroups = types.Int64Value(hostResponse.NumberHostGroups)
-	hostState.NumberInitiators = types.Int64Value(hostResponse.NumberInitiators)
-	hostState.NumberMaskingViews = types.Int64Value(hostResponse.NumberMaskingViews)
-	hostState.NumPowerPathHosts = types.Int64Value(hostResponse.NumPowerPathHosts)
-	hostState.BWLimit = types.Int64Value(int64(hostResponse.BWLimit))
-	hostState.HostType = types.StringValue(hostResponse.HostType)
-	hostState.PortFlagsOverride = types.BoolValue(hostResponse.PortFlagsOverride)
-	hostState.ConsistentLun = types.BoolValue(hostResponse.PortFlagsOverride)
+func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostResponse *pmax.Host) {
+	hostState.HostID = types.StringValue(hostResponse.HostId)
+	hostState.Name = types.StringValue(hostResponse.HostId)
+
+	if hostNumMaskingview, ok := hostResponse.GetNumOfMaskingViewsOk(); ok {
+		hostState.NumberMaskingViews = types.Int64Value(*hostNumMaskingview)
+	}
+	if hostNumOfHostGroups, ok := hostResponse.GetNumOfHostGroupsOk(); ok {
+		hostState.NumberHostGroups = types.Int64Value(int64(*hostNumOfHostGroups))
+	}
+	if hostNumOfInitiators, ok := hostResponse.GetNumOfInitiatorsOk(); ok {
+		hostState.NumberInitiators = types.Int64Value(int64(*hostNumOfInitiators))
+	}
+	if hostNumOfPowerPathHosts, ok := hostResponse.GetNumOfPowerpathHostsOk(); ok {
+		hostState.NumPowerPathHosts = types.Int64Value(*hostNumOfPowerPathHosts)
+	}
+	hostBwLimit := hostResponse.GetBwLimit()
+	hostState.BWLimit = types.Int64Value(hostBwLimit)
+
+	if hostType, ok := hostResponse.GetTypeOk(); ok {
+		hostState.HostType = types.StringValue(*hostType)
+	}
+	if hostPortFlagsOverride, ok := hostResponse.GetPortFlagsOverrideOk(); ok {
+		hostState.PortFlagsOverride = types.BoolValue(*hostPortFlagsOverride)
+	}
+	if hostConsistentLun, ok := hostResponse.GetConsistentLunOk(); ok {
+		hostState.ConsistentLun = types.BoolValue(*hostConsistentLun)
+	}
 
 	iniAttributeList := []attr.Value{}
-	for _, ini := range hostResponse.Initiators {
+	for _, ini := range hostResponse.Initiator {
 		iniAttributeList = append(iniAttributeList, types.StringValue(ini))
 	}
 	hostState.Initiators, _ = types.ListValue(types.StringType, iniAttributeList)
 
 	maskViewAttributeList := []attr.Value{}
-	for _, id := range hostResponse.MaskingviewIDs {
+	for _, id := range hostResponse.Maskingview {
 		maskViewAttributeList = append(maskViewAttributeList, types.StringValue(id))
 	}
 	hostState.MaskingviewIDs, _ = types.ListValue(types.StringType, maskViewAttributeList)
 
 	powerPathAttributeList := []attr.Value{}
-	for _, id := range hostResponse.PowerPathHosts {
-		powerPathAttributeList = append(maskViewAttributeList, types.StringValue(id))
+	for _, id := range hostResponse.Powerpathhosts {
+		powerPathAttributeList = append(powerPathAttributeList, types.StringValue(id))
 	}
 	hostState.PowerPathHosts, _ = types.ListValue(types.StringType, powerPathAttributeList)
+
+	hostGroupList := []attr.Value{}
+	for _, hg := range hostResponse.Hostgroup {
+		hostGroupList = append(hostGroupList, types.StringValue(hg))
+	}
+	hostState.HostGroup, _ = types.ListValue(types.StringType, hostGroupList)
+
 	setDefaultHostFlags(hostState)
-	setHostFlags(hostResponse.EnabledFlags, true, hostState)
-	setHostFlags(hostResponse.DisabledFlags, false, hostState)
+	if hostEnabledFlags, ok := hostResponse.GetEnabledFlagsOk(); ok {
+		setHostFlags(*hostEnabledFlags, true, hostState)
+	}
+	if hostDisabledFlags, ok := hostResponse.GetDisabledFlagsOk(); ok {
+		setHostFlags(*hostDisabledFlags, true, hostState)
+	}
 
 }
 
@@ -88,80 +118,152 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	}
 
 	if !CompareStringSlice(planInitiators, stateInitiators) {
-		hostResponse, err := client.PmaxClient.GetHostByID(ctx, client.SymmetrixID, state.HostID.ValueString())
+		getReq := client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, client.SymmetrixID, state.HostID.ValueString())
+		hostResponse, _, err := getReq.Execute()
 		if err != nil {
 			updateFailedParameters = append(updateFailedParameters, "initiators")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s for %s", "couldn't get the host data", state.HostID.ValueString()))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s for %s %s", "couldn't get the host data", state.HostID.ValueString(), hostResponse))
 		}
 
 		var planInitiatorsLowerCase []string
 		for _, planInitiator := range planInitiators {
 			planInitiatorsLowerCase = append(planInitiatorsLowerCase, strings.ToLower(planInitiator))
 		}
-		_, err = client.PmaxClient.UpdateHostInitiators(ctx, client.SymmetrixID, hostResponse, planInitiatorsLowerCase)
-		if err != nil {
-			updateFailedParameters = append(updateFailedParameters, "initiators")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify initiators: %s", err.Error()))
-		} else {
-			updatedParameters = append(updatedParameters, "initiators")
-		}
-	}
+		initRemove := []string{}
+		initAdd := []string{}
 
-	if plan.HostFlags != state.HostFlags || plan.ConsistentLun.ValueBool() != state.ConsistentLun.ValueBool() {
-		hostFlags := pmaxTypes.HostFlags{
-			VolumeSetAddressing: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),
-				Override: plan.HostFlags.VolumeSetAddressing.Override.ValueBool(),
-			},
-			DisableQResetOnUA: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
-				Override: plan.HostFlags.DisableQResetOnUA.Override.ValueBool(),
-			},
-			EnvironSet: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.EnvironSet.Enabled.ValueBool(),
-				Override: plan.HostFlags.EnvironSet.Override.ValueBool(),
-			},
-			AvoidResetBroadcast: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(),
-				Override: plan.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
-			},
-			OpenVMS: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.OpenVMS.Enabled.ValueBool(),
-				Override: plan.HostFlags.OpenVMS.Override.ValueBool(),
-			},
-			SCSI3: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.SCSI3.Enabled.ValueBool(),
-				Override: plan.HostFlags.SCSI3.Override.ValueBool(),
-			},
-			Spc2ProtocolVersion: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
-				Override: plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
-			},
-			SCSISupport1: &pmaxTypes.HostFlag{
-				Enabled:  plan.HostFlags.SCSISupport1.Enabled.ValueBool(),
-				Override: plan.HostFlags.SCSISupport1.Override.ValueBool(),
-			},
-			ConsistentLUN: plan.ConsistentLun.ValueBool(),
+		// check for initiators that are being added
+		for _, init := range planInitiatorsLowerCase {
+			// if this initiator is not in the list of current initiators, add it
+			if !StringInSlice(init, hostResponse.Initiator) {
+				initAdd = append(initAdd, init)
+			}
 		}
-		_, err := client.PmaxClient.UpdateHostFlags(ctx, client.SymmetrixID, state.HostID.ValueString(), &hostFlags)
+
+		// check for initiators to be removed
+		for _, init := range hostResponse.Initiator {
+			if !StringInSlice(init, planInitiatorsLowerCase) {
+				initRemove = append(initRemove, init)
+			}
+		}
+		// add initiators if needed
+		if len(initAdd) > 0 {
+			addInitiatorParam := pmax.NewAddInitiatorParam(initAdd)
+			edit := &pmax.EditHostActionParam{
+				AddInitiatorParam: addInitiatorParam,
+			}
+			_, err := ModifyHost(client, ctx, state.HostID.ValueString(), *edit)
+			if err != nil {
+				err1, ok := err.(*pmax.GenericOpenAPIError)
+				message := ""
+				if ok {
+					message, _ = ParseBody(err1.Body())
+				}
+				updateFailedParameters = append(updateFailedParameters, "add_initiators")
+				errorMessages = append(errorMessages, fmt.Sprintf("Failed to add initiators to host: %s", message))
+			} else {
+				updatedParameters = append(updatedParameters, "add_initiators")
+			}
+		}
+
+		// remove initiators if needed
+		if len(initRemove) > 0 {
+			removeInitiatorParam := pmax.NewRemoveInitiatorParam(initRemove)
+			edit := &pmax.EditHostActionParam{
+				RemoveInitiatorParam: removeInitiatorParam,
+			}
+			_, err := ModifyHost(client, ctx, state.HostID.ValueString(), *edit)
+			if err != nil {
+				err1, ok := err.(*pmax.GenericOpenAPIError)
+				message := ""
+				if ok {
+					message, _ = ParseBody(err1.Body())
+				}
+				updateFailedParameters = append(updateFailedParameters, "remove_initiators")
+				errorMessages = append(errorMessages, fmt.Sprintf("Failed to remove initiators from host: %s", message))
+			} else {
+				updatedParameters = append(updatedParameters, "remove_initiators")
+			}
+		}
+
+	}
+	// Update host flags
+	if plan.HostFlags != state.HostFlags || plan.ConsistentLun.ValueBool() != state.ConsistentLun.ValueBool() {
+		hostFlags := pmax.NewHostFlags(
+			*pmax.NewVolumeSetAddressing(plan.HostFlags.VolumeSetAddressing.Enabled.ValueBool(), plan.HostFlags.VolumeSetAddressing.Override.ValueBool()),
+			*pmax.NewDisableQResetOnUa(plan.HostFlags.DisableQResetOnUA.Enabled.ValueBool(), plan.HostFlags.DisableQResetOnUA.Override.ValueBool()),
+			*pmax.NewEnvironSet(plan.HostFlags.EnvironSet.Enabled.ValueBool(), plan.HostFlags.EnvironSet.Override.ValueBool()),
+			*pmax.NewAvoidResetBroadcast(plan.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(), plan.HostFlags.AvoidResetBroadcast.Override.ValueBool()),
+			*pmax.NewOpenvms(plan.HostFlags.OpenVMS.Enabled.ValueBool(), plan.HostFlags.OpenVMS.Override.ValueBool()),
+			*pmax.NewScsi3(plan.HostFlags.SCSI3.Enabled.ValueBool(), plan.HostFlags.SCSI3.Override.ValueBool()),
+			*pmax.NewSpc2ProtocolVersion(plan.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(), plan.HostFlags.Spc2ProtocolVersion.Override.ValueBool()),
+			*pmax.NewScsiSupport1(plan.HostFlags.SCSISupport1.Enabled.ValueBool(), plan.HostFlags.SCSISupport1.Override.ValueBool()),
+			plan.ConsistentLun.ValueBool(),
+		)
+		flagsParam := pmax.NewSetHostFlagsParam(*hostFlags)
+		edit := &pmax.EditHostActionParam{
+			SetHostFlagsParam: flagsParam,
+		}
+		_, err := ModifyHost(client, ctx, state.HostID.ValueString(), *edit)
+
 		if err != nil {
+			err1, ok := err.(*pmax.GenericOpenAPIError)
+			message := ""
+			if ok {
+				message, _ = ParseBody(err1.Body())
+			}
 			updateFailedParameters = append(updateFailedParameters, "host_flags")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", err.Error()))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", message))
 		} else {
 			updatedParameters = append(updatedParameters, "host_flags")
 		}
 	}
+
+	// Update host name
 	if plan.Name.ValueString() != state.Name.ValueString() {
-		_, err := client.PmaxClient.UpdateHostName(ctx, client.SymmetrixID, state.HostID.ValueString(), plan.Name.ValueString())
+
+		renameHostParam := pmax.RenameHostParam{
+			NewHostName: plan.Name.ValueStringPointer(),
+		}
+		edit := pmax.EditHostActionParam{
+			RenameHostParam: &renameHostParam,
+		}
+		_, err := ModifyHost(client, ctx, state.Name.ValueString(), edit)
 		if err != nil {
+			err1, ok := err.(*pmax.GenericOpenAPIError)
+			message := ""
+			if ok {
+				message, _ = ParseBody(err1.Body())
+			}
 			updateFailedParameters = append(updateFailedParameters, "name")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename host: %s", err.Error()))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename host: %s", message))
 		} else {
 			updatedParameters = append(updatedParameters, "name")
 		}
 	}
 
 	return updatedParameters, updateFailedParameters, errorMessages
+}
+
+func ModifyHost(client client.Client, ctx context.Context, hostId string, edit pmax.EditHostActionParam) (*pmax.Host, error) {
+	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHost(ctx, client.SymmetrixID, hostId)
+	editParam := pmax.NewEditHostParam(edit)
+	modifyParam = modifyParam.EditHostParam(*editParam)
+	hostResp, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostExecute(modifyParam)
+	if err != nil {
+		return hostResp, err
+	}
+	if resp1.StatusCode != http.StatusOK {
+		err1 := errors.New(
+			"Unable to Update PowerMax Host . Got http error - " +
+				resp1.Status,
+		)
+		return hostResp, err1
+	}
+	tflog.Debug(ctx, "get host  by ID response", map[string]interface{}{
+		"hostResponse": hostResp,
+	})
+	return hostResp, nil
 }
 
 func setDefaultHostFlags(hostState *models.HostModel) {

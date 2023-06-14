@@ -19,15 +19,13 @@ package provider
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
 	"fmt"
 	"strings"
 	"terraform-provider-powermax/client"
-
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
-
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -149,7 +147,12 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 				Description:         "The initiators associated with the host.",
 				MarkdownDescription: "The initiators associated with the host.",
 			},
-
+			"hostgroup": schema.ListAttribute{
+				ElementType:         types.StringType,
+				Computed:            true,
+				Description:         "The host group associated with the host.",
+				MarkdownDescription: "The host group associated with the host.",
+			},
 			"maskingview": schema.ListAttribute{
 				ElementType:         types.StringType,
 				Computed:            true,
@@ -295,51 +298,41 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 		}
 	}
 	tflog.Debug(ctx, "preparing host flags")
-	hostFlags := pmaxTypes.HostFlags{
-		VolumeSetAddressing: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.VolumeSetAddressing.Enabled.ValueBool(),
-			Override: planHost.HostFlags.VolumeSetAddressing.Override.ValueBool(),
-		},
-		DisableQResetOnUA: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.DisableQResetOnUA.Enabled.ValueBool(),
-			Override: planHost.HostFlags.DisableQResetOnUA.Override.ValueBool(),
-		},
-		EnvironSet: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.EnvironSet.Enabled.ValueBool(),
-			Override: planHost.HostFlags.EnvironSet.Override.ValueBool(),
-		},
-		AvoidResetBroadcast: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(),
-			Override: planHost.HostFlags.AvoidResetBroadcast.Override.ValueBool(),
-		},
-		OpenVMS: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.OpenVMS.Enabled.ValueBool(),
-			Override: planHost.HostFlags.OpenVMS.Override.ValueBool(),
-		},
-		SCSI3: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.SCSI3.Enabled.ValueBool(),
-			Override: planHost.HostFlags.SCSI3.Override.ValueBool(),
-		},
-		Spc2ProtocolVersion: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(),
-			Override: planHost.HostFlags.Spc2ProtocolVersion.Override.ValueBool(),
-		},
-		SCSISupport1: &pmaxTypes.HostFlag{
-			Enabled:  planHost.HostFlags.SCSISupport1.Enabled.ValueBool(),
-			Override: planHost.HostFlags.SCSISupport1.Override.ValueBool(),
-		},
-	}
+	hostFlags := *pmax.NewHostFlags(
+		*pmax.NewVolumeSetAddressing(planHost.HostFlags.VolumeSetAddressing.Enabled.ValueBool(), planHost.HostFlags.VolumeSetAddressing.Override.ValueBool()),
+		*pmax.NewDisableQResetOnUa(planHost.HostFlags.DisableQResetOnUA.Enabled.ValueBool(), planHost.HostFlags.DisableQResetOnUA.Override.ValueBool()),
+		*pmax.NewEnvironSet(planHost.HostFlags.EnvironSet.Enabled.ValueBool(), planHost.HostFlags.EnvironSet.Override.ValueBool()),
+		*pmax.NewAvoidResetBroadcast(planHost.HostFlags.AvoidResetBroadcast.Enabled.ValueBool(), planHost.HostFlags.AvoidResetBroadcast.Override.ValueBool()),
+		*pmax.NewOpenvms(planHost.HostFlags.OpenVMS.Enabled.ValueBool(), planHost.HostFlags.OpenVMS.Override.ValueBool()),
+		*pmax.NewScsi3(planHost.HostFlags.SCSI3.Enabled.ValueBool(), planHost.HostFlags.SCSI3.Override.ValueBool()),
+		*pmax.NewSpc2ProtocolVersion(planHost.HostFlags.Spc2ProtocolVersion.Enabled.ValueBool(), planHost.HostFlags.Spc2ProtocolVersion.Override.ValueBool()),
+		*pmax.NewScsiSupport1(planHost.HostFlags.SCSISupport1.Enabled.ValueBool(), planHost.HostFlags.SCSISupport1.Override.ValueBool()),
+		planHost.ConsistentLun.ValueBool(),
+	)
 
-	hostCreateResp, err := r.client.PmaxClient.CreateHost(ctx, r.client.SymmetrixID, planHost.Name.ValueString(), initiators, &hostFlags)
+	hostCreateReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateHost(ctx, r.client.SymmetrixID)
+	createHostParam := pmax.NewCreateHostParam(planHost.Name.ValueString())
+	createHostParam.SetHostFlags(hostFlags)
+	createHostParam.SetInitiatorId(initiators)
+	hostCreateReq = hostCreateReq.CreateHostParam(*createHostParam)
+	hostCreateResp, _, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateHostExecute(hostCreateReq)
 	if err != nil {
 		hostID := planHost.Name.ValueString()
-		resp.Diagnostics.AddError(
-			"Error creating host",
-			constants.CreateHostDetailErrorMsg+hostID+"with error: "+err.Error(),
-		)
-		hostCreateResp, getHostErr := r.client.PmaxClient.GetHostByID(ctx, r.client.SymmetrixID, hostID)
-		if hostCreateResp != nil || getHostErr == nil {
-			err := r.client.PmaxClient.DeleteHost(ctx, r.client.SymmetrixID, hostID)
+
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError(
+				"Error creating host",
+				constants.CreateHostDetailErrorMsg+hostID+": "+message,
+			)
+		}
+
+		req := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
+		hostGetResp, _, getHostErr := req.Execute()
+		if hostGetResp != nil || getHostErr == nil {
+			delReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHost(ctx, r.client.SymmetrixID, hostID)
+			_, err := delReq.Execute()
 			if err != nil {
 				resp.Diagnostics.AddError(
 					"Error deleting the invalid host, This may be a dangling resource and needs to be deleted manually",
@@ -377,12 +370,17 @@ func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *res
 		"symmetrixID": r.client.SymmetrixID,
 		"hostID":      hostID,
 	})
-	err := r.client.PmaxClient.DeleteHost(ctx, r.client.SymmetrixID, hostID)
+	delReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHost(ctx, r.client.SymmetrixID, hostID)
+	_, err := delReq.Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error deleting host",
-			constants.DeleteHostDetailsErrorMsg+hostID+" with error: "+err.Error(),
-		)
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError(
+				"Error deleting host",
+				constants.DeleteHostDetailsErrorMsg+hostID+" with error: "+message,
+			)
+		}
 	}
 
 	tflog.Info(ctx, "Delete host complete")
@@ -427,7 +425,8 @@ func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *res
 	if helper.IsParamUpdated(updatedParams, "name") {
 		hostID = plan.Name.ValueString()
 	}
-	hostResponse, err := r.client.PmaxClient.GetHostByID(ctx, r.client.SymmetrixID, hostID)
+	getReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
+	hostResponse, _, err := getReq.Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error reading host",
@@ -479,12 +478,17 @@ func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resourc
 		return
 	}
 	hostID := hostState.HostID.ValueString()
-	host, err := r.client.PmaxClient.GetHostByID(ctx, r.client.SymmetrixID, hostID)
+	getReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
+	host, _, err := getReq.Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading host",
-			constants.ReadHostDetailsErrorMsg+hostID+" with error: "+err.Error(),
-		)
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError(
+				"Error reading host",
+				constants.ReadHostDetailsErrorMsg+hostID+" with error: "+message,
+			)
+		}
 		return
 	}
 	initiators := make([]string, len(hostState.Initiators.Elements()))
@@ -515,12 +519,19 @@ func (r *Host) ImportState(ctx context.Context, req resource.ImportStateRequest,
 		"symmetrixID": r.client.SymmetrixID,
 		"hostID":      hostID,
 	})
-	hostResponse, err := r.client.PmaxClient.GetHostByID(ctx, r.client.SymmetrixID, hostID)
+
+	getReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
+	hostResponse, _, err := getReq.Execute()
+
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error reading host",
-			constants.ImportHostDetailsErrorMsg+hostID+" with error: "+err.Error(),
-		)
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError(
+				"Error reading host",
+				constants.ImportHostDetailsErrorMsg+hostID+" with error: "+message,
+			)
+		}
 		return
 	}
 	tflog.Debug(ctx, "Get Host By ID response", map[string]interface{}{
@@ -528,7 +539,7 @@ func (r *Host) ImportState(ctx context.Context, req resource.ImportStateRequest,
 	})
 
 	tflog.Debug(ctx, "updating host state after import")
-	helper.UpdateHostState(&hostState, hostResponse.Initiators, hostResponse)
+	helper.UpdateHostState(&hostState, hostResponse.Initiator, hostResponse)
 	diags := resp.State.Set(ctx, hostState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
