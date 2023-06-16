@@ -13,6 +13,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# v1.0.0-beta2
+## Release Summary
+The release supports resources and data sources mentioned in the Features section for Dell PowerMax.
+## Features
+
+### Data Sources:
+* `powermax_host` for reading hosts in PowerMax.
+* `powermax_hostgroup` for reading host groups in PowerMax.
+* `powermax_maskingview` for reading masking views in PowerMax.
+* `powermax_portgroups` for reading port groups in PowerMax.
+* `powermax_storagegroup` for reading storage groups in PowerMax.
+* `powermax_volume` for reading volumes in PowerMax.
+
+### Resources
+* `powermax_host` for managing hosts in PowerMax.
+* `powermax_hostgroup` for managing host groups in PowerMax.
+* `powermax_maskingview` for managing masking views in PowerMax.
+* `powermax_portgroup` for managing port groups in PowerMax.
+* `powermax_storagegroup` for managing storage groups in PowerMax.
+* `powermax_volume` for managing volumes in PowerMax.
+
+### Others
+N/A
+
+## Enhancements
+N/A
+
+## Bug Fixes
+N/A
+
+
 # v1.0.0-beta
 ## Release Summary
 The release supports HostGroup resource to manage HostGroup in PowerMax .

@@ -26,7 +26,7 @@ Create a file called `main.tf` in your workspace with the following contents
 terraform {
   required_providers {
     powermax = { 
-      version = "1.0.0"
+      version = "1.0.0-beta2"
       source = "registry.terraform.io/dell/powermax"
     }
   }
