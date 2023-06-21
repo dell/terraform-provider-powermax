@@ -23,9 +23,11 @@ import (
 	"strconv"
 	"sync"
 	"terraform-provider-powermax/client"
+	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
+	pmax "dell/powermax-go-client"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -178,16 +180,22 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if state.MaskingViewFilter == nil || len(state.MaskingViewFilter.Names) == 0 {
 		// Read all the masking views
 		tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingViewList for Symmetrix - %s", d.client.SymmetrixID))
-		maskingViewList, err := d.client.PmaxClient.GetMaskingViewList(ctx, d.client.SymmetrixID)
+		maskingViews := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListMaskingViews(ctx, d.client.SymmetrixID)
+		maskingViewList, _, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListMaskingViewsExecute(maskingViews)
 
 		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to Get PowerMax Masking View List",
-				err.Error(),
-			)
+			err1, ok := err.(*pmax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError(
+					"Unable to Get PowerMax Masking View List",
+					message,
+				)
+			}
+
 			return
 		}
-		maskingViewIds = maskingViewList.MaskingViewIDs
+		maskingViewIds = maskingViewList.MaskingViewId
 	} else {
 		tflog.Debug(ctx, fmt.Sprintf("Get masking view Ids from filter for Symmetrix - %s", d.client.SymmetrixID))
 		// get ids from filter and assign to maskingViewIds
@@ -216,14 +224,21 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 }
 
 // updateMaskingViewState parse masking view and masking view connections to the state model.
-func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmaxTypes.MaskingView, connections []*pmaxTypes.MaskingViewConnection) (model models.MaskingViewModel, err error) {
+func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmax.MaskingView, connections []pmax.MaskingViewConnection) (model models.MaskingViewModel, err error) {
 
-	model = models.MaskingViewModel{
-		MaskingViewName: types.StringValue(maskingView.MaskingViewID),
-		HostID:          types.StringValue(maskingView.HostID),
-		HostGroupID:     types.StringValue(maskingView.HostGroupID),
-		PortGroupID:     types.StringValue(maskingView.PortGroupID),
-		StorageGroupID:  types.StringValue(maskingView.StorageGroupID),
+	model.MaskingViewName = types.StringValue(maskingView.MaskingViewId)
+
+	if hostId, ok := maskingView.GetHostIdOk(); ok {
+		model.HostID = types.StringValue(*hostId)
+	}
+	if hostGroupId, ok := maskingView.GetHostGroupIdOk(); ok {
+		model.HostGroupID = types.StringValue(*hostGroupId)
+	}
+	if portGroupId, ok := maskingView.GetPortGroupIdOk(); ok {
+		model.PortGroupID = types.StringValue(*portGroupId)
+	}
+	if storageGroupId, ok := maskingView.GetStorageGroupIdOk(); ok {
+		model.StorageGroupID = types.StringValue(*storageGroupId)
 	}
 
 	var totalCapacity float64
@@ -231,19 +246,25 @@ func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmaxTypes.Ma
 	var ports []attr.Value
 	var initiators []attr.Value
 	for _, conn := range connections {
-		capacity, err := strconv.ParseFloat(conn.CapacityGB, 64)
+		capacity, err := strconv.ParseFloat(conn.GetCapGb(), 64)
 		if err != nil {
 			return model, err
 		}
-		if !contains(volumes, conn.VolumeID) {
-			volumes = append(volumes, types.StringValue(conn.VolumeID))
-			totalCapacity += capacity
+		if volId, ok := conn.GetVolumeIdOk(); ok {
+			if !contains(volumes, *volId) {
+				volumes = append(volumes, types.StringValue(*volId))
+				totalCapacity += capacity
+			}
 		}
-		if !contains(initiators, conn.InitiatorID) {
-			initiators = append(initiators, types.StringValue(conn.InitiatorID))
+		if iniId, ok := conn.GetInitiatorIdOk(); ok {
+			if !contains(initiators, *iniId) {
+				initiators = append(initiators, types.StringValue(*iniId))
+			}
 		}
-		if !contains(ports, conn.DirectorPort) {
-			ports = append(ports, types.StringValue(conn.DirectorPort))
+		if dirPort, ok := conn.GetDirPortOk(); ok {
+			if !contains(ports, *dirPort) {
+				ports = append(ports, types.StringValue(*dirPort))
+			}
 		}
 	}
 
@@ -255,32 +276,37 @@ func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmaxTypes.Ma
 	return
 }
 
-func (d *maskingViewDataSource) getMaskingViewToConnections(ctx context.Context, resp *datasource.ReadResponse, maskingView <-chan *pmaxTypes.MaskingView) <-chan models.MaskingViewModel {
+func (d *maskingViewDataSource) getMaskingViewToConnections(ctx context.Context, resp *datasource.ReadResponse, maskingView <-chan *pmax.MaskingView) <-chan models.MaskingViewModel {
 
 	var wg sync.WaitGroup
 	ch := make(chan models.MaskingViewModel)
 	go func() {
 		for mv := range maskingView {
 			wg.Add(1)
-			go func(mv *pmaxTypes.MaskingView) {
+			go func(mv *pmax.MaskingView) {
 				defer wg.Done()
-				maskingViewConnection, err := d.client.PmaxClient.GetMaskingViewConnections(ctx, d.client.SymmetrixID, mv.MaskingViewID, "")
+				maskingViewConReq := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingViewConnections(ctx, d.client.SymmetrixID, mv.MaskingViewId)
+				maskingViewConnection, _, err := maskingViewConReq.Execute()
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
-					resp.Diagnostics.AddError(
-						fmt.Sprintf("Failed to get MaskingViewConnections - %s.", mv.MaskingViewID),
-						err.Error(),
-					)
+					err1, ok := err.(*pmax.GenericOpenAPIError)
+					if ok {
+						message, _ := helper.ParseBody(err1.Body())
+						resp.Diagnostics.AddError(
+							fmt.Sprintf("Failed to get MaskingViewConnections - %s.", mv.MaskingViewId),
+							message,
+						)
+					}
 					return
 				}
 
-				model, err := d.updateMaskingViewState(mv, maskingViewConnection)
+				model, err := d.updateMaskingViewState(mv, maskingViewConnection.MaskingViewConnection)
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
 					resp.Diagnostics.AddError(
-						fmt.Sprintf("Failed to update masking view state - %s.", mv.MaskingViewID),
+						fmt.Sprintf("Failed to update masking view state - %s.", mv.MaskingViewId),
 						err.Error(),
 					)
 					return
@@ -295,9 +321,9 @@ func (d *maskingViewDataSource) getMaskingViewToConnections(ctx context.Context,
 	return ch
 }
 
-func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datasource.ReadResponse, maskingViewNames []string) <-chan *pmaxTypes.MaskingView {
+func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datasource.ReadResponse, maskingViewNames []string) <-chan *pmax.MaskingView {
 
-	ch := make(chan *pmaxTypes.MaskingView)
+	ch := make(chan *pmax.MaskingView)
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, defaultMaxPowerMaxConnections)
 
@@ -311,14 +337,19 @@ func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datas
 					<-sem
 				}()
 				tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", id))
-				maskingView, err := d.client.PmaxClient.GetMaskingViewByID(ctx, d.client.SymmetrixID, id)
+				getMaskingView := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, d.client.SymmetrixID, id)
+				maskingView, _, err := getMaskingView.Execute()
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
-					resp.Diagnostics.AddError(
-						fmt.Sprintf("Failed to get MaskingView - %s.", id),
-						err.Error(),
-					)
+					err1, ok := err.(*pmax.GenericOpenAPIError)
+					if ok {
+						message, _ := helper.ParseBody(err1.Body())
+						resp.Diagnostics.AddError(
+							fmt.Sprintf("Failed to get MaskingView - %s.", id),
+							message,
+						)
+					}
 					return
 				}
 

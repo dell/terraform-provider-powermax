@@ -19,6 +19,7 @@ package provider
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
 	"fmt"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
@@ -134,10 +135,12 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 	var hostOrHostGroupID string
-	if plan.HostID.ValueString() != "" && plan.HostGroupID.ValueString() == "" {
-		hostOrHostGroupID = plan.HostID.ValueString()
-	} else if plan.HostID.ValueString() == "" && plan.HostGroupID.ValueString() != "" {
-		hostOrHostGroupID = plan.HostGroupID.ValueString()
+	var isHost = false
+	if plan.HostId.ValueString() != "" && plan.HostGroupId.ValueString() == "" {
+		hostOrHostGroupID = plan.HostId.ValueString()
+		isHost = true
+	} else if plan.HostId.ValueString() == "" && plan.HostGroupId.ValueString() != "" {
+		hostOrHostGroupID = plan.HostGroupId.ValueString()
 	} else {
 		resp.Diagnostics.AddError(
 			"Specify either host_id or host_group_id.",
@@ -148,9 +151,35 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to create MaskingView - %s", plan.Name.ValueString()))
 
-	maskingView, err := r.client.PmaxClient.CreateMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString(), plan.StorageGroupID.ValueString(), hostOrHostGroupID, false, plan.PortGroupID.ValueString())
+	hostOrHostGroupSelection := *pmax.NewHostOrHostGroupSelection()
+	if isHost {
+		hostOrHostGroupSelection.UseExistingHostParam = pmax.NewUseExistingHostParam(hostOrHostGroupID)
+
+	} else {
+		hostOrHostGroupSelection.UseExistingHostGroupParam = pmax.NewUseExistingHostGroupParam(hostOrHostGroupID)
+	}
+
+	portGroupSelection := *pmax.NewPortGroupSelection()
+	portGroupSelection.UseExistingPortGroupParam = pmax.NewUseExistingPortGroupParam(plan.PortGroupId.ValueString())
+
+	storageGroupSelection := *pmax.NewStorageGroupSelection()
+	storageGroupSelection.UseExistingStorageGroupParam = pmax.NewUseExistingStorageGroupParam(plan.StorageGroupId.ValueString())
+
+	createMaskingViewParam := pmax.NewCreateMaskingViewParam(plan.Name.ValueString())
+	createMaskingViewParam.SetHostOrHostGroupSelection(hostOrHostGroupSelection)
+	createMaskingViewParam.SetPortGroupSelection(portGroupSelection)
+	createMaskingViewParam.SetStorageGroupSelection(storageGroupSelection)
+
+	maskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateMaskingView(ctx, r.client.SymmetrixID)
+	maskingViewReq = maskingViewReq.CreateMaskingViewParam(*createMaskingViewParam)
+	maskingView, _, err := maskingViewReq.Execute()
+
 	if err != nil {
-		resp.Diagnostics.AddError("Error creating masking view", err.Error())
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error creating masking view", message)
+		}
 		return
 	}
 
@@ -159,9 +188,15 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	})
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.Name.ValueString()))
-	maskingView, err = r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, plan.Name.ValueString())
+	getMaskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString())
+	maskingView, _, err = getMaskingViewReq.Execute()
+
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading masking view", err.Error())
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error reading masking view", message)
+		}
 		return
 	}
 
@@ -171,8 +206,8 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	plan.Name = types.StringValue(maskingView.MaskingViewID)
-	plan.ID = types.StringValue(maskingView.MaskingViewID)
+	plan.Name = types.StringValue(maskingView.MaskingViewId)
+	plan.ID = types.StringValue(maskingView.MaskingViewId)
 	// Save plan into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -193,9 +228,15 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", state.Name.ValueString()))
-	maskingView, err := r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, state.Name.ValueString())
+	getMaskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString())
+	maskingView, _, err := getMaskingViewReq.Execute()
+
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading masking view", err.Error())
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error reading masking view", message)
+		}
 		return
 	}
 
@@ -205,8 +246,8 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	state.Name = types.StringValue(maskingView.MaskingViewID)
-	state.ID = types.StringValue(maskingView.MaskingViewID)
+	state.Name = types.StringValue(maskingView.MaskingViewId)
+	state.ID = types.StringValue(maskingView.MaskingViewId)
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
@@ -231,8 +272,8 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	// prompt error on change in maskingView's hostGroup, portGroup or storageGroup, as we can't update the them after the creation
-	if !plan.StorageGroupID.Equal(state.StorageGroupID) || !plan.PortGroupID.Equal(state.PortGroupID) || !plan.HostID.Equal(state.HostID) ||
-		!plan.HostGroupID.Equal(state.HostGroupID) {
+	if !plan.StorageGroupId.Equal(state.StorageGroupId) || !plan.PortGroupId.Equal(state.PortGroupId) || !plan.HostId.Equal(state.HostId) ||
+		!plan.HostGroupId.Equal(state.HostGroupId) {
 		resp.Diagnostics.AddError(
 			"maskingView's host, hostGroup, portGroup or storageGroup cannot be update after creation.",
 			"unexpected error: maskingView's host, hostGroup, portGroup or storageGroup change is not supported",
@@ -244,17 +285,34 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 	if !plan.Name.Equal(state.Name) {
 		tflog.Debug(ctx, fmt.Sprintf("Calling api to rename MaskingView from %s to %s", state.Name.ValueString(), plan.Name.ValueString()))
 
-		_, err := r.client.PmaxClient.RenameMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString(), plan.Name.ValueString())
+		renameMaskingViewParam := pmax.NewRenameMaskingViewParam(plan.Name.ValueString())
+		rename := pmax.EditMaskingViewActionParam{
+			RenameMaskingViewParam: renameMaskingViewParam,
+		}
+		modifyReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.ModifyMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString())
+		editParam := pmax.NewEditMaskingViewParam(rename)
+		modifyReq = modifyReq.EditMaskingViewParam(*editParam)
+		_, _, err := modifyReq.Execute()
 		if err != nil {
-			resp.Diagnostics.AddError("Error renaming masking view", err.Error())
+			err1, ok := err.(*pmax.GenericOpenAPIError)
+			if ok {
+				message, _ := helper.ParseBody(err1.Body())
+				resp.Diagnostics.AddError("Error renaming masking view", message)
+			}
+
 			return
 		}
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.Name.ValueString()))
-	maskingView, err := r.client.PmaxClient.GetMaskingViewByID(ctx, r.client.SymmetrixID, plan.Name.ValueString())
+	getMaskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString())
+	maskingView, _, err := getMaskingViewReq.Execute()
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading masking view", err.Error())
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Error reading masking view", message)
+		}
 		return
 	}
 
@@ -264,8 +322,8 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	state.Name = types.StringValue(maskingView.MaskingViewID)
-	state.ID = types.StringValue(maskingView.MaskingViewID)
+	state.Name = types.StringValue(maskingView.MaskingViewId)
+	state.ID = types.StringValue(maskingView.MaskingViewId)
 	// Save updated state into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
@@ -284,9 +342,15 @@ func (r *maskingView) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to delete MaskingView - %s", state.Name.ValueString()))
-	err := r.client.PmaxClient.DeleteMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString())
+	delReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString())
+	_, err := delReq.Execute()
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete masking view, got error: %s", err))
+		err1, ok := err.(*pmax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete masking view, got error: %s", message))
+		}
+
 		return
 	}
 

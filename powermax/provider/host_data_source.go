@@ -257,10 +257,9 @@ func (d *HostDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 
 // Read host data source.
 func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var plan models.HostsDataSourceModel
 	var state models.HostsDataSourceModel
 
-	diags := req.Config.Get(ctx, &plan)
+	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -268,7 +267,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	var hostIds []string
 	// Get host IDs from config or query all if not specified
-	if plan.HostFilter == nil || len(plan.HostFilter.Names) == 0 {
+	if state.HostFilter == nil || len(state.HostFilter.Names) == 0 {
 		// Read all the hosts
 		hosts := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHosts(ctx, d.client.SymmetrixID)
 		hostIDList, response, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHostsExecute(hosts)
@@ -291,7 +290,7 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		hostIds = hostIDList.HostId
 	} else {
 		// get ids from filter and assign to hostIds
-		for _, ids := range plan.HostFilter.Names {
+		for _, ids := range state.HostFilter.Names {
 			hostIds = append(hostIds, ids.ValueString())
 		}
 	}

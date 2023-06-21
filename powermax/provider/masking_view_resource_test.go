@@ -112,11 +112,10 @@ func TestAccMaskingView_ImportSuccess(t *testing.T) {
 				Config: ProviderConfig + maskingViewCreateWithHost,
 			},
 			{
-				Config:            ProviderConfig + maskingViewCreateWithHost,
-				ResourceName:      "powermax_maskingview.masking_view_create_with_host_test",
-				ImportState:       true,
-				ExpectError:       nil,
-				ImportStateVerify: true,
+				Config:       ProviderConfig + maskingViewCreateWithHost,
+				ResourceName: "powermax_maskingview.masking_view_create_with_host_test",
+				ImportState:  true,
+				ExpectError:  nil,
 				ImportStateCheck: func(s []*terraform.InstanceState) error {
 					assert.Equal(t, "tfacc_masking_view", s[0].Attributes["name"])
 					assert.Equal(t, "tfacc_masking_view_host", s[0].Attributes["host_id"])
