@@ -51,14 +51,11 @@ resource "powermax_host" "host_1" {
   name      = "host_1"
   initiator = ["10000000c9fc4b7e"]
   host_flags = {
-    volume_set_addressing = {
+    disable_q_reset_on_ua = {
       override = true
       enabled  = true
     }
-    openvms = {
-      override = true
-      enabled  = false
-    }
+
   }
 }
 ```
@@ -79,6 +76,7 @@ resource "powermax_host" "host_1" {
 ### Read-Only
 
 - `bw_limit` (Number) Specifies the bandwidth limit for a host.
+- `hostgroup` (List of String) The host group associated with the host.
 - `id` (String) The ID of the host.
 - `maskingview` (List of String) The masking views associated with the host.
 - `num_of_host_groups` (Number) The number of hostgroups associated with the host.

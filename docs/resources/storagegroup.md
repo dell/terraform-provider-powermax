@@ -66,7 +66,7 @@ resource "powermax_storagegroup" "test" {
 ### Required
 
 - `name` (String) The name of the storage group
-- `srp_id` (String) The SRP to be associated with the Storage Group. An existing SRP or 'none' must be specified
+- `srp_id` (String) The Srp to be associated with the Storage Group. An existing Srpor 'none' must be specified
 
 ### Optional
 

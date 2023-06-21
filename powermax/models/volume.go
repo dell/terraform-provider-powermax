@@ -21,34 +21,34 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 
 // VolumeResource holds volume schema attribute details.
 type VolumeResource struct {
-	ID                    types.String  `tfsdk:"id"`
-	StorageGroupName      types.String  `tfsdk:"sg_name"`
-	VolumeIdentifier      types.String  `tfsdk:"vol_name"`
-	Size                  types.Number  `tfsdk:"size"`
-	CapUnit               types.String  `tfsdk:"cap_unit"`
-	StorageGroups         types.List    `tfsdk:"storage_groups"`
-	Type                  types.String  `tfsdk:"type"`
-	Emulation             types.String  `tfsdk:"emulation"`
-	SSID                  types.String  `tfsdk:"ssid"`
-	AllocatedPercent      types.Int64   `tfsdk:"allocated_percent"`
-	Status                types.String  `tfsdk:"status"`
-	Reserved              types.Bool    `tfsdk:"reserved"`
-	Pinned                types.Bool    `tfsdk:"pinned"`
-	WWN                   types.String  `tfsdk:"wwn"`
-	Encapsulated          types.Bool    `tfsdk:"encapsulated"`
-	NumberOfStorageGroups types.Int64   `tfsdk:"num_of_storage_groups"`
-	NumberOfFrontEndPaths types.Int64   `tfsdk:"num_of_front_end_paths"`
-	SnapSource            types.Bool    `tfsdk:"snapvx_source"`
-	SnapTarget            types.Bool    `tfsdk:"snapvx_target"`
-	HasEffectiveWWN       types.Bool    `tfsdk:"has_effective_wwn"`
-	EffectiveWWN          types.String  `tfsdk:"effective_wwn"`
-	EncapsulatedWWN       types.String  `tfsdk:"encapsulated_wwn"`
-	MobilityIDEnabled     types.Bool    `tfsdk:"mobility_id_enabled"`
-	UnreducibleDataGB     types.Float64 `tfsdk:"unreducible_data_gb"`
-	NGUID                 types.String  `tfsdk:"nguid"`
-	OracleInstanceName    types.String  `tfsdk:"oracle_instance_name"`
-	SymmetrixPortKey      types.List    `tfsdk:"symmetrix_port_key"`
-	RDFGroupIDList        types.List    `tfsdk:"rdf_group_ids"`
+	ID                 types.String  `tfsdk:"id"`
+	StorageGroupName   types.String  `tfsdk:"sg_name"`
+	VolumeIdentifier   types.String  `tfsdk:"vol_name"`
+	Size               types.Number  `tfsdk:"size"`
+	CapUnit            types.String  `tfsdk:"cap_unit"`
+	StorageGroups      types.List    `tfsdk:"storage_groups"`
+	Type               types.String  `tfsdk:"type"`
+	Emulation          types.String  `tfsdk:"emulation"`
+	Ssid               types.String  `tfsdk:"ssid"`
+	AllocatedPercent   types.Int64   `tfsdk:"allocated_percent"`
+	Status             types.String  `tfsdk:"status"`
+	Reserved           types.Bool    `tfsdk:"reserved"`
+	Pinned             types.Bool    `tfsdk:"pinned"`
+	Wwn                types.String  `tfsdk:"wwn"`
+	Encapsulated       types.Bool    `tfsdk:"encapsulated"`
+	NumOfStorageGroups types.Int64   `tfsdk:"num_of_storage_groups"`
+	NumOfFrontEndPaths types.Int64   `tfsdk:"num_of_front_end_paths"`
+	SnapvxSource       types.Bool    `tfsdk:"snapvx_source"`
+	SnapvxTarget       types.Bool    `tfsdk:"snapvx_target"`
+	EffectiveWwn       types.String  `tfsdk:"effective_wwn"`
+	HasEffectiveWwn    types.Bool    `tfsdk:"has_effective_wwn"`
+	EncapsulatedWwn    types.String  `tfsdk:"encapsulated_wwn"`
+	MobilityIDEnabled  types.Bool    `tfsdk:"mobility_id_enabled"`
+	UnreducibleDataGB  types.Float64 `tfsdk:"unreducible_data_gb"`
+	NGUID              types.String  `tfsdk:"nguid"`
+	OracleInstanceName types.String  `tfsdk:"oracle_instance_name"`
+	SymmetrixPortKey   types.List    `tfsdk:"symmetrix_port_key"`
+	RDFGroupIDList     types.List    `tfsdk:"rdf_group_ids"`
 }
 
 // VolumeDatasourceFilter holds volume datasource filter schema attribute details.
@@ -87,7 +87,7 @@ type VolumeDatasourceFilter struct {
 	Emulation            types.String `tfsdk:"emulation"`
 	SplitName            types.String `tfsdk:"split_name"`
 	CuImageNum           types.String `tfsdk:"cu_image_num"`
-	CuImageSsid          types.String `tfsdk:"cu_image_ssid"`
+	Ssid                 types.String `tfsdk:"cu_image_ssid"`
 	RdfGroupNumber       types.String `tfsdk:"rdf_group_number"`
 	HasEffectiveWwn      types.Bool   `tfsdk:"has_effective_wwn"`
 	EffectiveWwn         types.String `tfsdk:"effective_wwn"`
@@ -108,35 +108,35 @@ type VolumeDatasource struct {
 
 // VolumeDatasourceEntity holds volume datasource entity schema attribute details.
 type VolumeDatasourceEntity struct {
-	VolumeID              types.String `tfsdk:"id"`
-	VolumeIdentifier      types.String `tfsdk:"volume_identifier"`
-	StorageGroups         types.List   `tfsdk:"storage_groups"`
-	Type                  types.String `tfsdk:"type"`
-	Emulation             types.String `tfsdk:"emulation"`
-	SSID                  types.String `tfsdk:"ssid"`
-	AllocatedPercent      types.Int64  `tfsdk:"allocated_percent"`
-	PhysicalName          types.String `tfsdk:"physical_name"`
-	Status                types.String `tfsdk:"status"`
-	Reserved              types.Bool   `tfsdk:"reserved"`
-	Pinned                types.Bool   `tfsdk:"pinned"`
-	WWN                   types.String `tfsdk:"wwn"`
-	Encapsulated          types.Bool   `tfsdk:"encapsulated"`
-	NumberOfStorageGroups types.Int64  `tfsdk:"num_of_storage_groups"`
-	NumberOfFrontEndPaths types.Int64  `tfsdk:"num_of_front_end_paths"`
-	SnapSource            types.Bool   `tfsdk:"snapvx_source"`
-	SnapTarget            types.Bool   `tfsdk:"snapvx_target"`
-	HasEffectiveWWN       types.Bool   `tfsdk:"has_effective_wwn"`
-	EffectiveWWN          types.String `tfsdk:"effective_wwn"`
-	EncapsulatedWWN       types.String `tfsdk:"encapsulated_wwn"`
-	MobilityIDEnabled     types.Bool   `tfsdk:"mobility_id_enabled"`
-	UnreducibleDataGB     types.Number `tfsdk:"unreducible_data_gb"`
-	NGUID                 types.String `tfsdk:"nguid"`
-	OracleInstanceName    types.String `tfsdk:"oracle_instance_name"`
-	SymmetrixPortKey      types.List   `tfsdk:"symmetrix_port_key"`
-	RDFGroupIDList        types.List   `tfsdk:"rdf_group_ids"`
-	CapacityGB            types.Number `tfsdk:"cap_gb"`
-	FloatCapacityMB       types.Number `tfsdk:"cap_mb"`
-	CapacityCYL           types.Int64  `tfsdk:"cap_cyl"`
+	VolumeId           types.String `tfsdk:"id"`
+	VolumeIdentifier   types.String `tfsdk:"volume_identifier"`
+	StorageGroups      types.List   `tfsdk:"storage_groups"`
+	Type               types.String `tfsdk:"type"`
+	Emulation          types.String `tfsdk:"emulation"`
+	Ssid               types.String `tfsdk:"ssid"`
+	AllocatedPercent   types.Int64  `tfsdk:"allocated_percent"`
+	PhysicalName       types.String `tfsdk:"physical_name"`
+	Status             types.String `tfsdk:"status"`
+	Reserved           types.Bool   `tfsdk:"reserved"`
+	Pinned             types.Bool   `tfsdk:"pinned"`
+	Wwn                types.String `tfsdk:"wwn"`
+	Encapsulated       types.Bool   `tfsdk:"encapsulated"`
+	NumOfStorageGroups types.Int64  `tfsdk:"num_of_storage_groups"`
+	NumOfFrontEndPaths types.Int64  `tfsdk:"num_of_front_end_paths"`
+	SnapvxSource       types.Bool   `tfsdk:"snapvx_source"`
+	SnapvxTarget       types.Bool   `tfsdk:"snapvx_target"`
+	HasEffectiveWwn    types.Bool   `tfsdk:"has_effective_wwn"`
+	EffectiveWwn       types.String `tfsdk:"effective_wwn"`
+	EncapsulatedWwn    types.String `tfsdk:"encapsulated_wwn"`
+	MobilityIdEnabled  types.Bool   `tfsdk:"mobility_id_enabled"`
+	UnreducibleDataGb  types.Number `tfsdk:"unreducible_data_gb"`
+	Nguid              types.String `tfsdk:"nguid"`
+	OracleInstanceName types.String `tfsdk:"oracle_instance_name"`
+	SymmetrixPortKey   types.List   `tfsdk:"symmetrix_port_key"`
+	RfdGroupIDList     types.List   `tfsdk:"rdf_group_ids"`
+	CapGb              types.Number `tfsdk:"cap_gb"`
+	CapMb              types.Number `tfsdk:"cap_mb"`
+	CapCyl             types.Int64  `tfsdk:"cap_cyl"`
 }
 
 // StorageGroupName holds information of StorageGroupName, ParentStorageGroupName.

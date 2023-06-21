@@ -128,6 +128,7 @@ func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedSt
 	hostIOLimit := ConstructHostIOLimit(plan)
 	workload := "None"
 	thickVolumes := false
+	num := int64(0)
 
 	if hostIOLimit != nil {
 		return []powermax.SloBasedStorageGroupParam{
@@ -140,7 +141,7 @@ func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedSt
 					{
 						VolumeSize:   "0",
 						CapacityUnit: "CYL",
-						NumOfVols:    0,
+						NumOfVols:    &num,
 					},
 				},
 				SetHostIOLimitsParam: &powermax.SetHostIOLimitsParam{
@@ -161,7 +162,7 @@ func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedSt
 					{
 						VolumeSize:   "0",
 						CapacityUnit: "CYL",
-						NumOfVols:    0,
+						NumOfVols:    &num,
 					},
 				},
 			},
