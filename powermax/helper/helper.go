@@ -156,7 +156,6 @@ func copySliceToTargetField(ctx context.Context, fields interface{}) attr.Value 
 					valueMap[tag] = types.StringValue(elem.Field(fieldIndex).String())
 				case reflect.Float32, reflect.Float64:
 					valueMap[tag] = types.NumberValue(big.NewFloat(elem.Field(fieldIndex).Float()))
-					//valueMap[tag] = types.Float64Value(elem.Field(fieldIndex).Float())
 				}
 			}
 			object, _ := types.ObjectValue(attrTypeMap, valueMap)
@@ -176,7 +175,7 @@ func ParseBody(body []byte) (string, error) {
 	}
 	message, ok := parsedData["message"]
 	if !ok {
-		return "", fmt.Errorf("No message field found in body")
+		return "", fmt.Errorf("no message field found in body")
 	}
 	return message, nil
 }
@@ -190,7 +189,7 @@ func GetErrorString(err error, errStr string) string {
 		errStr = errStr + message
 	}
 	if message == "" {
-		errStr = errStr + err.Error()
+		msgStr = errStr + err.Error()
 	}
 	return msgStr
 }

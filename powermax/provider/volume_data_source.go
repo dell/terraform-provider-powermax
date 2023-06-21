@@ -19,13 +19,15 @@ package provider
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var (
@@ -505,7 +507,7 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	param, err := helper.GetVolumeFilterParam(state)
+	param, err := helper.GetVolumeFilterParam(ctx, d.client, state)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to get volume filter param",
@@ -531,23 +533,42 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 }
 
 // updateVolumeState iterates over the volume list and update the state.
-func updateVolumeState(ctx context.Context, p *client.Client, params map[string]string) (response []models.VolumeDatasourceEntity, err error) {
-	volIDs, err := p.PmaxClient.GetVolumeIDListWithParams(ctx, p.SymmetrixID, params)
+func updateVolumeState(ctx context.Context, p *client.Client, params powermax.ApiListVolumesRequest) (response []models.VolumeDatasourceEntity, err error) {
+	volIDs, _, err := params.Execute()
 	if err != nil {
-		return nil, err
+		err1, ok := err.(*powermax.GenericOpenAPIError)
+		if ok {
+			message, _ := helper.ParseBody(err1.Body())
+			return nil, fmt.Errorf(message)
+		} else {
+			return nil, err
+		}
 	}
-	for _, volumeID := range volIDs {
-		volResponse, err := p.PmaxClient.GetVolumeByID(context.Background(), p.SymmetrixID, volumeID)
-		if err != nil {
-			return nil, err
+
+	for _, vol := range volIDs.ResultList.GetResult() {
+		for _, volumeId := range vol {
+			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeId))
+			volResponse, _, err := volumeModel.Execute()
+			if err != nil {
+				err1, ok := err.(*powermax.GenericOpenAPIError)
+				if ok {
+					message, _ := helper.ParseBody(err1.Body())
+					return nil, fmt.Errorf(message)
+				} else {
+					return nil, err
+				}
+
+			}
+			volState := models.VolumeDatasourceEntity{}
+			err = helper.CopyFields(ctx, volResponse, &volState)
+			volState.SymmetrixPortKey, _ = helper.GetSymmetrixPortKeyObjects(volResponse)
+			volState.StorageGroups, _ = helper.GetStorageGroupObjects(volResponse)
+			volState.RfdGroupIDList, _ = helper.GetRfdGroupIdsObjects(volResponse)
+			if err != nil {
+				return nil, err
+			}
+			response = append(response, volState)
 		}
-		volState := models.VolumeDatasourceEntity{}
-		err = helper.CopyFields(ctx, volResponse, &volState)
-		volState.SymmetrixPortKey, _ = helper.GetSymmetrixPortKeyObjects(volResponse)
-		if err != nil {
-			return nil, err
-		}
-		response = append(response, volState)
 	}
 	return response, nil
 }

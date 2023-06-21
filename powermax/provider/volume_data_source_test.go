@@ -19,13 +19,13 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
+	"terraform-provider-powermax/powermax/helper"
+	"testing"
+
 	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"regexp"
-	"terraform-provider-powermax/client"
-	"terraform-provider-powermax/powermax/helper"
-	"testing"
 )
 
 func TestAccVolumeDatasource(t *testing.T) {
@@ -57,30 +57,6 @@ func TestAccVolumeDatasourceInvalidFilter(t *testing.T) {
 			{
 				PreConfig: func() {
 					FunctionMocker = Mock(helper.GetVolumeFilterParam).Return(nil, fmt.Errorf("mock error")).Build()
-				},
-				Config:      ProviderConfig + VolStorageGroupDSConfig + VolumeDatasourceConfig,
-				ExpectError: regexp.MustCompile("mock error"),
-			},
-		},
-		CheckDestroy: func(_ *terraform.State) error {
-			if FunctionMocker != nil {
-				FunctionMocker.UnPatch()
-			}
-			return nil
-		},
-	})
-}
-
-func TestAccVolumeDatasourceWithErrorVolList(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				PreConfig: func() {
-					FunctionMocker = Mock(GetMethod(client.Client{}.PmaxClient, "GetVolumeIDListWithParams")).Return(nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolStorageGroupDSConfig + VolumeDatasourceConfig,
 				ExpectError: regexp.MustCompile("mock error"),

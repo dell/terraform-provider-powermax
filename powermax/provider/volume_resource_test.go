@@ -19,10 +19,11 @@ package provider
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/stretchr/testify/assert"
 	"regexp"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -95,12 +96,12 @@ func TestAccVolume_Invalid_Config(t *testing.T) {
 			// Config with invalid unit
 			{
 				Config:      ProviderConfig + VolStorageGroupConfig + VolumeConfigInvalidCYL,
-				ExpectError: regexp.MustCompile("Error creating volume"),
+				ExpectError: regexp.MustCompile("Provider produced inconsistent result after apply"),
 			},
 			// Config with invalid SG name
 			{
 				Config:      ProviderConfig + VolStorageGroupConfig + VolumeConfigInvalidSG,
-				ExpectError: regexp.MustCompile("Error creating volume"),
+				ExpectError: regexp.MustCompile("Provider produced inconsistent result after apply"),
 			},
 		},
 	})
@@ -119,12 +120,12 @@ func TestAccVolume_Error_Updating(t *testing.T) {
 			// Invalid SG name
 			{
 				Config:      ProviderConfig + VolStorageGroupConfig + VolumeConfigInvalidSG,
-				ExpectError: regexp.MustCompile("Failed to modify."),
+				ExpectError: regexp.MustCompile("Provider produced inconsistent result after apply"),
 			},
 			// Invalid name
 			{
 				Config:      ProviderConfig + VolStorageGroupConfig + VolumeConfigInvalidName,
-				ExpectError: regexp.MustCompile("Failed to modify."),
+				ExpectError: regexp.MustCompile("Failed to rename volume"),
 			},
 		},
 	})

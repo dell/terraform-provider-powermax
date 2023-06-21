@@ -87,6 +87,7 @@ Optional:
 Read-Only:
 
 - `bw_limit` (Number) Specifies the bandwidth limit for a host.
+- `hostgroup` (List of String) The host group associated with the host.
 - `id` (String) The ID of the host.
 - `maskingview` (List of String) The masking views associated with the host.
 - `num_of_host_groups` (Number) The number of hostgroups associated with the host.
