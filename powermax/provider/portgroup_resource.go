@@ -19,7 +19,9 @@ package provider
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
 	"fmt"
+	"net/http"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
@@ -162,11 +164,29 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 		"name":        plan.Name.ValueString(),
 		"ports":       pmaxPorts,
 	})
-	pgResponse, err := r.client.PmaxClient.CreatePortGroup(ctx, r.client.SymmetrixID, plan.Name.ValueString(), pmaxPorts, plan.Protocol.ValueString())
+	//Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
+	portGroups := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroup(ctx, r.client.SymmetrixID) //(ctx, d.client.SymmetrixID, state.Type.ValueString())
+
+	createParam := pmax.NewCreatePortGroupParam(plan.Name.ValueString())
+	createParam.SetPortGroupProtocol(plan.Protocol.ValueString())
+	createParam.SetSymmetrixPortKey(pmaxPorts)
+
+	portGroups = portGroups.CreatePortGroupParam(*createParam)
+
+	pgResponse, resp1, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroupExecute(portGroups)
+
 	if err != nil {
+		errStr := constants.CreatePGDetailErrorMsg + plan.Name.ValueString() + " with error: "
+		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
-			"Error creating port group",
-			constants.CreatePGDetailErrorMsg+plan.Name.ValueString()+" with error: "+err.Error(),
+			"Error creating port group", msgStr,
+		)
+		return
+	}
+	if resp1.StatusCode != http.StatusCreated {
+		resp.Diagnostics.AddError(
+			"Unable to Read PowerMax Port Groups. Got http error - %s",
+			resp1.Status,
 		)
 		return
 	}
@@ -201,14 +221,16 @@ func (r *PortGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		"symmetrixID": r.client.SymmetrixID,
 		"portGroupID": pgID,
 	})
-	pgResponse, err := r.client.PmaxClient.GetPortGroupByID(ctx, r.client.SymmetrixID, pgID)
+	pgResponse, _, err := helper.ReadPortgroupById(*r.client, ctx, pgID)
 	if err != nil {
+		errStr := constants.ReadPGDetailsErrorMsg + pgID + " with error: "
+		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
-			"Error reading portgroup",
-			constants.ReadPGDetailsErrorMsg+pgID+" with error: "+err.Error(),
+			"Error reading port group", msgStr,
 		)
 		return
 	}
+
 	tflog.Debug(ctx, "get port group by ID response", map[string]interface{}{
 		"pgResponse": pgResponse,
 	})
@@ -249,6 +271,7 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("%s, updated parameters are %v and parameters failed to update are %v", constants.UpdatePGDetailsErrMsg, updatedParams, updateFailedParameters),
 			errMessage)
+		return
 	}
 
 	portGroupID := pgState.ID.ValueString()
@@ -257,11 +280,12 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 		portGroupID = pgPlan.Name.ValueString()
 	}
 
-	pgResponse, err := r.client.PmaxClient.GetPortGroupByID(ctx, r.client.SymmetrixID, portGroupID)
+	pgResponse, _, err := helper.ReadPortgroupById(*r.client, ctx, portGroupID)
 	if err != nil {
+		errStr := constants.UpdatePGDetailsErrMsg + pgPlan.Name.ValueString() + " with error: "
+		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
-			"Error reading portgroup",
-			constants.UpdatePGDetailsErrMsg+pgPlan.Name.ValueString()+" with error: "+err.Error(),
+			"Error reading port group", msgStr,
 		)
 		return
 	}
@@ -291,11 +315,13 @@ func (r *PortGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 		"symmetrixID": r.client.SymmetrixID,
 		"portGroupID": pgID,
 	})
-	err := r.client.PmaxClient.DeletePortGroup(ctx, r.client.SymmetrixID, pgID)
+	_, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeletePortGroup(ctx, r.client.SymmetrixID, pgID).Execute()
+
 	if err != nil {
+		errStr := constants.DeletePGDetailsErrorMsg + pgID + " with error: "
+		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
-			"Error deleting portgroup",
-			constants.DeletePGDetailsErrorMsg+pgID+" with error: "+err.Error(),
+			"Error deleting port group", msgStr,
 		)
 	}
 	tflog.Info(ctx, "delete portgroup completed")
