@@ -20,6 +20,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -171,23 +172,37 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	var pgNames []string
-	var typeStr string = ""
-	if pgPlan.PgFilter != nil {
-		typeStr = pgPlan.PgFilter.Type.ValueString()
-	}
 	//Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
-	portGroupIDList, err := d.client.PmaxClient.GetPortGroupList(ctx, d.client.SymmetrixID, typeStr)
+	portGroupsParam := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroups(ctx, d.client.SymmetrixID)
+	if pgState.PgFilter.Type.ValueString() == "iscsi" {
+		portGroupsParam = portGroupsParam.Iscsi("true")
+	} else { //default Fiber
+		portGroupsParam = portGroupsParam.Fibre("true")
+	}
+	//err GenericOpenAPIError;
+
+	portGroupIDList, resp1, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroupsExecute(portGroupsParam)
 	if err != nil {
-		resp.Diagnostics.AddError("Error reading port group names", err.Error())
+		errStr := ""
+		msgStr := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError(
+			"Unable to Read PowerMax Port Groups", msgStr,
+		)
+	}
+	if resp1.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"Unable to Read PowerMax Port Groups. Got http error - %s",
+			resp1.Status,
+		)
 		return
 	}
 	// Get portgroup IDs from config or query all if not specified
 	if pgPlan.PgFilter == nil || len(pgPlan.PgFilter.Names) == 0 {
-		pgNames = portGroupIDList.PortGroupIDs
+		pgNames = portGroupIDList.GetPortGroupId()
 	} else {
 		// get ids from portGroups and assign to pgNames
 		for _, pg := range pgPlan.PgFilter.Names {
-			for _, pgFromList := range portGroupIDList.PortGroupIDs {
+			for _, pgFromList := range portGroupIDList.GetPortGroupId() {
 				if pg.ValueString() == pgFromList {
 					pgNames = append(pgNames, pg.ValueString())
 				}
@@ -202,10 +217,11 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	// iterate Portgroup IDs and GetPortGroup with each id
 	for _, elemid := range pgNames {
-		pgResponse, err := d.client.PmaxClient.GetPortGroupByID(ctx, d.client.SymmetrixID, elemid)
+		pgResponse, _, err := helper.ReadPortgroupById(*d.client, ctx, elemid)
 		if err != nil || pgResponse == nil {
 			errStr := fmt.Sprintf("Error reading port group with id %s", elemid)
-			resp.Diagnostics.AddError(errStr, err.Error())
+			msgStr := helper.GetErrorString(err, "")
+			resp.Diagnostics.AddError(errStr, msgStr)
 			return
 		}
 		var pg models.PortGroup

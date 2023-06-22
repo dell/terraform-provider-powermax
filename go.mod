@@ -87,5 +87,3 @@ require (
 )
 
 replace dell/powermax-go-client => ../powermax-go-client
-
-replace github.com/dell/powermax-go-client => ../powermax-go-client
