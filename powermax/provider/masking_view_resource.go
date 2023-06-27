@@ -175,11 +175,10 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	maskingView, _, err := maskingViewReq.Execute()
 
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError("Error creating masking view", message)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error creating masking view", message)
+
 		return
 	}
 
@@ -192,11 +191,10 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	maskingView, _, err = getMaskingViewReq.Execute()
 
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError("Error reading masking view", message)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error reading masking view", message)
+
 		return
 	}
 
@@ -232,11 +230,10 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 	maskingView, _, err := getMaskingViewReq.Execute()
 
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError("Error reading masking view", message)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error reading masking view", message)
+
 		return
 	}
 
@@ -294,11 +291,9 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 		modifyReq = modifyReq.EditMaskingViewParam(*editParam)
 		_, _, err := modifyReq.Execute()
 		if err != nil {
-			err1, ok := err.(*pmax.GenericOpenAPIError)
-			if ok {
-				message, _ := helper.ParseBody(err1.Body())
-				resp.Diagnostics.AddError("Error renaming masking view", message)
-			}
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError("Error renaming masking view", message)
 
 			return
 		}
@@ -308,11 +303,9 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 	getMaskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString())
 	maskingView, _, err := getMaskingViewReq.Execute()
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError("Error reading masking view", message)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error reading masking view", message)
 		return
 	}
 
@@ -345,12 +338,9 @@ func (r *maskingView) Delete(ctx context.Context, req resource.DeleteRequest, re
 	delReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteMaskingView(ctx, r.client.SymmetrixID, state.Name.ValueString())
 	_, err := delReq.Execute()
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete masking view, got error: %s", message))
-		}
-
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete masking view, got error: %s", message))
 		return
 	}
 

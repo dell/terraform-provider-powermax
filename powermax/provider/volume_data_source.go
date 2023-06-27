@@ -536,13 +536,9 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 func updateVolumeState(ctx context.Context, p *client.Client, params powermax.ApiListVolumesRequest) (response []models.VolumeDatasourceEntity, err error) {
 	volIDs, _, err := params.Execute()
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			return nil, fmt.Errorf(message)
-		} else {
-			return nil, err
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		return nil, fmt.Errorf(message)
 	}
 
 	for _, vol := range volIDs.ResultList.GetResult() {
@@ -550,13 +546,9 @@ func updateVolumeState(ctx context.Context, p *client.Client, params powermax.Ap
 			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeId))
 			volResponse, _, err := volumeModel.Execute()
 			if err != nil {
-				err1, ok := err.(*powermax.GenericOpenAPIError)
-				if ok {
-					message, _ := helper.ParseBody(err1.Body())
-					return nil, fmt.Errorf(message)
-				} else {
-					return nil, err
-				}
+				errStr := ""
+				message := helper.GetErrorString(err, errStr)
+				return nil, fmt.Errorf(message)
 
 			}
 			volState := models.VolumeDatasourceEntity{}

@@ -184,14 +184,12 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 		maskingViewList, _, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListMaskingViewsExecute(maskingViews)
 
 		if err != nil {
-			err1, ok := err.(*pmax.GenericOpenAPIError)
-			if ok {
-				message, _ := helper.ParseBody(err1.Body())
-				resp.Diagnostics.AddError(
-					"Unable to Get PowerMax Masking View List",
-					message,
-				)
-			}
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError(
+				"Unable to Get PowerMax Masking View List",
+				message,
+			)
 
 			return
 		}
@@ -290,14 +288,12 @@ func (d *maskingViewDataSource) getMaskingViewToConnections(ctx context.Context,
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
-					err1, ok := err.(*pmax.GenericOpenAPIError)
-					if ok {
-						message, _ := helper.ParseBody(err1.Body())
-						resp.Diagnostics.AddError(
-							fmt.Sprintf("Failed to get MaskingViewConnections - %s.", mv.MaskingViewId),
-							message,
-						)
-					}
+					errStr := ""
+					message := helper.GetErrorString(err, errStr)
+					resp.Diagnostics.AddError(
+						fmt.Sprintf("Failed to get MaskingViewConnections - %s.", mv.MaskingViewId),
+						message,
+					)
 					return
 				}
 
@@ -342,14 +338,12 @@ func (d *maskingViewDataSource) getMaskingViews(ctx context.Context, resp *datas
 				if err != nil {
 					lockMutex.Lock()
 					defer lockMutex.Unlock()
-					err1, ok := err.(*pmax.GenericOpenAPIError)
-					if ok {
-						message, _ := helper.ParseBody(err1.Body())
-						resp.Diagnostics.AddError(
-							fmt.Sprintf("Failed to get MaskingView - %s.", id),
-							message,
-						)
-					}
+					errStr := ""
+					message := helper.GetErrorString(err, errStr)
+					resp.Diagnostics.AddError(
+						fmt.Sprintf("Failed to get MaskingView - %s.", id),
+						message,
+					)
 					return
 				}
 

@@ -185,9 +185,11 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	hostGroupIDs, err := helper.FilterHostGroupIds(ctx, &state, &plan, *d.client)
 
 	if err != nil {
+		errStr := constants.ReadHostGroupListDetailsErrorMsg + "with error: "
+		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error getting the list of host group ids",
-			constants.ReadHostGroupListDetailsErrorMsg+"with error: "+err.Error(),
+			message,
 		)
 		return
 	}
@@ -198,9 +200,11 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		groupDetailModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, d.client.SymmetrixID, hostGroupID)
 		groupDetail, resp1, err := groupDetailModel.Execute()
 		if err != nil {
+			errStr := constants.ReadHostGroupListDetailsErrorMsg + "with error: "
+			message := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError(
 				"Error getting the details of host group: "+hostGroupID,
-				constants.ReadHostGroupListDetailsErrorMsg+"with error: "+err.Error(),
+				message,
 			)
 			return
 		}
