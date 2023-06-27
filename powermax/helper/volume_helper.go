@@ -153,15 +153,10 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 		})
 		_, _, err := modifyParam.Execute()
 		if err != nil {
-			err1, ok := err.(*powermax.GenericOpenAPIError)
-			if ok {
-				message, _ := ParseBody(err1.Body())
-				updateFailedParameters = append(updateFailedParameters, "name")
-				errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename volume: %s", message))
-			} else {
-				updateFailedParameters = append(updateFailedParameters, "name")
-				errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename volume: %s", err.Error()))
-			}
+			errStr := ""
+			message := GetErrorString(err, errStr)
+			updateFailedParameters = append(updateFailedParameters, "name")
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename volume: %s", message))
 		} else {
 			updatedParameters = append(updatedParameters, "name")
 		}
@@ -178,15 +173,10 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 		})
 		_, _, err := modifyParam.Execute()
 		if err != nil {
-			err1, ok := err.(*powermax.GenericOpenAPIError)
-			if ok {
-				message, _ := ParseBody(err1.Body())
-				updateFailedParameters = append(updateFailedParameters, "enable_mobility_id")
-				errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify mobility: %s", message))
-			} else {
-				updateFailedParameters = append(updateFailedParameters, "enable_mobility_id")
-				errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify mobility: %s", err.Error()))
-			}
+			errStr := ""
+			message := GetErrorString(err, errStr)
+			updateFailedParameters = append(updateFailedParameters, "enable_mobility_id")
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify mobility: %s", message))
 		} else {
 			updatedParameters = append(updatedParameters, "enable_mobility_id")
 		}
@@ -205,15 +195,10 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 		})
 		_, _, err := modifyParam.Execute()
 		if err != nil {
-			err1, ok := err.(*powermax.GenericOpenAPIError)
-			if ok {
-				message, _ := ParseBody(err1.Body())
-				updateFailedParameters = append(updateFailedParameters, "size")
-				errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the volume size: %s", message))
-			} else {
-				updateFailedParameters = append(updateFailedParameters, "size")
-				errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the volume size: %s", err.Error()))
-			}
+			errStr := ""
+			message := GetErrorString(err, errStr)
+			updateFailedParameters = append(updateFailedParameters, "size")
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the volume size: %s", message))
 		} else {
 			updatedParameters = append(updatedParameters, "size")
 		}

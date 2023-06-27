@@ -366,9 +366,11 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 			deleteModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHostGroup(ctx, r.client.SymmetrixID, hostgroupID)
 			_, err := deleteModel.Execute()
 			if err != nil {
+				errStr := constants.CreateHostGroupDetailErrorMsg + hostgroupID + "with error: "
+				message := helper.GetErrorString(err, errStr)
 				resp.Diagnostics.AddError(
 					"Error deleting the invalid hostGroup, This may be a dangling resource and needs to be deleted manually",
-					constants.CreateHostGroupDetailErrorMsg+hostgroupID+"with error: "+err.Error(),
+					message,
 				)
 			}
 		}
@@ -411,9 +413,11 @@ func (r *HostGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		"HostGroup Response": hgResponse,
 	})
 	if err != nil {
+		errStr := constants.ReadHostGroupDetailsErrorMsg + hostGroupID + " with error: "
+		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error reading hostGroup",
-			constants.ReadHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+			message,
 		)
 		return
 	}
@@ -482,9 +486,11 @@ func (r *HostGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 	hgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
 	hostGroupResponse, resp1, err := hgModel.Execute()
 	if err != nil {
+		errStr := constants.ReadHostGroupDetailsErrorMsg + hostGroupID + " with error: "
+		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error reading hostgroup",
-			constants.ReadHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+			message,
 		)
 		return
 	}
@@ -526,9 +532,11 @@ func (r *HostGroup) Delete(ctx context.Context, req resource.DeleteRequest, resp
 	deleteModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
 	_, err := deleteModel.Execute()
 	if err != nil {
+		errStr := constants.DeleteHostGroupDetailsErrorMsg + hostGroupID + " with error: "
+		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error deleting hostGroup",
-			constants.DeleteHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+			message,
 		)
 	}
 
@@ -547,9 +555,11 @@ func (r *HostGroup) ImportState(ctx context.Context, req resource.ImportStateReq
 	hgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, r.client.SymmetrixID, hostGroupID)
 	hostGroupResponse, resp1, err := hgModel.Execute()
 	if err != nil {
+		errStr := constants.ImportHostGroupDetailsErrorMsg + hostGroupID + " with error: "
+		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error reading hostgroup",
-			constants.ImportHostGroupDetailsErrorMsg+hostGroupID+" with error: "+err.Error(),
+			message,
 		)
 		return
 	}

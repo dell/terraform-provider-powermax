@@ -19,7 +19,6 @@ package provider
 
 import (
 	"context"
-	pmax "dell/powermax-go-client"
 	"fmt"
 	"net/http"
 	"terraform-provider-powermax/client"
@@ -273,11 +272,9 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		hostIDList, response, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHostsExecute(hosts)
 
 		if err != nil {
-			err1, ok := err.(*pmax.GenericOpenAPIError)
-			if ok {
-				message, _ := helper.ParseBody(err1.Body())
-				resp.Diagnostics.AddError("Error reading host ids", message)
-			}
+			errStr := ""
+			msgStr := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError("Error reading host ids", msgStr)
 			return
 		}
 		if response.StatusCode != http.StatusOK {
@@ -300,11 +297,9 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		getHostReq := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, d.client.SymmetrixID, id)
 		hostResponse, response1, err := getHostReq.Execute()
 		if err != nil || hostResponse == nil {
-			err1, ok := err.(*pmax.GenericOpenAPIError)
-			if ok {
-				message, _ := helper.ParseBody(err1.Body())
-				resp.Diagnostics.AddError("Error reading host with id", message)
-			}
+			errStr := ""
+			msgStr := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError("Error reading host with id", msgStr)
 			continue
 		}
 		if response1.StatusCode != http.StatusOK {

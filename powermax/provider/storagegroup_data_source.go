@@ -19,7 +19,6 @@ package provider
 
 import (
 	"context"
-	"dell/powermax-go-client"
 	"fmt"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
@@ -286,13 +285,9 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 		sgModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListStorageGroups(ctx, d.client.SymmetrixID)
 		storageGroupIDList, _, err := sgModel.Execute()
 		if err != nil {
-			err1, ok := err.(*powermax.GenericOpenAPIError)
-			if ok {
-				message, _ := helper.ParseBody(err1.Body())
-				resp.Diagnostics.AddError("Error reading storage group ids:", message)
-			} else {
-				resp.Diagnostics.AddError("Error reading storage group ids", err.Error())
-			}
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError("Error reading storage group ids:", message)
 			return
 		}
 		sgIDs = storageGroupIDList.StorageGroupId

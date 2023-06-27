@@ -319,14 +319,12 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 	if err != nil {
 		hostID := planHost.Name.ValueString()
 
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError(
-				"Error creating host",
-				constants.CreateHostDetailErrorMsg+hostID+": "+message,
-			)
-		}
+		errStr := constants.CreateHostDetailErrorMsg + hostID + ": "
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError(
+			"Error creating host",
+			message,
+		)
 
 		req := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
 		hostGetResp, _, getHostErr := req.Execute()
@@ -334,9 +332,11 @@ func (r *Host) Create(ctx context.Context, req resource.CreateRequest, resp *res
 			delReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHost(ctx, r.client.SymmetrixID, hostID)
 			_, err := delReq.Execute()
 			if err != nil {
+				errStr := constants.CreateHostDetailErrorMsg + hostID + "with error: "
+				message := helper.GetErrorString(err, errStr)
 				resp.Diagnostics.AddError(
 					"Error deleting the invalid host, This may be a dangling resource and needs to be deleted manually",
-					constants.CreateHostDetailErrorMsg+hostID+"with error: "+err.Error(),
+					message,
 				)
 			}
 		}
@@ -373,14 +373,12 @@ func (r *Host) Delete(ctx context.Context, req resource.DeleteRequest, resp *res
 	delReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteHost(ctx, r.client.SymmetrixID, hostID)
 	_, err := delReq.Execute()
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError(
-				"Error deleting host",
-				constants.DeleteHostDetailsErrorMsg+hostID+" with error: "+message,
-			)
-		}
+		errStr := constants.DeleteHostDetailsErrorMsg + hostID + " with error: "
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError(
+			"Error deleting host",
+			message,
+		)
 	}
 
 	tflog.Info(ctx, "Delete host complete")
@@ -428,9 +426,11 @@ func (r *Host) Update(ctx context.Context, req resource.UpdateRequest, resp *res
 	getReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
 	hostResponse, _, err := getReq.Execute()
 	if err != nil {
+		errStr := constants.ReadHostDetailsErrorMsg + hostID + " with error: "
+		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error reading host",
-			constants.ReadHostDetailsErrorMsg+hostID+" with error: "+err.Error(),
+			message,
 		)
 		return
 	}
@@ -481,14 +481,12 @@ func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resourc
 	getReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
 	host, _, err := getReq.Execute()
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError(
-				"Error reading host",
-				constants.ReadHostDetailsErrorMsg+hostID+" with error: "+message,
-			)
-		}
+		errStr := constants.ReadHostDetailsErrorMsg + hostID + " with error: "
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError(
+			"Error reading host",
+			message,
+		)
 		return
 	}
 	initiators := make([]string, len(hostState.Initiators.Elements()))
@@ -524,14 +522,12 @@ func (r *Host) ImportState(ctx context.Context, req resource.ImportStateRequest,
 	hostResponse, _, err := getReq.Execute()
 
 	if err != nil {
-		err1, ok := err.(*pmax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			resp.Diagnostics.AddError(
-				"Error reading host",
-				constants.ImportHostDetailsErrorMsg+hostID+" with error: "+message,
-			)
-		}
+		errStr := constants.ImportHostDetailsErrorMsg + hostID + " with error: "
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError(
+			"Error reading host",
+			message,
+		)
 		return
 	}
 	tflog.Debug(ctx, "Get Host By ID response", map[string]interface{}{

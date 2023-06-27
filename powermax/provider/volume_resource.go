@@ -355,16 +355,10 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 	)
 	volResponse, _, err := createParam.Execute()
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			response.Diagnostics.AddError("Error creating volume",
-				fmt.Sprintf("Could not create volume %s with error: %s", plan.VolumeIdentifier.ValueString(), message))
-		} else {
-			response.Diagnostics.AddError("Error creating volume",
-				fmt.Sprintf("Could not create volume %s with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
-			)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		response.Diagnostics.AddError("Error creating volume",
+			fmt.Sprintf("Could not create volume %s with error: %s", plan.VolumeIdentifier.ValueString(), message))
 		return
 	}
 	tflog.Debug(ctx, "create volume in storage groups response", map[string]interface{}{
@@ -376,16 +370,10 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 	param = param.StorageGroupId(plan.StorageGroupName.ValueString())
 	volumeIDListInStorageGroup, _, err := param.Execute()
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			response.Diagnostics.AddError("Error creating volume",
-				fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
-		} else {
-			response.Diagnostics.AddError("Error creating volume",
-				fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
-			)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		response.Diagnostics.AddError("Error creating volume",
+			fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
 		return
 	}
 	volId := ""
@@ -405,16 +393,10 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 	vol, _, err := paramVol.Execute()
 
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			response.Diagnostics.AddError("Error creating volume",
-				fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
-		} else {
-			response.Diagnostics.AddError("Error creating volume",
-				fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
-			)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		response.Diagnostics.AddError("Error creating volume",
+			fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
 		return
 	}
 	tflog.Debug(ctx, "updating create volume state", map[string]interface{}{
@@ -458,19 +440,13 @@ func (r volumeResource) Read(ctx context.Context, request resource.ReadRequest, 
 	param := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volID)
 	volResponse, _, err := param.Execute()
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			response.Diagnostics.AddError(
-				"Error reading volume",
-				fmt.Sprintf("Could not read volume %s with error: %s", volID, message),
-			)
-		} else {
-			response.Diagnostics.AddError(
-				"Error reading volume",
-				fmt.Sprintf("Could not read volume %s with error: %s", volID, err.Error()),
-			)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		response.Diagnostics.AddError(
+			"Error reading volume",
+			fmt.Sprintf("Could not read volume %s with error: %s", volID, message),
+		)
+
 		return
 	}
 	tflog.Debug(ctx, "get volume by ID response", map[string]interface{}{
@@ -535,19 +511,12 @@ func (r volumeResource) Update(ctx context.Context, request resource.UpdateReque
 	param := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volID)
 	volResponse, _, err := param.Execute()
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			response.Diagnostics.AddError(
-				"Error reading volume",
-				fmt.Sprintf("Could not read volume %s with error: %s", volID, message),
-			)
-		} else {
-			response.Diagnostics.AddError(
-				"Error reading volume",
-				fmt.Sprintf("Could not read volume %s with error: %s", volID, err.Error()),
-			)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		response.Diagnostics.AddError(
+			"Error reading volume",
+			fmt.Sprintf("Could not read volume %s with error: %s", volID, message),
+		)
 		return
 	}
 	tflog.Debug(ctx, "get volume by ID response", map[string]interface{}{
@@ -623,21 +592,14 @@ func (r volumeResource) Delete(ctx context.Context, request resource.DeleteReque
 			)
 			_, _, err := deleteParam.Execute()
 			if err != nil {
-				err1, ok := err.(*powermax.GenericOpenAPIError)
-				if ok {
-					message, _ := helper.ParseBody(err1.Body())
-					response.Diagnostics.AddError(
-						"Error removing volume from storage group",
-						fmt.Sprintf("Could not remove  Volume ID: %s from storage group: %s with error: %s",
-							volumeID, volumeState.StorageGroupName.ValueString(), message),
-					)
-				} else {
-					response.Diagnostics.AddError(
-						"Error removing volume from storage group",
-						fmt.Sprintf("Could not remove  Volume ID: %s from storage group: %s with error: %s",
-							volumeID, volumeState.StorageGroupName.ValueString(), err.Error()),
-					)
-				}
+				errStr := ""
+				message := helper.GetErrorString(err, errStr)
+				response.Diagnostics.AddError(
+					"Error removing volume from storage group",
+					fmt.Sprintf("Could not remove  Volume ID: %s from storage group: %s with error: %s",
+						volumeID, volumeState.StorageGroupName.ValueString(), message),
+				)
+
 				return
 			}
 		}
@@ -649,21 +611,13 @@ func (r volumeResource) Delete(ctx context.Context, request resource.DeleteReque
 	delParam := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteVolume(ctx, r.client.SymmetrixID, volumeID)
 	_, err := delParam.Execute()
 	if err != nil {
-		err1, ok := err.(*powermax.GenericOpenAPIError)
-		if ok {
-			message, _ := helper.ParseBody(err1.Body())
-			response.Diagnostics.AddError(
-				"Error deleting volume",
-				fmt.Sprintf("Could not remove Volume ID: %s with error: %s ",
-					volumeID, message),
-			)
-		} else {
-			response.Diagnostics.AddError(
-				"Error deleting volume",
-				fmt.Sprintf("Could not remove Volume ID: %s with error: %s ",
-					volumeID, err.Error()),
-			)
-		}
+		errStr := ""
+		message := helper.GetErrorString(err, errStr)
+		response.Diagnostics.AddError(
+			"Error deleting volume",
+			fmt.Sprintf("Could not remove Volume ID: %s with error: %s ",
+				volumeID, message),
+		)
 
 	}
 	response.State.RemoveResource(ctx)

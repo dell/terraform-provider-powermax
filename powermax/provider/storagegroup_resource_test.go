@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccStorageGroup(t *testing.T) {
+func TestAccStorageGroupA(t *testing.T) {
 	var storageGroupTerraformName = "powermax_storagegroup.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
