@@ -42,7 +42,7 @@ func NewHostGroupDataSource() datasource.DataSource {
 	return &hostGroupDataSource{}
 }
 
-// coffeesDataSource is the data source implementation.
+// hostGroupDataSource is the data source implementation.
 type hostGroupDataSource struct {
 	client *client.Client
 }
