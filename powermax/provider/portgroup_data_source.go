@@ -174,7 +174,13 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	var pgNames []string
 	//Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
 	portGroupsParam := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroups(ctx, d.client.SymmetrixID)
-	if pgState.PgFilter != nil && pgState.PgFilter.Type.ValueString() == "iscsi" {
+	var typeStr string = ""
+	if pgPlan.PgFilter != nil {
+		if !pgPlan.PgFilter.Type.IsNull() {
+			typeStr = pgPlan.PgFilter.Type.ValueString()
+		}
+	}
+	if typeStr == "iscsi" {
 		portGroupsParam = portGroupsParam.Iscsi("true")
 	} else { //default Fiber
 		portGroupsParam = portGroupsParam.Fibre("true")
