@@ -86,4 +86,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace dell/powermax-go-client => ../powermax-go-client
+replace dell/powermax-go-client => ./powermax-go-client-100
