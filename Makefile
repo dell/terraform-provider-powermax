@@ -22,8 +22,21 @@ OS_ARCH=linux_amd64
 
 default: install
 
-build:
+extract-client: 
+	unzip -o 'goClientZip/powermax-go-client-100.zip' -d ./powermax-go-client-100/
+
+clean:
+	rm -rf powermax-go-client-100
+	rm -f ${BINARY}
+
+no-extract-build: 
+	go mod download
 	go build -o ${BINARY}
+
+build: extract-client
+	go mod download
+	go build -o ${BINARY}
+
 
 release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
