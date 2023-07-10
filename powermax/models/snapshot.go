@@ -24,10 +24,99 @@ import (
 type SnapshotDataSourceModel struct {
 	ID           types.String          `tfsdk:"id"`
 	Snapshots    []SnapshotDetailModal `tfsdk:"snapshots"`
-	StorageGroup *filterTypeSnapshot   `tfsdk:"storage_group"`
+	StorageGroup *FilterTypeSnapshot   `tfsdk:"storage_group"`
 }
 
-type filterTypeSnapshot struct {
+// SnapshotResourceModel struct.
+type SnapshotResourceModel struct {
+	ID types.String `tfsdk:"id"`
+	// The name of the SnapVX snapshot.
+	Name types.String `tfsdk:"name"`
+	// The number of generation for the snapshot. Using snap IDs instead of generation numbers is preferred.
+	Generation types.Int64 `tfsdk:"generation"`
+	// The unique snap ID for the snapshot. This snap ID value does not change in the way generations can change when newer snapshots are created or terminated. Using snapset IDs instead of generation numbers is preferred.
+	Snapid types.Int64 `tfsdk:"snapid"`
+	// The timestamp of the snapshot generation.
+	Timestamp types.String `tfsdk:"timestamp"`
+	// The timestamp of the snapshot generation in milliseconds since 1970.
+	TimestampUtc types.String `tfsdk:"timestamp_utc"`
+	// The state of the snapshot generation.
+	State types.List `tfsdk:"state"`
+	// The number of source volumes in the snapshot generation.
+	NumSourceVolumes types.Int64 `tfsdk:"num_source_volumes"`
+	// The source volumes of the snapshot generation.
+	SourceVolume types.List `tfsdk:"source_volume"`
+	// The number of non-gatekeeper storage group volumes.
+	NumStorageGroupVolumes types.Int64 `tfsdk:"num_storage_group_volumes"`
+	// The number of source tracks that have been overwritten by the host.
+	Tracks types.Int64 `tfsdk:"tracks"`
+	// The number of tracks uniquely allocated for this snapshots delta. This is an approximate indication of the number of tracks that will be returned to the SRP if this snapshot is terminated.
+	NonSharedTracks types.Int64 `tfsdk:"non_shared_tracks"`
+	// When the snapshot will expire once it is not linked.
+	TimeToLiveExpiryDate types.String `tfsdk:"time_to_live_expiry_date"`
+	// When the snapshot will expire once it is not linked.
+	SecureExpiryDate types.String `tfsdk:"secure_expiry_date"`
+	// Set if this generation secure has expired.
+	Expired types.Bool `tfsdk:"expired"`
+	// Set if this generation is SnapVX linked.
+	Linked types.Bool `tfsdk:"linked"`
+	// Set if this generation is restored.
+	Restored types.Bool `tfsdk:"restored"`
+	// Linked storage group names. Only populated if the generation is linked.
+	LinkedStorageGroupNames types.List `tfsdk:"linked_storage_group_names"`
+	// Linked storage group and volume information. Only populated if the generation is linked.
+	LinkedStorageGroup types.List `tfsdk:"linked_storage_group"`
+	// Set if this snapshot is persistent.  Only applicable to policy based snapshots.
+	Persistent   types.Bool              `tfsdk:"persistent"`
+	StorageGroup *FilterTypeSnapshot     `tfsdk:"storage_group"`
+	Snapshot     *SnapshotResourceFields `tfsdk:"snapshot_actions"`
+}
+
+// SnapshotResourceFields The different Action fields for snapshot
+type SnapshotResourceFields struct {
+	Name       types.String         `tfsdk:"name"`
+	Restore    *restoreActionFields `tfsdk:"restore"`
+	Link       *linkActionFields    `tfsdk:"link"`
+	SetMode    *setModeActionFields `tfsdk:"set_mode"`
+	TimeToLive *ttlActionFields     `tfsdk:"time_to_live"`
+	Secure     *secureActionFields  `tfsdk:"secure"`
+	Remote     types.Bool           `tfsdk:"remote"`
+	Bothsides  types.Bool           `tfsdk:"both_sides"`
+}
+
+type restoreActionFields struct {
+	Enable types.Bool `tfsdk:"enable"`
+	Remote types.Bool `tfsdk:"remote"`
+}
+
+type linkActionFields struct {
+	Enable             types.Bool   `tfsdk:"enable"`
+	TargetStorageGroup types.String `tfsdk:"target_storage_group"`
+	NoCompression      types.Bool   `tfsdk:"no_compression"`
+	Remote             types.Bool   `tfsdk:"remote"`
+	Copy               types.Bool   `tfsdk:"copy"`
+}
+
+type setModeActionFields struct {
+	Enable             types.Bool   `tfsdk:"enable"`
+	TargetStorageGroup types.String `tfsdk:"target_storage_group"`
+	Copy               types.Bool   `tfsdk:"copy"`
+}
+
+type ttlActionFields struct {
+	Enable      types.Bool  `tfsdk:"enable"`
+	TimeToLive  types.Int64 `tfsdk:"time_to_live"`
+	TimeInHours types.Bool  `tfsdk:"time_in_hours"`
+}
+
+type secureActionFields struct {
+	Enable      types.Bool  `tfsdk:"enable"`
+	Secure      types.Int64 `tfsdk:"secure"`
+	TimeInHours types.Bool  `tfsdk:"time_in_hours"`
+}
+
+// FilterTypeSnapshot The different filter fields for snapshot
+type FilterTypeSnapshot struct {
 	Name types.String `tfsdk:"name"`
 }
 

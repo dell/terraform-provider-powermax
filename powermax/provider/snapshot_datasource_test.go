@@ -44,7 +44,7 @@ data "powermax_snapshot" "test" {
 	# The storage group to which you want to see all the snapshots
 	# Required
    storage_group {
-	 name = "tfacc_example_storage_group"
+	 name = "tfacc_sg_snapshot"
    }
  }
 `
