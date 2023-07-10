@@ -21,6 +21,7 @@ import (
 	"context"
 	"dell/powermax-go-client"
 	"fmt"
+	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -29,8 +30,38 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
+const (
+	// ActionSnapshotRestore is used as the restore action for snasphots
+	ActionSnapshotRestore = "Restore"
+	// ActionSnapshotLink is used as the link action for snasphots
+	ActionSnapshotLink = "Link"
+	// ActionSnapshotSetMode is used as the setMode action for snasphots
+	ActionSnapshotSetMode = "SetMode"
+	// ActionSnapshotRename is used as the rename action for snasphots
+	ActionSnapshotRename = "Rename"
+	// ActionSnapshotTimeToLive is used as the ttl action for snasphots
+	ActionSnapshotTimeToLive = "SetTimeToLive"
+	// ActionSnapshotSecure is used as the secure action for snasphots
+	ActionSnapshotSecure = "SetSecure"
+	// ActionSnapshotUnlink is used as the unlink action for snasphots
+	ActionSnapshotUnlink = "Unlink"
+)
+
 // UpdateSnapshotDatasourceState Update Snaposhot state.
 func UpdateSnapshotDatasourceState(ctx context.Context, snapshotDetail *powermax.SnapVXSnapshotInstance, state *models.SnapshotDetailModal) error {
+	// Copy values with the same fields
+	err := CopyFields(ctx, snapshotDetail, state)
+	state.LinkedStorageGroup, _ = GetLinkedSgList(snapshotDetail)
+	state.SourceVolume, _ = GetSnapshotGenerationVolume(snapshotDetail)
+	tflog.Debug(ctx, fmt.Sprintf("Snapshot Detail State: %v", state))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateSnapshotResourceState Update Snaposhot state.
+func UpdateSnapshotResourceState(ctx context.Context, snapshotDetail *powermax.SnapVXSnapshotInstance, state *models.SnapshotResourceModel) error {
 	// Copy values with the same fields
 	err := CopyFields(ctx, snapshotDetail, state)
 	state.LinkedStorageGroup, _ = GetLinkedSgList(snapshotDetail)
@@ -92,4 +123,124 @@ func GetLinkedSgList(snapshotDetail *powermax.SnapVXSnapshotInstance) (types.Lis
 		sgObjects = append(sgObjects, sgbject)
 	}
 	return types.ListValue(types.ObjectType{AttrTypes: typeKey}, sgObjects)
+}
+
+// ModifySnapshot Do the modify action.
+func ModifySnapshot(ctx context.Context, client client.Client, plan *models.SnapshotResourceModel, state *models.SnapshotResourceModel) error {
+
+	modifyParam := client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotSnapID(ctx, client.SymmetrixID, state.StorageGroup.Name.ValueString(), state.Snapshot.Name.ValueString(), state.Snapid.ValueInt64())
+	actionList := []string{ActionSnapshotRestore, ActionSnapshotLink, ActionSnapshotSetMode, ActionSnapshotTimeToLive, ActionSnapshotSecure}
+	// Do the rename modification first so it does not interfere with tho other modifications if there are multiple which need the snapshot name value
+	if plan.Snapshot.Name.ValueString() != state.Snapshot.Name.ValueString() {
+		modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+			Action: ActionSnapshotRename,
+			Rename: &powermax.SnapVXRenameOptions{
+				NewSnapshotName: plan.Snapshot.Name.ValueString(),
+			},
+		})
+		_, _, err := modifyParam.Execute()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Update the modify Param after the possible rename
+	modifyParam = client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotSnapID(ctx, client.SymmetrixID, state.StorageGroup.Name.ValueString(), plan.Snapshot.Name.ValueString(), state.Snapid.ValueInt64())
+	// Loop through and check to see if any actions need to be done
+	for _, v := range actionList {
+
+		switch v {
+		case ActionSnapshotRestore:
+			if plan.Snapshot.Restore != nil && (state.Snapshot.SetMode == nil || plan.Snapshot.Restore.Enable.ValueBool() != state.Snapshot.Restore.Enable.ValueBool()) {
+				modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+					Action: ActionSnapshotRestore,
+					Restore: &powermax.SnapVxRestoreOptions{
+						Remote: plan.Snapshot.Remote.ValueBoolPointer(),
+					},
+				})
+				_, _, err := modifyParam.Execute()
+				if err != nil {
+					return err
+				}
+			}
+		case ActionSnapshotLink:
+			if plan.Snapshot.Link != nil && (state.Snapshot.SetMode == nil || plan.Snapshot.Link.Enable.ValueBool() != state.Snapshot.Link.Enable.ValueBool()) {
+				if plan.Snapshot.Link.Enable.ValueBool() {
+					modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+						Action: ActionSnapshotLink,
+						Link: &powermax.SnapVxLinkOptions{
+							StorageGroupName: plan.Snapshot.Link.TargetStorageGroup.ValueString(),
+							NoCompression:    plan.Snapshot.Link.NoCompression.ValueBoolPointer(),
+							Copy:             plan.Snapshot.Link.Copy.ValueBoolPointer(),
+							Remote:           plan.Snapshot.Link.Remote.ValueBoolPointer(),
+						},
+					})
+					_, _, err := modifyParam.Execute()
+					if err != nil {
+						return err
+					}
+				} else {
+					modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+						Action: ActionSnapshotUnlink,
+						Unlink: &powermax.SnapVxUnlinkOptions{
+							StorageGroupName: plan.Snapshot.Link.TargetStorageGroup.ValueString(),
+						},
+					})
+					_, _, err := modifyParam.Execute()
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+		case ActionSnapshotSetMode:
+			if plan.Snapshot.SetMode != nil && (state.Snapshot.SetMode == nil || plan.Snapshot.SetMode.Enable.ValueBool() != state.Snapshot.SetMode.Enable.ValueBool()) {
+				modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+					Action: ActionSnapshotSetMode,
+					SetMode: &powermax.SnapVXSetModeOptions{
+						StorageGroupName: plan.Snapshot.SetMode.TargetStorageGroup.ValueString(),
+						Copy:             plan.Snapshot.SetMode.Copy.ValueBoolPointer(),
+					},
+				})
+				_, _, err := modifyParam.Execute()
+				if err != nil {
+					return err
+				}
+			}
+		case ActionSnapshotRename:
+
+		case ActionSnapshotTimeToLive:
+			if plan.Snapshot.TimeToLive != nil && (state.Snapshot.TimeToLive == nil || plan.Snapshot.TimeToLive.Enable.ValueBool() != state.Snapshot.TimeToLive.Enable.ValueBool()) {
+				ttl := int32(plan.Snapshot.TimeToLive.TimeToLive.ValueInt64())
+				modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+					Action: ActionSnapshotTimeToLive,
+					TimeToLive: &powermax.SnapVxTimeToLiveOptions{
+						TimeToLive:  &ttl,
+						TimeInHours: plan.Snapshot.TimeToLive.TimeInHours.ValueBoolPointer(),
+					},
+				})
+				_, _, err := modifyParam.Execute()
+				if err != nil {
+					return err
+				}
+			}
+		case ActionSnapshotSecure:
+			if plan.Snapshot.Secure != nil && (state.Snapshot.Secure == nil || plan.Snapshot.Secure.Enable.ValueBool() != state.Snapshot.Secure.Enable.ValueBool()) {
+				secure := int32(plan.Snapshot.Secure.Secure.ValueInt64())
+				modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
+					Action: ActionSnapshotSecure,
+					Secure: &powermax.SnapVxSecureOptions{
+						Secure:      &secure,
+						TimeInHours: plan.Snapshot.Secure.TimeInHours.ValueBoolPointer(),
+					},
+				})
+				_, _, err := modifyParam.Execute()
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }
