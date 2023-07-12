@@ -170,7 +170,7 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 			}
 		}
 	}
-	pg, shouldReturn, returnValue := ReadPortgroupById(client, ctx, portGroupID)
+	pg, shouldReturn, returnValue := ReadPortgroupByID(ctx, client, portGroupID)
 	if shouldReturn {
 		return pg, returnValue
 	}
@@ -220,7 +220,7 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 				Port: added,
 			},
 		}
-		pgResponse, shouldReturn, err1 := ModifyPortGroup(client, ctx, portGroupID, *edit)
+		pgResponse, shouldReturn, err1 := modifyPortGroup(ctx, client, portGroupID, *edit)
 		if shouldReturn {
 			return pgResponse, err1
 		}
@@ -233,7 +233,7 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 				Port: removed,
 			},
 		}
-		pgResponse, shouldReturn, err1 := ModifyPortGroup(client, ctx, portGroupID, *edit)
+		pgResponse, shouldReturn, err1 := modifyPortGroup(ctx, client, portGroupID, *edit)
 		if shouldReturn {
 			return pgResponse, err1
 		}
@@ -241,7 +241,7 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 	return pg, nil
 }
 
-func ModifyPortGroup(client client.Client, ctx context.Context, portGroupID string, edit pmax.EditPortGroupActionParam) (*pmax.PortGroup, bool, error) {
+func modifyPortGroup(ctx context.Context, client client.Client, portGroupID string, edit pmax.EditPortGroupActionParam) (*pmax.PortGroup, bool, error) {
 	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroup(ctx, client.SymmetrixID, portGroupID)
 	editParam := pmax.NewEditPortGroupParam(edit)
 	modifyParam.EditPortGroupParam(*editParam)
@@ -272,15 +272,15 @@ func RenamePortGroup(ctx context.Context, client client.Client, symID string, po
 	edit := pmax.EditPortGroupActionParam{
 		RenamePortGroupParam: &RenamePortGroupParam,
 	}
-	pgResponse, shouldReturn, err1 := ModifyPortGroup(client, ctx, portGroupID, edit)
+	pgResponse, shouldReturn, err1 := modifyPortGroup(ctx, client, portGroupID, edit)
 	if shouldReturn {
 		return pgResponse, err1
 	}
 	return pgResponse, nil
 }
 
-// Read PortGroup by ID.
-func ReadPortgroupById(client client.Client, ctx context.Context, portGroupID string) (*pmax.PortGroup, bool, error) {
+// ReadPortgroupByID Read PortGroup by ID.
+func ReadPortgroupByID(ctx context.Context, client client.Client, portGroupID string) (*pmax.PortGroup, bool, error) {
 	portGroups := client.PmaxOpenapiClient.SLOProvisioningApi.GetPortGroup(ctx, client.SymmetrixID, portGroupID)
 	pgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.GetPortGroupExecute(portGroups)
 

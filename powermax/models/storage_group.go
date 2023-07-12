@@ -22,7 +22,7 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 // StorageGroupResourceModel describes the resource data model.
 type StorageGroupResourceModel struct {
 	ID                    types.String `tfsdk:"id"`
-	StorageGroupId        types.String `tfsdk:"name"`
+	StorageGroupID        types.String `tfsdk:"name"`
 	Slo                   types.String `tfsdk:"slo"`
 	Srp                   types.String `tfsdk:"srp_id"`
 	ServiceLevel          types.String `tfsdk:"service_level"`
@@ -48,7 +48,7 @@ type StorageGroupResourceModel struct {
 	CompressionRatioToOne types.Number `tfsdk:"compression_ratio_to_one"`
 	VpSavedPercent        types.Number `tfsdk:"vp_saved_percent"`
 	Tags                  types.String `tfsdk:"tags"`
-	Uuid                  types.String `tfsdk:"uuid"`
+	UUID                  types.String `tfsdk:"uuid"`
 	UnreducibleDataGb     types.Number `tfsdk:"unreducible_data_gb"`
 	VolumeIDs             types.List   `tfsdk:"volume_ids"`
 }

@@ -226,17 +226,17 @@ func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmax.Masking
 
 	model.MaskingViewName = types.StringValue(maskingView.MaskingViewId)
 
-	if hostId, ok := maskingView.GetHostIdOk(); ok {
-		model.HostID = types.StringValue(*hostId)
+	if hostID, ok := maskingView.GetHostIdOk(); ok {
+		model.HostID = types.StringValue(*hostID)
 	}
-	if hostGroupId, ok := maskingView.GetHostGroupIdOk(); ok {
-		model.HostGroupID = types.StringValue(*hostGroupId)
+	if hostGroupID, ok := maskingView.GetHostGroupIdOk(); ok {
+		model.HostGroupID = types.StringValue(*hostGroupID)
 	}
-	if portGroupId, ok := maskingView.GetPortGroupIdOk(); ok {
-		model.PortGroupID = types.StringValue(*portGroupId)
+	if portGroupID, ok := maskingView.GetPortGroupIdOk(); ok {
+		model.PortGroupID = types.StringValue(*portGroupID)
 	}
-	if storageGroupId, ok := maskingView.GetStorageGroupIdOk(); ok {
-		model.StorageGroupID = types.StringValue(*storageGroupId)
+	if storageGroupID, ok := maskingView.GetStorageGroupIdOk(); ok {
+		model.StorageGroupID = types.StringValue(*storageGroupID)
 	}
 
 	var totalCapacity float64
@@ -248,15 +248,15 @@ func (d *maskingViewDataSource) updateMaskingViewState(maskingView *pmax.Masking
 		if err != nil {
 			return model, err
 		}
-		if volId, ok := conn.GetVolumeIdOk(); ok {
-			if !contains(volumes, *volId) {
-				volumes = append(volumes, types.StringValue(*volId))
+		if volID, ok := conn.GetVolumeIdOk(); ok {
+			if !contains(volumes, *volID) {
+				volumes = append(volumes, types.StringValue(*volID))
 				totalCapacity += capacity
 			}
 		}
-		if iniId, ok := conn.GetInitiatorIdOk(); ok {
-			if !contains(initiators, *iniId) {
-				initiators = append(initiators, types.StringValue(*iniId))
+		if iniID, ok := conn.GetInitiatorIdOk(); ok {
+			if !contains(initiators, *iniID) {
+				initiators = append(initiators, types.StringValue(*iniID))
 			}
 		}
 		if dirPort, ok := conn.GetDirPortOk(); ok {

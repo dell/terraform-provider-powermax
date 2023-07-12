@@ -270,7 +270,7 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 	sgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateStorageGroup(ctx, r.client.SymmetrixID)
-	create := powermax.NewCreateStorageGroupParam(plan.StorageGroupId.ValueString())
+	create := powermax.NewCreateStorageGroupParam(plan.StorageGroupID.ValueString())
 	create.SetSrpId(plan.Srp.ValueString())
 	create.SetSloBasedStorageGroupParam(helper.CreateSloParam(plan))
 	sgModel = sgModel.CreateStorageGroupParam(*create)
@@ -287,7 +287,7 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 	})
 
 	// Add or remove existing volumes to the storage group based on volume attributes
-	err = helper.AddRemoveVolume(ctx, &plan, &state, r.client, plan.StorageGroupId.ValueString())
+	err = helper.AddRemoveVolume(ctx, &plan, &state, r.client, plan.StorageGroupID.ValueString())
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -295,7 +295,7 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	err = helper.UpdateSgState(ctx, r.client, plan.StorageGroupId.ValueString(), &state)
+	err = helper.UpdateSgState(ctx, r.client, plan.StorageGroupID.ValueString(), &state)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -321,7 +321,7 @@ func (r *StorageGroup) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	err := helper.UpdateSgState(ctx, r.client, state.StorageGroupId.ValueString(), &state)
+	err := helper.UpdateSgState(ctx, r.client, state.StorageGroupID.ValueString(), &state)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -350,13 +350,13 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 	// Read Storage Group ID from state in case of renaming
-	stateID := state.StorageGroupId.ValueString()
+	stateID := state.StorageGroupID.ValueString()
 	sgID := stateID
 	payload := r.client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, r.client.SymmetrixID, sgID)
 
 	// Storage Group update need to be done separately because only one payload is accepted by the REST API
 	// Rename
-	planID := plan.StorageGroupId.ValueString()
+	planID := plan.StorageGroupID.ValueString()
 	if stateID != planID {
 		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
 			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
@@ -374,7 +374,7 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 		} else {
 			tflog.Debug(ctx, fmt.Sprintf("Update Storage Group ID(name): %s", planID))
 			sgID = planID
-			state.StorageGroupId = types.StringValue(planID)
+			state.StorageGroupID = types.StringValue(planID)
 		}
 	}
 
@@ -528,7 +528,7 @@ func (r *StorageGroup) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	deletePayload := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteStorageGroup(ctx, r.client.SymmetrixID, data.StorageGroupId.ValueString())
+	deletePayload := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteStorageGroup(ctx, r.client.SymmetrixID, data.StorageGroupID.ValueString())
 	_, err := deletePayload.Execute()
 	if err != nil {
 		errStr := ""

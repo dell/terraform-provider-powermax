@@ -57,6 +57,7 @@ func UpdateVolResourceState(ctx context.Context, volState *models.VolumeResource
 	if err != nil {
 		return err
 	}
+
 	tflog.Info(ctx, fmt.Sprintf("Capacity %v", volResponse))
 	// Convert size
 	switch volState.CapUnit.ValueString() {

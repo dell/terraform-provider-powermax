@@ -193,7 +193,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 			},
 		}
 
-		_, doReturn, err := ModifyHostGroup(client, ctx, state.ID.ValueString(), *edit)
+		_, doReturn, err := ModifyHostGroup(ctx, client, state.ID.ValueString(), *edit)
 
 		if doReturn {
 			updateFailedParameters = append(updateFailedParameters, "host_ids")
@@ -217,7 +217,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 			},
 		}
 
-		_, doReturnRemove, errRemove := ModifyHostGroup(client, ctx, state.ID.ValueString(), *editRemove)
+		_, doReturnRemove, errRemove := ModifyHostGroup(ctx, client, state.ID.ValueString(), *editRemove)
 
 		if doReturnRemove {
 			updateFailedParameters = append(updateFailedParameters, "host_ids")
@@ -243,7 +243,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 		edit := &powermax.EditHostGroupActionParam{
 			SetHostGroupFlagsParam: flagsParam,
 		}
-		_, doReturn, err := ModifyHostGroup(client, ctx, state.ID.ValueString(), *edit)
+		_, doReturn, err := ModifyHostGroup(ctx, client, state.ID.ValueString(), *edit)
 
 		if doReturn {
 			updateFailedParameters = append(updateFailedParameters, "host_flags")
@@ -262,7 +262,7 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 		edit := powermax.EditHostGroupActionParam{
 			RenameHostGroupParam: &RenameHostGroupParam,
 		}
-		_, shouldReturn, err := ModifyHostGroup(client, ctx, state.Name.ValueString(), edit)
+		_, shouldReturn, err := ModifyHostGroup(ctx, client, state.Name.ValueString(), edit)
 
 		if shouldReturn {
 			updateFailedParameters = append(updateFailedParameters, "name")
@@ -275,8 +275,9 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-func ModifyHostGroup(client client.Client, ctx context.Context, hostGroupId string, edit powermax.EditHostGroupActionParam) (*powermax.HostGroup, bool, error) {
-	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostGroup(ctx, client.SymmetrixID, hostGroupId)
+// ModifyHostGroup modify host group.
+func ModifyHostGroup(ctx context.Context, client client.Client, hostGroupID string, edit powermax.EditHostGroupActionParam) (*powermax.HostGroup, bool, error) {
+	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostGroup(ctx, client.SymmetrixID, hostGroupID)
 	editParam := powermax.NewEditHostGroupParam(edit)
 	modifyParam = modifyParam.EditHostGroupParam(*editParam)
 	hgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostGroupExecute(modifyParam)

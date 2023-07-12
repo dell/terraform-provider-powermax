@@ -376,20 +376,20 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 			fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
 		return
 	}
-	volId := ""
+	volID := ""
 	for _, v := range volumeIDListInStorageGroup.ResultList.Result {
 		for _, v2 := range v {
-			volId = fmt.Sprint(v2)
+			volID = fmt.Sprint(v2)
 		}
 	}
-	if volId == "" {
+	if volID == "" {
 		response.Diagnostics.AddError("Error creating volume",
 			fmt.Sprintf("Could not find find volume id for %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
 		)
 		return
 	}
 	// Now that we have the ID get the specific volume info
-	paramVol := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volId)
+	paramVol := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volID)
 	vol, _, err := paramVol.Execute()
 
 	if err != nil {
@@ -404,7 +404,7 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 		"vol":         vol,
 		"plan":        plan,
 		"volState":    volState,
-		"volId":       volId,
+		"volId":       volID,
 	})
 	err = helper.UpdateVolResourceState(ctx, &volState, vol, &plan)
 	if err != nil {

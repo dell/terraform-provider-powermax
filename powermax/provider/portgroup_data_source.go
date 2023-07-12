@@ -223,7 +223,7 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	// iterate Portgroup IDs and GetPortGroup with each id
 	for _, elemid := range pgNames {
-		pgResponse, _, err := helper.ReadPortgroupById(*d.client, ctx, elemid)
+		pgResponse, _, err := helper.ReadPortgroupByID(ctx, *d.client, elemid)
 		if err != nil || pgResponse == nil {
 			errStr := fmt.Sprintf("Error reading port group with id %s", elemid)
 			msgStr := helper.GetErrorString(err, "")
