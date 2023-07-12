@@ -542,8 +542,8 @@ func updateVolumeState(ctx context.Context, p *client.Client, params powermax.Ap
 	}
 
 	for _, vol := range volIDs.ResultList.GetResult() {
-		for _, volumeId := range vol {
-			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeId))
+		for _, volumeID := range vol {
+			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeID))
 			volResponse, _, err := volumeModel.Execute()
 			if err != nil {
 				errStr := ""
@@ -556,6 +556,12 @@ func updateVolumeState(ctx context.Context, p *client.Client, params powermax.Ap
 			volState.SymmetrixPortKey, _ = helper.GetSymmetrixPortKeyObjects(volResponse)
 			volState.StorageGroups, _ = helper.GetStorageGroupObjects(volResponse)
 			volState.RfdGroupIDList, _ = helper.GetRfdGroupIdsObjects(volResponse)
+			if id, ok := volResponse.GetVolumeIdOk(); ok {
+				volState.VolumeID = types.StringValue(*id)
+			}
+			if mobid, ok := volResponse.GetMobilityIdEnabledOk(); ok {
+				volState.MobilityIDEnabled = types.BoolValue(*mobid)
+			}
 			if err != nil {
 				return nil, err
 			}

@@ -23,10 +23,10 @@ import "github.com/hashicorp/terraform-plugin-framework/types"
 type MaskingViewResourceModel struct {
 	Name           types.String `tfsdk:"name"`
 	ID             types.String `tfsdk:"id"`
-	StorageGroupId types.String `tfsdk:"storage_group_id"`
-	HostId         types.String `tfsdk:"host_id"`
-	HostGroupId    types.String `tfsdk:"host_group_id"`
-	PortGroupId    types.String `tfsdk:"port_group_id"`
+	StorageGroupID types.String `tfsdk:"storage_group_id"`
+	HostID         types.String `tfsdk:"host_id"`
+	HostGroupID    types.String `tfsdk:"host_group_id"`
+	PortGroupID    types.String `tfsdk:"port_group_id"`
 }
 
 // MaskingViewDataSourceModel describes the data source data model.

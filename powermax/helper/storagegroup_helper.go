@@ -38,7 +38,7 @@ const (
 )
 
 // AddRemoveVolume add or remove a volume based on the config of plan and current state.
-func AddRemoveVolume(ctx context.Context, plan *models.StorageGroupResourceModel, state *models.StorageGroupResourceModel, client *client.Client, sgId string) error {
+func AddRemoveVolume(ctx context.Context, plan *models.StorageGroupResourceModel, state *models.StorageGroupResourceModel, client *client.Client, sgID string) error {
 
 	var planVolumeIDs []string
 	var stateVolumeIDs []string
@@ -69,7 +69,7 @@ func AddRemoveVolume(ctx context.Context, plan *models.StorageGroupResourceModel
 		return nil
 	}
 
-	payload := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, client.SymmetrixID, sgId)
+	payload := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, client.SymmetrixID, sgID)
 	// Add or remove existing volumes to the storage group based on the attribute "volume_ids"
 	volumeIDMap := make(map[string]int)
 	for _, elem := range planVolumeIDs {
@@ -123,6 +123,7 @@ func AddRemoveVolume(ctx context.Context, plan *models.StorageGroupResourceModel
 	return nil
 }
 
+// CreateSloParam Create SLO param.
 func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedStorageGroupParam {
 
 	hostIOLimit := ConstructHostIOLimit(plan)
@@ -151,23 +152,23 @@ func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedSt
 				},
 			},
 		}
-	} else {
-		return []powermax.SloBasedStorageGroupParam{
-			{
-				SloId:                      plan.Slo.ValueStringPointer(),
-				WorkloadSelection:          &workload,
-				AllocateCapacityForEachVol: &thickVolumes,
-				NoCompression:              &thickVolumes,
-				VolumeAttributes: []powermax.VolumeAttribute{
-					{
-						VolumeSize:   "0",
-						CapacityUnit: "CYL",
-						NumOfVols:    &num,
-					},
+	}
+	return []powermax.SloBasedStorageGroupParam{
+		{
+			SloId:                      plan.Slo.ValueStringPointer(),
+			WorkloadSelection:          &workload,
+			AllocateCapacityForEachVol: &thickVolumes,
+			NoCompression:              &thickVolumes,
+			VolumeAttributes: []powermax.VolumeAttribute{
+				{
+					VolumeSize:   "0",
+					CapacityUnit: "CYL",
+					NumOfVols:    &num,
 				},
 			},
-		}
+		},
 	}
+
 }
 
 // UpdateSgState update the state of storage group based on the current state of the storage group.
@@ -182,6 +183,13 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 	err = CopyFields(ctx, storageGroup, state)
 	if err != nil {
 		return err
+	}
+	if id, ok := storageGroup.GetStorageGroupIdOk(); ok {
+		state.StorageGroupID = types.StringValue(*id)
+	}
+
+	if uuid, ok := storageGroup.GetUuidOk(); ok {
+		state.UUID = types.StringValue(*uuid)
 	}
 
 	// set HostIOLimit
@@ -212,10 +220,10 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 	}
 
 	// Read volume list in storage group
-	volIdModel := client.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, client.SymmetrixID)
+	volIDModel := client.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, client.SymmetrixID)
 	// Set the storage group id
-	volIdModel = volIdModel.StorageGroupId(storageGroup.StorageGroupId)
-	volumeIDListInStorageGroup, _, err := volIdModel.Execute()
+	volIDModel = volIDModel.StorageGroupId(storageGroup.StorageGroupId)
+	volumeIDListInStorageGroup, _, err := volIDModel.Execute()
 	vol := make([]string, 0, len(volumeIDListInStorageGroup.GetResultList().Result))
 	for _, v := range volumeIDListInStorageGroup.ResultList.Result {
 		for _, v2 := range v {

@@ -136,11 +136,11 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 	var hostOrHostGroupID string
 	var isHost = false
-	if plan.HostId.ValueString() != "" && plan.HostGroupId.ValueString() == "" {
-		hostOrHostGroupID = plan.HostId.ValueString()
+	if plan.HostID.ValueString() != "" && plan.HostGroupID.ValueString() == "" {
+		hostOrHostGroupID = plan.HostID.ValueString()
 		isHost = true
-	} else if plan.HostId.ValueString() == "" && plan.HostGroupId.ValueString() != "" {
-		hostOrHostGroupID = plan.HostGroupId.ValueString()
+	} else if plan.HostID.ValueString() == "" && plan.HostGroupID.ValueString() != "" {
+		hostOrHostGroupID = plan.HostGroupID.ValueString()
 	} else {
 		resp.Diagnostics.AddError(
 			"Specify either host_id or host_group_id.",
@@ -160,10 +160,10 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	portGroupSelection := *pmax.NewPortGroupSelection()
-	portGroupSelection.UseExistingPortGroupParam = pmax.NewUseExistingPortGroupParam(plan.PortGroupId.ValueString())
+	portGroupSelection.UseExistingPortGroupParam = pmax.NewUseExistingPortGroupParam(plan.PortGroupID.ValueString())
 
 	storageGroupSelection := *pmax.NewStorageGroupSelection()
-	storageGroupSelection.UseExistingStorageGroupParam = pmax.NewUseExistingStorageGroupParam(plan.StorageGroupId.ValueString())
+	storageGroupSelection.UseExistingStorageGroupParam = pmax.NewUseExistingStorageGroupParam(plan.StorageGroupID.ValueString())
 
 	createMaskingViewParam := pmax.NewCreateMaskingViewParam(plan.Name.ValueString())
 	createMaskingViewParam.SetHostOrHostGroupSelection(hostOrHostGroupSelection)
@@ -269,8 +269,8 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	// prompt error on change in maskingView's hostGroup, portGroup or storageGroup, as we can't update the them after the creation
-	if !plan.StorageGroupId.Equal(state.StorageGroupId) || !plan.PortGroupId.Equal(state.PortGroupId) || !plan.HostId.Equal(state.HostId) ||
-		!plan.HostGroupId.Equal(state.HostGroupId) {
+	if !plan.StorageGroupID.Equal(state.StorageGroupID) || !plan.PortGroupID.Equal(state.PortGroupID) || !plan.HostID.Equal(state.HostID) ||
+		!plan.HostGroupID.Equal(state.HostGroupID) {
 		resp.Diagnostics.AddError(
 			"maskingView's host, hostGroup, portGroup or storageGroup cannot be update after creation.",
 			"unexpected error: maskingView's host, hostGroup, portGroup or storageGroup change is not supported",

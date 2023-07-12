@@ -152,7 +152,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 			edit := &pmax.EditHostActionParam{
 				AddInitiatorParam: addInitiatorParam,
 			}
-			_, err := ModifyHost(client, ctx, state.HostID.ValueString(), *edit)
+			_, err := ModifyHost(ctx, client, state.HostID.ValueString(), *edit)
 			if err != nil {
 				err1, ok := err.(*pmax.GenericOpenAPIError)
 				message := ""
@@ -172,7 +172,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 			edit := &pmax.EditHostActionParam{
 				RemoveInitiatorParam: removeInitiatorParam,
 			}
-			_, err := ModifyHost(client, ctx, state.HostID.ValueString(), *edit)
+			_, err := ModifyHost(ctx, client, state.HostID.ValueString(), *edit)
 			if err != nil {
 				err1, ok := err.(*pmax.GenericOpenAPIError)
 				message := ""
@@ -204,7 +204,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 		edit := &pmax.EditHostActionParam{
 			SetHostFlagsParam: flagsParam,
 		}
-		_, err := ModifyHost(client, ctx, state.HostID.ValueString(), *edit)
+		_, err := ModifyHost(ctx, client, state.HostID.ValueString(), *edit)
 
 		if err != nil {
 			err1, ok := err.(*pmax.GenericOpenAPIError)
@@ -228,7 +228,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 		edit := pmax.EditHostActionParam{
 			RenameHostParam: &renameHostParam,
 		}
-		_, err := ModifyHost(client, ctx, state.Name.ValueString(), edit)
+		_, err := ModifyHost(ctx, client, state.Name.ValueString(), edit)
 		if err != nil {
 			err1, ok := err.(*pmax.GenericOpenAPIError)
 			message := ""
@@ -245,8 +245,9 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-func ModifyHost(client client.Client, ctx context.Context, hostId string, edit pmax.EditHostActionParam) (*pmax.Host, error) {
-	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHost(ctx, client.SymmetrixID, hostId)
+// ModifyHost modify host.
+func ModifyHost(ctx context.Context, client client.Client, hostID string, edit pmax.EditHostActionParam) (*pmax.Host, error) {
+	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHost(ctx, client.SymmetrixID, hostID)
 	editParam := pmax.NewEditHostParam(edit)
 	modifyParam = modifyParam.EditHostParam(*editParam)
 	hostResp, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHostExecute(modifyParam)

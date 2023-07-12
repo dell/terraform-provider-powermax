@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package models
 
 import (
@@ -82,6 +83,7 @@ type SnapshotGenerationSource struct {
 	CapacityGb types.Float64 `tfsdk:"capacity_gb"`
 }
 
+// LinkedSnapshot Linked snapshot.
 type LinkedSnapshot struct {
 	// The storage group name.
 	Name types.String `tfsdk:"name"`

@@ -21,7 +21,6 @@ import (
 	"context"
 	pmax "dell/powermax-go-client"
 	"fmt"
-	"net/http"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
@@ -173,20 +172,13 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 
 	portGroups = portGroups.CreatePortGroupParam(*createParam)
 
-	pgResponse, resp1, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroupExecute(portGroups)
+	pgResponse, _, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroupExecute(portGroups)
 
 	if err != nil {
 		errStr := constants.CreatePGDetailErrorMsg + plan.Name.ValueString() + " with error: "
 		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error creating port group", msgStr,
-		)
-		return
-	}
-	if resp1.StatusCode != http.StatusCreated {
-		resp.Diagnostics.AddError(
-			"Unable to Read PowerMax Port Groups. Got http error - %s",
-			resp1.Status,
 		)
 		return
 	}
@@ -221,7 +213,7 @@ func (r *PortGroup) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		"symmetrixID": r.client.SymmetrixID,
 		"portGroupID": pgID,
 	})
-	pgResponse, _, err := helper.ReadPortgroupById(*r.client, ctx, pgID)
+	pgResponse, _, err := helper.ReadPortgroupByID(ctx, *r.client, pgID)
 	if err != nil {
 		errStr := constants.ReadPGDetailsErrorMsg + pgID + " with error: "
 		msgStr := helper.GetErrorString(err, errStr)
@@ -280,7 +272,7 @@ func (r *PortGroup) Update(ctx context.Context, req resource.UpdateRequest, resp
 		portGroupID = pgPlan.Name.ValueString()
 	}
 
-	pgResponse, _, err := helper.ReadPortgroupById(*r.client, ctx, portGroupID)
+	pgResponse, _, err := helper.ReadPortgroupByID(ctx, *r.client, portGroupID)
 	if err != nil {
 		errStr := constants.UpdatePGDetailsErrMsg + pgPlan.Name.ValueString() + " with error: "
 		msgStr := helper.GetErrorString(err, errStr)

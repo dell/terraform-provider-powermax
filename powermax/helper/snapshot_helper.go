@@ -29,6 +29,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
+// UpdateSnapshotDatasourceState Update Snaposhot state.
 func UpdateSnapshotDatasourceState(ctx context.Context, snapshotDetail *powermax.SnapVXSnapshotInstance, state *models.SnapshotDetailModal) error {
 	// Copy values with the same fields
 	err := CopyFields(ctx, snapshotDetail, state)
@@ -41,6 +42,7 @@ func UpdateSnapshotDatasourceState(ctx context.Context, snapshotDetail *powermax
 	return nil
 }
 
+// GetSnapshotGenerationVolume Get snapshot generation volume.
 func GetSnapshotGenerationVolume(snapshotDetail *powermax.SnapVXSnapshotInstance) (types.List, diag.Diagnostics) {
 	var genObjects []attr.Value
 	typeKey := map[string]attr.Type{
@@ -60,6 +62,7 @@ func GetSnapshotGenerationVolume(snapshotDetail *powermax.SnapVXSnapshotInstance
 	return types.ListValue(types.ObjectType{AttrTypes: typeKey}, genObjects)
 }
 
+// GetLinkedSgList Get linked storage group list.
 func GetLinkedSgList(snapshotDetail *powermax.SnapVXSnapshotInstance) (types.List, diag.Diagnostics) {
 	var sgObjects []attr.Value
 	typeKey := map[string]attr.Type{

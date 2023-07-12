@@ -60,16 +60,16 @@ const (
 	// ImportHostDetailsErrorMsg specifies error details occurred while importing host.
 	ImportHostDetailsErrorMsg = "Could not import host "
 
-	// CreateSnapshot.
+	// CreateSnapshot specifies error while creating snapshot.
 	CreateSnapshot = "Could not create snapshot"
-	// ReadSnapshots.
 
+	// ReadSnapshots specifies error while reading snapshot.
 	ReadSnapshots = "Could not read snapshots"
-	// UpdateSnapshot.
 
+	// UpdateSnapshot specifies error while updating snapshot.
 	UpdateSnapshot = "Could not update the snapshot"
-	// DeleteSnapshot.
 
+	// DeleteSnapshot specifies error while deleting snapshot.
 	DeleteSnapshot = "Could not delete snapshot"
 
 	// CreateHostGroupDetailErrorMsg specifies error details occurred while creating hostgroup.

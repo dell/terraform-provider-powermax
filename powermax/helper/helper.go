@@ -167,6 +167,7 @@ func copySliceToTargetField(ctx context.Context, fields interface{}) attr.Value 
 	return nil
 }
 
+// ParseBody parses json body to extract error message.
 func ParseBody(body []byte) (string, error) {
 	var parsedData map[string]string
 	err := json.Unmarshal(body, &parsedData)
@@ -180,6 +181,7 @@ func ParseBody(body []byte) (string, error) {
 	return message, nil
 }
 
+// GetErrorString extracts error message and returns combined message with errStr.
 func GetErrorString(err error, errStr string) string {
 	err1, ok := err.(*pmax.GenericOpenAPIError)
 	message := ""
@@ -194,6 +196,7 @@ func GetErrorString(err error, errStr string) string {
 	return msgStr
 }
 
+// StringInSlice checks if string is present in the list.
 func StringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {

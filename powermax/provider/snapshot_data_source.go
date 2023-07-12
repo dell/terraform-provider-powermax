@@ -300,8 +300,8 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	// Get the list of snapids
 	for _, sngc := range list.SnapshotNamesAndCounts {
-		snapIdParam := d.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, d.client.SymmetrixID, plan.StorageGroup.Name.ValueString(), *sngc.Name)
-		val, _, err := snapIdParam.Execute()
+		snapIDParam := d.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, d.client.SymmetrixID, plan.StorageGroup.Name.ValueString(), *sngc.Name)
+		val, _, err := snapIDParam.Execute()
 		if err != nil {
 			errStr := constants.ReadSnapshots + "with error: "
 			message := helper.GetErrorString(err, errStr)

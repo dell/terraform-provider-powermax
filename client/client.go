@@ -30,27 +30,21 @@ import (
 
 	pmaxop "dell/powermax-go-client"
 
-	pmax "github.com/dell/gopowermax/v2"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Client type is to hold powermax client and symmetrix ID.
 type Client struct {
 	PmaxOpenapiClient *pmaxop.APIClient
-	PmaxClient        *pmax.Client
 	SymmetrixID       string
 }
 
 // NewClient returns the client.
 func NewClient(ctx context.Context, endpoint, username, password, serialNumber, pmaxVersion string, insecure bool) (*Client, error) {
-
-	gomaxclient, _ := NewGopmClient(endpoint, username, password, serialNumber, pmaxVersion, insecure)
 	openapiClient, _ := NewOpenApiClient(ctx, endpoint, username, password, serialNumber, pmaxVersion, insecure)
 	client := Client{
 		SymmetrixID:       serialNumber,
 		PmaxOpenapiClient: openapiClient,
-		PmaxClient:        gomaxclient,
 	}
 	return &client, nil
 }
@@ -76,7 +70,6 @@ func NewOpenApiClient(ctx context.Context, endpoint, username, password, serialN
 		}
 	} else {
 		// Loading system certs by default if insecure is set to false
-		// TODO: Check if we need to remove references to UseCerts from the code
 		pool, err := x509.SystemCertPool()
 		if err != nil {
 			errSysCerts := errors.New("unable to initialize cert pool from system")
@@ -131,28 +124,4 @@ func getHeaders() map[string]string {
 	header["Accept"] = "application/json; charset=utf-8"
 	return header
 
-}
-
-// NewClient returns the gopowermax client.
-func NewGopmClient(endpoint, username, password, serialNumber, pmaxVersion string, insecure bool) (*pmax.Client, error) {
-	cc := pmax.ConfigConnect{
-		Endpoint: endpoint,
-		Version:  pmaxVersion,
-		Username: username,
-		Password: password,
-	}
-	pmaxClient, err := pmax.NewClientWithArgs(endpoint, "Terraform Provider for PowerMax", insecure, false)
-	if err != nil {
-		return nil, err
-	}
-	err = pmax.Pmax.Authenticate(pmaxClient, context.Background(), &cc)
-	if err != nil {
-		return nil, err
-	}
-	pmaxClientWithID, ok := pmaxClient.WithSymmetrixID(serialNumber).(*pmax.Client)
-	if !ok { // type assertion failed
-		err := errors.New("creating client returned error")
-		return nil, err
-	}
-	return pmaxClientWithID, nil
 }
