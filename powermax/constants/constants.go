@@ -18,6 +18,10 @@ limitations under the License.
 package constants
 
 const (
+
+	// ReadPortDetailErrorMsg specifies error details while reading ports.
+	ReadPortDetailErrorMsg = "Could not read ports "
+
 	// CreateSGDetailErrorMsg specifies error details occurred while creating storage group.
 	CreateSGDetailErrorMsg = "Could not create storage group "
 
