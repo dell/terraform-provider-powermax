@@ -243,8 +243,9 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 
 func modifyPortGroup(ctx context.Context, client client.Client, portGroupID string, edit pmax.EditPortGroupActionParam) (*pmax.PortGroup, bool, error) {
 	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroup(ctx, client.SymmetrixID, portGroupID)
-	editParam := pmax.NewEditPortGroupParam(edit)
-	modifyParam.EditPortGroupParam(*editParam)
+	modifyParam = modifyParam.EditPortGroupParam(pmax.EditPortGroupParam{
+		EditPortGroupActionParam: edit,
+	})
 	pgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroupExecute(modifyParam)
 	if err != nil {
 		return pgResponse, true, err
@@ -265,12 +266,10 @@ func modifyPortGroup(ctx context.Context, client client.Client, portGroupID stri
 // RenamePortGroup - Renames a port group.
 func RenamePortGroup(ctx context.Context, client client.Client, symID string, portGroupID string, newName string) (*pmax.PortGroup, error) {
 
-	RenamePortGroupParam := pmax.RenamePortGroupParam{
-		NewPortGroupName: newName,
-	}
-
 	edit := pmax.EditPortGroupActionParam{
-		RenamePortGroupParam: &RenamePortGroupParam,
+		RenamePortGroupParam: &pmax.RenamePortGroupParam{
+			NewPortGroupName: newName,
+		},
 	}
 	pgResponse, shouldReturn, err1 := modifyPortGroup(ctx, client, portGroupID, edit)
 	if shouldReturn {

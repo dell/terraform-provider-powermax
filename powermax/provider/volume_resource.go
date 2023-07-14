@@ -213,7 +213,7 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Description:         "States whether mobility ID is enabled on the volume.",
 				MarkdownDescription: "States whether mobility ID is enabled on the volume.",
 			},
-			"unreducible_data_gb": schema.Float64Attribute{
+			"unreducible_data_gb": schema.NumberAttribute{
 				Computed:            true,
 				Description:         "The amount of unreducible data in Gb.",
 				MarkdownDescription: "The amount of unreducible data in Gb.",

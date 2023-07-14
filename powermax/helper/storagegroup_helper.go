@@ -233,7 +233,6 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 	if err != nil {
 		return err
 	}
-
 	state.VolumeIDs, _ = types.ListValueFrom(ctx, types.StringType, vol)
 	// set ID
 	state.ID = types.StringValue(storageGroup.StorageGroupId)
