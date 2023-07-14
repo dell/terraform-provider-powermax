@@ -204,6 +204,14 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
+	plan.StorageGroupID = types.StringValue(*maskingView.StorageGroupId)
+	if maskingView.HostId != nil {
+		plan.HostID = types.StringValue(*maskingView.HostId)
+	}
+	if maskingView.HostGroupId != nil {
+		plan.HostGroupID = types.StringValue(*maskingView.HostGroupId)
+	}
+	plan.PortGroupID = types.StringValue(*maskingView.PortGroupId)
 	plan.Name = types.StringValue(maskingView.MaskingViewId)
 	plan.ID = types.StringValue(maskingView.MaskingViewId)
 	// Save plan into Terraform state
@@ -243,6 +251,14 @@ func (r *maskingView) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
+	state.StorageGroupID = types.StringValue(*maskingView.StorageGroupId)
+	if maskingView.HostId != nil {
+		state.HostID = types.StringValue(*maskingView.HostId)
+	}
+	if maskingView.HostGroupId != nil {
+		state.HostGroupID = types.StringValue(*maskingView.HostGroupId)
+	}
+	state.PortGroupID = types.StringValue(*maskingView.PortGroupId)
 	state.Name = types.StringValue(maskingView.MaskingViewId)
 	state.ID = types.StringValue(maskingView.MaskingViewId)
 	// Save updated state into Terraform state
@@ -315,6 +331,14 @@ func (r *maskingView) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	state.StorageGroupID = types.StringValue(*maskingView.StorageGroupId)
+	if maskingView.HostId != nil {
+		state.HostID = types.StringValue(*maskingView.HostId)
+	}
+	if maskingView.HostGroupId != nil {
+		state.HostGroupID = types.StringValue(*maskingView.HostGroupId)
+	}
+	state.PortGroupID = types.StringValue(*maskingView.PortGroupId)
 	state.Name = types.StringValue(maskingView.MaskingViewId)
 	state.ID = types.StringValue(maskingView.MaskingViewId)
 	// Save updated state into Terraform state

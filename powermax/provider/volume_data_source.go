@@ -183,7 +183,7 @@ func (d *volumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 							Description:         "States whether mobility ID is enabled on the volume.",
 							MarkdownDescription: "States whether mobility ID is enabled on the volume.",
 						},
-						"unreducible_data_gb": schema.Float64Attribute{
+						"unreducible_data_gb": schema.NumberAttribute{
 							Computed:            true,
 							Description:         "The amount of unreducible data in Gb.",
 							MarkdownDescription: "The amount of unreducible data in Gb.",
@@ -236,12 +236,12 @@ func (d *volumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 								},
 							},
 						},
-						"cap_gb": schema.Float64Attribute{
+						"cap_gb": schema.NumberAttribute{
 							Computed:            true,
 							Description:         "The capability of volume in the unit of GB.",
 							MarkdownDescription: "The capability of volume in the unit of GB.",
 						},
-						"cap_mb": schema.Float64Attribute{
+						"cap_mb": schema.NumberAttribute{
 							Computed:            true,
 							Description:         "The capability of volume in the unit of MB.",
 							MarkdownDescription: "The capability of volume in the unit of MB.",
@@ -565,6 +565,8 @@ func updateVolumeState(ctx context.Context, p *client.Client, params powermax.Ap
 			if err != nil {
 				return nil, err
 			}
+			volState.VolumeID = types.StringValue(volResponse.VolumeId)
+			volState.MobilityIDEnabled = types.BoolValue(*volResponse.MobilityIdEnabled)
 			response = append(response, volState)
 		}
 	}

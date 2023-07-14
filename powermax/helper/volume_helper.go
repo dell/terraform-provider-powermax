@@ -76,7 +76,6 @@ func UpdateVolResourceState(ctx context.Context, volState *models.VolumeResource
 	volState.SymmetrixPortKey, _ = GetSymmetrixPortKeyObjects(volResponse)
 	volState.StorageGroups, _ = GetStorageGroupObjects(volResponse)
 	volState.RDFGroupIDList, _ = GetRfdGroupIdsObjects(volResponse)
-
 	return nil
 }
 
