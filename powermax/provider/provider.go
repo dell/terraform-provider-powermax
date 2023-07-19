@@ -176,6 +176,7 @@ func (p *PmaxProvider) DataSources(ctx context.Context) []func() datasource.Data
 		NewStorageGroupDataSource,
 		NewSnapshotDataSource,
 		NewPortDataSource,
+		NewSnapshotPolicyDataSource,
 	}
 }
 
