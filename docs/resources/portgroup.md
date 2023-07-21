@@ -47,9 +47,9 @@ resource "powermax_portgroup" "portgroup_1" {
 
 ### Required
 
-- `name` (String) The name of the portgroup.
+- `name` (String) The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.
 - `ports` (Attributes List) The list of ports associated with the portgroup. (see [below for nested schema](#nestedatt--ports))
-- `protocol` (String) The portgroup protocol.
+- `protocol` (String) The portgroup protocol. Protocols: SCSI_FC, iSCSI, NVMe_FC, NVMe_TCP
 
 ### Read-Only
 
