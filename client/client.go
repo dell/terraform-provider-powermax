@@ -63,8 +63,10 @@ func NewOpenApiClient(ctx context.Context, endpoint, username, password, serialN
 		Jar:     jar,
 	}
 	if insecure {
+		/* #nosec */
 		httpclient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
+				MinVersion:         tls.VersionTLS12,
 				InsecureSkipVerify: true,
 			},
 		}
@@ -77,6 +79,7 @@ func NewOpenApiClient(ctx context.Context, endpoint, username, password, serialN
 		}
 		httpclient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
+				MinVersion:         tls.VersionTLS12,
 				RootCAs:            pool,
 				InsecureSkipVerify: false,
 			},
@@ -104,7 +107,6 @@ func NewOpenApiClient(ctx context.Context, endpoint, username, password, serialN
 	if serialNumber != "" {
 		cfg.AddDefaultHeader("symid", serialNumber)
 	}
-	fmt.Printf("config %+v header %+v", cfg, cfg.DefaultHeader)
 
 	apiClient := pmaxop.NewAPIClient(cfg)
 	return apiClient, nil
