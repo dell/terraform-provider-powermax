@@ -21,15 +21,18 @@ import (
 	"context"
 	pmax "dell/powermax-go-client"
 	"fmt"
+	"regexp"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -66,8 +69,16 @@ func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the portgroup.",
-				MarkdownDescription: "The name of the portgroup.",
+				Description:         "The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				MarkdownDescription: "The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(64),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9_-]*$`),
+						"must contain only alphanumeric characters and _-",
+					),
+				},
 			},
 			"ports": schema.ListNestedAttribute{
 				Required: true,
@@ -86,8 +97,11 @@ func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 			},
 			"protocol": schema.StringAttribute{
 				Required:            true,
-				Description:         "The portgroup protocol.",
-				MarkdownDescription: "The portgroup protocol.",
+				Description:         "The portgroup protocol. Protocols: SCSI_FC, iSCSI, NVMe_FC, NVMe_TCP",
+				MarkdownDescription: "The portgroup protocol. Protocols: SCSI_FC, iSCSI, NVMe_FC, NVMe_TCP",
+				Validators: []validator.String{
+					stringvalidator.OneOf("SCSI_FC", "iSCSI", "NVMe_FC", "NVMe_TCP"),
+				},
 			},
 			"numofports": schema.Int64Attribute{
 				Computed:            true,

@@ -243,9 +243,8 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 
 func modifyPortGroup(ctx context.Context, client client.Client, portGroupID string, edit pmax.EditPortGroupActionParam) (*pmax.PortGroup, bool, error) {
 	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroup(ctx, client.SymmetrixID, portGroupID)
-	modifyParam = modifyParam.EditPortGroupParam(pmax.EditPortGroupParam{
-		EditPortGroupActionParam: edit,
-	})
+	editParam := pmax.NewEditPortGroupParam(edit)
+	modifyParam = modifyParam.EditPortGroupParam(*editParam)
 	pgResponse, resp1, err := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyPortGroupExecute(modifyParam)
 	if err != nil {
 		return pgResponse, true, err
