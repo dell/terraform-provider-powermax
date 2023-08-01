@@ -11,22 +11,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-variable "username" {
-  type = string
-}
+resource "powermax_snapshotpolicy" "terraform_sp" {
+  # Required Field
+  snapshot_policy_name = "terraform_sp"
 
-variable "password" {
-  type = string
-}
+  interval = "2 Hours"
 
-variable "endpoint" {
-  type = string
-}
+  // Default values defined for some of the optional Fields
+  # interval             = "1 Hour"
+  # snapshot_count       = "48"
+  # compliance_count_critical = 46
+  # compliance_count_warning  = 47
+  # offset_minutes            = 420
+  # secure = false
 
-variable "serial_number" {
-  type = string
-}
-
-variable "pmax_version" {
-  type = string
 }

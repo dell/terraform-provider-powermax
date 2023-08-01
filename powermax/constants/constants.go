@@ -167,4 +167,16 @@ const (
 	SweepTestsTemplateIdentifier = "test_acc_"
 	// MinimumSizeValidationError specifies error details returned if the length of the collection is lesser than the specified min size.
 	MinimumSizeValidationError = "Required size of the parameter is less than the minimum size: "
+
+	// CreateSnapPolicyDetailErrorMsg specifies error details occurred while creating Snapshot policy.
+	CreateSnapPolicyDetailErrorMsg = "Could not create snapshot policy "
+
+	// DeleteSnapPolicyDetailErrorMsg specifies error details occurred while deleting Snapshot policy.
+	DeleteSnapPolicyDetailErrorMsg = "Could not delete snapshot policy "
+
+	// ReadSnapPolicyDetailsErrorMsg specifies error details occurred while reading Snapshot policy.
+	ReadSnapPolicyDetailsErrorMsg = "Could not read Snapshot Policy "
+
+	// UpdateSnapshotPolicy specifies error while updating snapshot policy.
+	UpdateSnapshotPolicy = "Could not update the snapshot policy"
 )
