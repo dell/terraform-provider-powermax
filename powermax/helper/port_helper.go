@@ -41,6 +41,7 @@ func FilterPortIds(ctx context.Context, state *models.PortDataSourceModel, plan 
 		}
 		portIds = portResponse.GetSymmetrixPortKey()
 	} else {
+		state.PortFilter = plan.PortFilter
 		// Loop through the list of port ids filter and create the symmetricxPortKey Objects
 		for _, port := range plan.PortFilter.IDs {
 			split := strings.Split(port.ValueString(), ":")
@@ -63,9 +64,13 @@ func PortDetailMapper(ctx context.Context, port *powermax.DirectorPort) (models.
 	err := CopyFields(ctx, port.SymmetrixPort, &model)
 	model.DirectorID = types.StringValue(port.SymmetrixPort.SymmetrixPortKey.DirectorId)
 	model.PortID = types.StringValue(port.SymmetrixPort.SymmetrixPortKey.PortId)
-	model.NetworkID = types.Int64Value(*port.SymmetrixPort.NetworkId)
-	tpc := int64(*port.SymmetrixPort.TcpPort)
-	model.TPCPort = types.Int64Value(tpc)
+	if networkID, ok := port.SymmetrixPort.GetNetworkIdOk(); ok {
+		model.NetworkID = types.Int64Value(*networkID)
+	}
+	if tpcID, ok := port.SymmetrixPort.GetTcpPortOk(); ok {
+		tpc := int64(*tpcID)
+		model.TPCPort = types.Int64Value(tpc)
+	}
 	ipAttributeList := []attr.Value{}
 	for _, ini := range port.GetSymmetrixPort().IpAddresses {
 		ipAttributeList = append(ipAttributeList, types.StringValue(ini))
