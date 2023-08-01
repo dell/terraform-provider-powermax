@@ -162,6 +162,7 @@ func (p *PmaxProvider) Resources(ctx context.Context) []func() resource.Resource
 		NewMaskingView,
 		NewVolumeResource,
 		NewSnapshotResource,
+		NewSnapshotPolicy,
 	}
 }
 
