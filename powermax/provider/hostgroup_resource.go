@@ -22,12 +22,14 @@ import (
 	"dell/powermax-go-client"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -35,6 +37,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -230,8 +233,16 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the hostgroup.",
-				MarkdownDescription: "The name of the hostgroup.",
+				Description:         "The name of the hostgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				MarkdownDescription: "The name of the hostgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(64),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9_-]*$`),
+						"must contain only alphanumeric characters and _-",
+					),
+				},
 			},
 			"host_ids": schema.SetAttribute{
 				ElementType:         types.StringType,
@@ -355,7 +366,9 @@ func (r *HostGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 
 	if err != nil {
 		hostgroupID := plan.Name.ValueString()
-		resp.Diagnostics.AddError("Client Error", "Unable to create host group, please make sure only existing host(s) are set in the host_id flag")
+		errStr := constants.CreateHostGroupDetailErrorMsg + hostgroupID + " with error: "
+		message := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error creating hostgroup", message)
 		if err != nil {
 			tflog.Debug(ctx, err.Error())
 		}

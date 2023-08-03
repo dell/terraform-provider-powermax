@@ -67,7 +67,7 @@ resource "powermax_hostgroup" "test_host_group" {
 ### Required
 
 - `host_ids` (Set of String) The masking views associated with the hostgroup.
-- `name` (String) The name of the hostgroup.
+- `name` (String) The name of the hostgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.
 
 ### Optional
 
