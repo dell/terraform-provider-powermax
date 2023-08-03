@@ -30,7 +30,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// ConvertToTimeString converts an int value to a string representation of time
+// ConvertToTimeString converts an int value to a string representation of time.
 func ConvertToTimeString(minutes int64) string {
 	switch minutes {
 	case 10, 12, 15, 20, 30:
@@ -53,7 +53,7 @@ func ConvertToTimeString(minutes int64) string {
 	}
 }
 
-// ConvertTimeStringToMinutes converts a string representation of time to an int value in minutes
+// ConvertTimeStringToMinutes converts a string representation of time to an int value in minutes.
 func ConvertTimeStringToMinutes(timeStr string) (int64, error) {
 	timeStr = strings.TrimSpace(timeStr)
 	if strings.HasSuffix(timeStr, "Minutes") {
@@ -82,7 +82,7 @@ func ConvertTimeStringToMinutes(timeStr string) (int64, error) {
 	}
 }
 
-// UpdateSnapshotPolicyResourceState updates snapshot policy state
+// UpdateSnapshotPolicyResourceState updates snapshot policy state.
 func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail *pmax.SnapshotPolicy, state *models.SnapshotPolicyResource) error {
 	err := CopyFields(ctx, snapshotPolicyDetail, state)
 	state.Interval = types.StringValue(ConvertToTimeString(*snapshotPolicyDetail.IntervalMinutes))
@@ -93,7 +93,7 @@ func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail
 	return nil
 }
 
-// ModifySnapshotPolicy modifies snapshot policy
+// ModifySnapshotPolicy modifies snapshot policy.
 func ModifySnapshotPolicy(ctx context.Context, client client.Client, plan *models.SnapshotPolicyResource, state *models.SnapshotPolicyResource) error {
 
 	modifySnapshotPolicyParam := pmax.NewSnapshotPolicyModify()

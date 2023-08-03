@@ -31,19 +31,19 @@ import (
 )
 
 const (
-	// ActionSnapshotRestore is used as the restore action for snasphots
+	// ActionSnapshotRestore is used as the restore action for snasphots.
 	ActionSnapshotRestore = "Restore"
-	// ActionSnapshotLink is used as the link action for snasphots
+	// ActionSnapshotLink is used as the link action for snasphots.
 	ActionSnapshotLink = "Link"
-	// ActionSnapshotSetMode is used as the setMode action for snasphots
+	// ActionSnapshotSetMode is used as the setMode action for snasphots.
 	ActionSnapshotSetMode = "SetMode"
-	// ActionSnapshotRename is used as the rename action for snasphots
+	// ActionSnapshotRename is used as the rename action for snasphots.
 	ActionSnapshotRename = "Rename"
-	// ActionSnapshotTimeToLive is used as the ttl action for snasphots
+	// ActionSnapshotTimeToLive is used as the ttl action for snasphots.
 	ActionSnapshotTimeToLive = "SetTimeToLive"
-	// ActionSnapshotSecure is used as the secure action for snasphots
+	// ActionSnapshotSecure is used as the secure action for snasphots.
 	ActionSnapshotSecure = "SetSecure"
-	// ActionSnapshotUnlink is used as the unlink action for snasphots
+	// ActionSnapshotUnlink is used as the unlink action for snasphots.
 	ActionSnapshotUnlink = "Unlink"
 )
 
