@@ -246,8 +246,10 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 		_, doReturn, err := ModifyHostGroup(ctx, client, state.ID.ValueString(), *edit)
 
 		if doReturn {
+			errStr := ""
+			message := GetErrorString(err, errStr)
 			updateFailedParameters = append(updateFailedParameters, "host_flags")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", err.Error()))
+			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", message))
 		} else {
 			updatedParameters = append(updatedParameters, "host_flags")
 		}
