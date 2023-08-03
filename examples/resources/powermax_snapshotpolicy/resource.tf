@@ -17,6 +17,9 @@ resource "powermax_snapshotpolicy" "terraform_sp" {
 
   interval = "2 Hours"
 
+  // should only be set for modify/edit operation , not supported during create
+  # storage_groups =  ["tfacc_sp_sg1", "tfacc_sp_sg2"]
+
   // Default values defined for some of the optional Fields
   # interval             = "1 Hour"
   # snapshot_count       = "48"
