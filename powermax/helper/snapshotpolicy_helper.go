@@ -20,12 +20,14 @@ package helper
 import (
 	"context"
 	pmax "dell/powermax-go-client"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -82,11 +84,19 @@ func ConvertTimeStringToMinutes(timeStr string) (int64, error) {
 	}
 }
 
-// UpdateSnapshotPolicyResourceState updates snapshot policy state.
-func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail *pmax.SnapshotPolicy, state *models.SnapshotPolicyResource) error {
+// UpdateSnapshotPolicyResourceState updates snapshot policy state
+func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail *pmax.SnapshotPolicy, state *models.SnapshotPolicyResource, storageGroups *pmax.StorageGroupList) error {
 	err := CopyFields(ctx, snapshotPolicyDetail, state)
 	state.Interval = types.StringValue(ConvertToTimeString(*snapshotPolicyDetail.IntervalMinutes))
 	state.ID = types.StringValue(snapshotPolicyDetail.SnapshotPolicyName)
+	storageGoupsList := []attr.Value{}
+	if storageGroups != nil && len(storageGroups.Name) > 0 {
+		for _, sg := range storageGroups.Name {
+			storageGoupsList = append(storageGoupsList, types.StringValue(sg))
+		}
+	}
+	state.StorageGroups, _ = types.SetValue(types.StringType, storageGoupsList)
+
 	if err != nil {
 		return err
 	}
@@ -97,9 +107,11 @@ func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail
 func ModifySnapshotPolicy(ctx context.Context, client client.Client, plan *models.SnapshotPolicyResource, state *models.SnapshotPolicyResource) error {
 
 	modifySnapshotPolicyParam := pmax.NewSnapshotPolicyModify()
+	isModified := false
 
 	if plan.SnapshotPolicyName.ValueString() != state.SnapshotPolicyName.ValueString() {
 		modifySnapshotPolicyParam.SetSnapshotPolicyName(plan.SnapshotPolicyName.ValueString())
+		isModified = true
 	}
 
 	if plan.Interval.ValueString() != "" && plan.Interval.ValueString() != state.Interval.ValueString() {
@@ -109,33 +121,119 @@ func ModifySnapshotPolicy(ctx context.Context, client client.Client, plan *model
 			return err
 		}
 		modifySnapshotPolicyParam.SetIntervalMins(mins)
+		isModified = true
 	}
 
 	if plan.OffsetMinutes.ValueInt64() != 0 && plan.OffsetMinutes != state.OffsetMinutes {
 		modifySnapshotPolicyParam.SetOffsetMins(int32(plan.OffsetMinutes.ValueInt64()))
+		isModified = true
 	}
 	if plan.ComplianceCountCritical.ValueInt64() != state.ComplianceCountCritical.ValueInt64() {
 		modifySnapshotPolicyParam.SetComplianceCountCritical(plan.ComplianceCountCritical.ValueInt64())
+		isModified = true
 	}
 	if plan.ComplianceCountWarning.ValueInt64() != state.ComplianceCountWarning.ValueInt64() {
 		modifySnapshotPolicyParam.SetComplianceCountWarning(plan.ComplianceCountWarning.ValueInt64())
+		isModified = true
 	}
 	if plan.SnapshotCount.ValueInt64() != state.SnapshotCount.ValueInt64() {
 		modifySnapshotPolicyParam.SetSnapshotCount(int32(plan.SnapshotCount.ValueInt64()))
+		isModified = true
 	}
-	snapshotPolicyUpdate := pmax.SnapshotPolicyUpdate{
-		Action: "Modify",
-		Modify: modifySnapshotPolicyParam,
+	if isModified {
+		snapshotPolicyUpdate := pmax.SnapshotPolicyUpdate{
+			Action: "Modify",
+			Modify: modifySnapshotPolicyParam,
+		}
+
+		updateReq := client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotPolicy(ctx, client.SymmetrixID, state.SnapshotPolicyName.ValueString())
+		updateReq = updateReq.SnapshotPolicyUpdate(snapshotPolicyUpdate)
+		_, _, err := updateReq.Execute()
+
+		if err != nil {
+			tflog.Debug(ctx, fmt.Sprintf("Error in modify snapshot policy: %s", err))
+			return err
+		}
 	}
 
-	updateReq := client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotPolicy(ctx, client.SymmetrixID, state.SnapshotPolicyName.ValueString())
-	updateReq = updateReq.SnapshotPolicyUpdate(snapshotPolicyUpdate)
-	_, _, err := updateReq.Execute()
-
-	if err != nil {
-		tflog.Debug(ctx, fmt.Sprintf("Error in update snapshot policy: %s", err))
-		return err
+	addRemoveErr := AddOrRemoveStorageGroups(ctx, client, plan, state)
+	if len(addRemoveErr) > 0 {
+		errMessage := strings.Join(addRemoveErr, ",\n")
+		tflog.Debug(ctx, fmt.Sprintf("Error in updating snapshot policy storage groups: %s", addRemoveErr))
+		return errors.New(errMessage)
 	}
 
 	return nil
+}
+
+// AddOrRemoveStorageGroups add/remove storage group from snapshot policy
+func AddOrRemoveStorageGroups(ctx context.Context, client client.Client, plan *models.SnapshotPolicyResource, state *models.SnapshotPolicyResource) []string {
+	errorMessages := []string{}
+	var planStorageGroups []string
+	diags := plan.StorageGroups.ElementsAs(ctx, &planStorageGroups, true)
+	if diags.HasError() {
+		errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify storage groups: %s", "couldn't get the plan storage group data"))
+	}
+
+	var stateStorageGroups []string
+	diags = state.StorageGroups.ElementsAs(ctx, &stateStorageGroups, true)
+	if diags.HasError() {
+		errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify storage groups: %s", "couldn't get the state storage group data"))
+	}
+
+	if !CompareStringSlice(planStorageGroups, stateStorageGroups) {
+		sgRemove := []string{}
+		sgAdd := []string{}
+
+		// check for storage groups that are being added
+		for _, sg := range planStorageGroups {
+			// if this storage group is not in the list of current state's storage groups, add it
+			if !StringInSlice(sg, stateStorageGroups) {
+				sgAdd = append(sgAdd, sg)
+			}
+		}
+
+		// check for storage groups to be removed
+		for _, sg := range stateStorageGroups {
+			if !StringInSlice(sg, planStorageGroups) {
+				sgRemove = append(sgRemove, sg)
+			}
+		}
+		// add storage groups if needed
+		if len(sgAdd) > 0 {
+			addSnapshotPolicyParam := pmax.NewSnapshotPolicyStorageGroupAddRemove()
+			addSnapshotPolicyParam.SetStorageGroupName(sgAdd)
+			snapshotPolicyUpdate := pmax.SnapshotPolicyUpdate{
+				Action:                  "AssociateToStorageGroups",
+				AssociateToStorageGroup: addSnapshotPolicyParam,
+			}
+
+			updateReq := client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotPolicy(ctx, client.SymmetrixID, plan.SnapshotPolicyName.ValueString())
+			updateReq = updateReq.SnapshotPolicyUpdate(snapshotPolicyUpdate)
+			_, _, err := updateReq.Execute()
+
+			if err != nil {
+				errorMessages = append(errorMessages, fmt.Sprintf("Error in add storage groups to snapshot policy: %s", err))
+			}
+		}
+
+		// remove storage groups if needed
+		if len(sgRemove) > 0 {
+			removeSnapshotPolicyParam := pmax.NewSnapshotPolicyStorageGroupAddRemove()
+			removeSnapshotPolicyParam.SetStorageGroupName(sgRemove)
+			snapshotPolicyUpdate := pmax.SnapshotPolicyUpdate{
+				Action:                       "DisassociateFromStorageGroups",
+				DisassociateFromStorageGroup: removeSnapshotPolicyParam,
+			}
+
+			updateReq := client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotPolicy(ctx, client.SymmetrixID, plan.SnapshotPolicyName.ValueString())
+			updateReq = updateReq.SnapshotPolicyUpdate(snapshotPolicyUpdate)
+			_, _, err := updateReq.Execute()
+
+			if err != nil {
+				errorMessages = append(errorMessages, fmt.Sprintf("Error in remove storage groups from snapshot policy: %s", err))
+			}
+		}
+	}
+	return errorMessages
 }

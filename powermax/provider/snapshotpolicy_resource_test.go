@@ -58,6 +58,30 @@ func TestAccSnapshotPolicyResource(t *testing.T) {
 					resource.TestCheckResourceAttr(snapPolicyTerraformName, "type", "local"),
 				),
 			},
+			// Add storage Groups to Snapshot Policy
+			{
+				Config: ProviderConfig + SnapshotPolicyResourceSGAdd,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "snapshot_policy_name", "terraform_test_sp_add"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "interval", "1 Day"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "compliance_count_critical", "29"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "compliance_count_warning", "47"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "type", "local"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "storage_groups.#", "2"),
+				),
+			},
+			// Remove storage Groups from Snapshot Policy
+			{
+				Config: ProviderConfig + SnapshotPolicyResourceSGRemove,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "snapshot_policy_name", "terraform_test_sp_remove"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "interval", "1 Day"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "compliance_count_critical", "29"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "compliance_count_warning", "47"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "type", "local"),
+					resource.TestCheckResourceAttr(snapPolicyTerraformName, "storage_groups.#", "0"),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
@@ -93,5 +117,21 @@ resource "powermax_snapshotpolicy" "terraform_test_sp" {
 	snapshot_policy_name = "terraform_test_sp1"
 	interval = "1 Day"
 	compliance_count_critical = 29
+  }
+`
+var SnapshotPolicyResourceSGAdd = `
+resource "powermax_snapshotpolicy" "terraform_test_sp" {
+	snapshot_policy_name = "terraform_test_sp_add"
+	interval = "1 Day"
+	compliance_count_critical = 29
+	storage_groups = ["tfacc_sp_sg1", "tfacc_sp_sg2"]
+  }
+`
+var SnapshotPolicyResourceSGRemove = `
+resource "powermax_snapshotpolicy" "terraform_test_sp" {
+	snapshot_policy_name = "terraform_test_sp_remove"
+	interval = "1 Day"
+	compliance_count_critical = 29
+	storage_groups = []
   }
 `

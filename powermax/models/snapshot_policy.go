@@ -95,4 +95,6 @@ type SnapshotPolicyResource struct {
 	ComplianceCountCritical types.Int64 `tfsdk:"compliance_count_critical"`
 	// The type of Snapshots that are created with the policy, local or cloud.
 	Type types.String `tfsdk:"type"`
+	// Storage Groups associated with the snapshot policy
+	StorageGroups types.Set `tfsdk:"storage_groups"`
 }
