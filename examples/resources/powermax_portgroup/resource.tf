@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 resource "powermax_portgroup" "portgroup_1" {
   name     = "tfacc_pg_test_1"
   protocol = "SCSI_FC"

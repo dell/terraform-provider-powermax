@@ -46,7 +46,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 # List fibre portgroups.
 data "powermax_portgroups" "fibreportgroups" {
   # Optional filter to list specified Portgroups names and/or type

@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 data "powermax_volume" "volume_datasource_test" {
   filter {
     storage_group_name     = "terraform_vol_sg"

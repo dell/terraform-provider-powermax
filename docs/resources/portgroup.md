@@ -46,7 +46,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 resource "powermax_portgroup" "portgroup_1" {
   name     = "tfacc_pg_test_1"
   protocol = "SCSI_FC"
@@ -89,7 +88,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-# Copyright (c) YEAR Dell Inc., or its subsidiaries. All Rights Reserved.
+# Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
 
 # Licensed under the Mozilla Public License Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

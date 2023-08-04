@@ -300,7 +300,7 @@ func TestAccHostGroupResourceError(t *testing.T) {
 				  name     = "tfacc_host_group_err"
 				}
 				`,
-				ExpectError: regexp.MustCompile(`.*Unable to create host group*.`),
+				ExpectError: regexp.MustCompile(`.*Error creating hostgroup*.`),
 			},
 			{
 				Config: ProviderConfig + `
