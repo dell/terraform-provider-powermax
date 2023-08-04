@@ -28,12 +28,15 @@ import (
 	"terraform-provider-powermax/powermax/models"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -167,6 +170,14 @@ func (r *SnapshotPolicy) Schema(ctx context.Context, req resource.SchemaRequest,
 					stringvalidator.OneOf("10 Minutes", "12 Minutes", "15 Minutes", "20 Minutes", "30 Minutes", "1 Hour", "2 Hours", "3 Hours", "4 Hours", "6 Hours", "8 Hours", "12 Hours", "1 Day", "7 Days"),
 				},
 			},
+			"storage_groups": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "The storage groups associated with the snapshot policy.This field cannot be set during create and is only valid for Edit/Update.",
+				MarkdownDescription: "The storage groups associated with the snapshot policy..This field cannot be set during create and is only valid for Edit/Update.",
+				Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+			},
 		},
 	}
 }
@@ -259,9 +270,18 @@ func (r *SnapshotPolicy) Create(ctx context.Context, req resource.CreateRequest,
 	tflog.Debug(ctx, "create snapshot policy response", map[string]interface{}{
 		"Create Snapshot Policy Response": snapPolicyCreateResp,
 	})
+	//Get Storage Groups associated with the snapshot policy
+	storageGroupReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, r.client.SymmetrixID, planSnapPolicy.SnapshotPolicyName.ValueString())
+	storageGroups, _, errStorageGroup := storageGroupReq.Execute()
+	if errStorageGroup != nil {
+		errStr := ""
+		msgStr := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error getting Snapshot Policy storage groups", msgStr)
+	}
+
 	var result models.SnapshotPolicyResource
 	// Copy values with the same fields
-	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapPolicyCreateResp, &result)
+	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapPolicyCreateResp, &result, storageGroups)
 
 	if errCpy != nil {
 		errStr := ""
@@ -351,7 +371,16 @@ func (r *SnapshotPolicy) Update(ctx context.Context, req resource.UpdateRequest,
 		)
 		return
 	}
-	errState := helper.UpdateSnapshotPolicyResourceState(ctx, snapPolicyDetail, &state)
+	// Get Storage Groups associated with the snapshot policy
+	storageGroupReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, r.client.SymmetrixID, snapPolicyDetail.SnapshotPolicyName)
+	storageGroups, _, errStorageGroup := storageGroupReq.Execute()
+	if errStorageGroup != nil {
+		errStr := ""
+		msgStr := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error getting Snapshot Policy storage groups", msgStr)
+	}
+
+	errState := helper.UpdateSnapshotPolicyResourceState(ctx, snapPolicyDetail, &state, storageGroups)
 	if errState != nil {
 		resp.Diagnostics.AddError(
 			"Error updating snapshot policy state",
@@ -391,10 +420,18 @@ func (r *SnapshotPolicy) Read(ctx context.Context, req resource.ReadRequest, res
 		)
 		return
 	}
+	// Get Storage Groups associated with the snapshot policy
+	storageGroupReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, r.client.SymmetrixID, snapshotPolicyID)
+	storageGroups, _, errStorageGroup := storageGroupReq.Execute()
+	if errStorageGroup != nil {
+		errStr := ""
+		msgStr := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error getting Snapshot Policy storage groups", msgStr)
+	}
 
 	tflog.Debug(ctx, "Updating snapshot policy state")
 	// Copy values with the same fields
-	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapshotPolicy, &snapPolicyState)
+	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapshotPolicy, &snapPolicyState, storageGroups)
 
 	if errCpy != nil {
 		errStr := ""
@@ -436,9 +473,17 @@ func (r *SnapshotPolicy) ImportState(ctx context.Context, req resource.ImportSta
 	tflog.Debug(ctx, "Get snapshot policy By ID response", map[string]interface{}{
 		"Snapshot Policy Response": snapshotPolicyResponse,
 	})
+	// Get Storage Groups associated with the snapshot policy
+	storageGroupReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, r.client.SymmetrixID, snapshotPolicyID)
+	storageGroups, _, errStorageGroup := storageGroupReq.Execute()
+	if errStorageGroup != nil {
+		errStr := ""
+		msgStr := helper.GetErrorString(err, errStr)
+		resp.Diagnostics.AddError("Error getting Snapshot Policy storage groups", msgStr)
+	}
 
 	tflog.Debug(ctx, "updating snapshot policy state after import")
-	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapshotPolicyResponse, &snapPolicyState)
+	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapshotPolicyResponse, &snapPolicyState, storageGroups)
 	if errCpy != nil {
 		errStr := ""
 		msgStr := helper.GetErrorString(err, errStr)
