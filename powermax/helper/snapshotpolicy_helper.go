@@ -84,7 +84,7 @@ func ConvertTimeStringToMinutes(timeStr string) (int64, error) {
 	}
 }
 
-// UpdateSnapshotPolicyResourceState updates snapshot policy state
+// UpdateSnapshotPolicyResourceState updates snapshot policy state.
 func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail *pmax.SnapshotPolicy, state *models.SnapshotPolicyResource, storageGroups *pmax.StorageGroupList) error {
 	err := CopyFields(ctx, snapshotPolicyDetail, state)
 	state.Interval = types.StringValue(ConvertToTimeString(*snapshotPolicyDetail.IntervalMinutes))

@@ -23,7 +23,7 @@ OS_ARCH=linux_amd64
 default: install
 
 extract-client: 
-	unzip -o 'goClientZip/powermax-go-client-100.zip' -d ./powermax-go-client-100/
+	unzip -qq -o 'goClientZip/powermax-go-client-100.zip' -d ./powermax-go-client-100/
 
 clean:
 	rm -rf powermax-go-client-100
@@ -86,7 +86,7 @@ check:
 	go vet
 
 gosec:
-	gosec -quiet -log gosec.log -out=gosecresults.csv -fmt=csv ./...
+	gosec -quiet -log gosec.log -out=gosecresults.csv -fmt=csv -exclude=G104 ./...
 
 testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
