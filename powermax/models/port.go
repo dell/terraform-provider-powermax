@@ -30,7 +30,7 @@ type portFilterType struct {
 	IDs []types.String `tfsdk:"port_ids"`
 }
 
-// PortDetailModal the details of the port resource
+// PortDetailModal the details of the port resource.
 type PortDetailModal struct {
 	// Director ID
 	DirectorID types.String `tfsdk:"director_id"`

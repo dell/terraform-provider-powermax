@@ -75,7 +75,7 @@ func TestSnapshotPolicyResourceError(t *testing.T) {
 					interval = "1 Minute"
 				  }
 				`,
-				ExpectError: regexp.MustCompile(`.*Could not create snapshot policy*.`),
+				ExpectError: regexp.MustCompile(`.*Invalid Attribute Value Match*.`),
 			},
 		},
 	})

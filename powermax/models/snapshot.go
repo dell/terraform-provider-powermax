@@ -72,7 +72,7 @@ type SnapshotResourceModel struct {
 	Snapshot     *SnapshotResourceFields `tfsdk:"snapshot_actions"`
 }
 
-// SnapshotResourceFields The different Action fields for snapshot
+// SnapshotResourceFields The different Action fields for snapshot.
 type SnapshotResourceFields struct {
 	Name       types.String         `tfsdk:"name"`
 	Restore    *restoreActionFields `tfsdk:"restore"`
@@ -115,7 +115,7 @@ type secureActionFields struct {
 	TimeInHours types.Bool  `tfsdk:"time_in_hours"`
 }
 
-// FilterTypeSnapshot The different filter fields for snapshot
+// FilterTypeSnapshot The different filter fields for snapshot.
 type FilterTypeSnapshot struct {
 	Name types.String `tfsdk:"name"`
 }

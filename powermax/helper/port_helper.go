@@ -58,7 +58,7 @@ func FilterPortIds(ctx context.Context, state *models.PortDataSourceModel, plan 
 	return portIds, nil
 }
 
-// PortDetailMapper maps the openApi port object to the port terraform model
+// PortDetailMapper maps the openApi port object to the port terraform model.
 func PortDetailMapper(ctx context.Context, port *powermax.DirectorPort) (models.PortDetailModal, error) {
 	model := models.PortDetailModal{}
 	err := CopyFields(ctx, port.SymmetrixPort, &model)
