@@ -64,7 +64,7 @@ resource "powermax_storagegroup" "test" {
 
 ### Required
 
-- `name` (String) The name of the storage group
+- `name` (String) The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.
 - `srp_id` (String) The Srp to be associated with the Storage Group. An existing Srpor 'none' must be specified
 
 ### Optional
