@@ -311,8 +311,10 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 	state.ID = types.StringValue("storage-group-data-source")
 	state.StorageGroupFilter = data.StorageGroupFilter
 
-	tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0]))
-	tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0].VolumeIDs))
+	if len(state.StorageGroups) > 0 {
+		tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0]))
+		tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0].VolumeIDs))
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

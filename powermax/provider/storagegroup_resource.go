@@ -21,16 +21,19 @@ import (
 	"context"
 	"dell/powermax-go-client"
 	"fmt"
+	"regexp"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -70,8 +73,16 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the storage group",
-				MarkdownDescription: "The name of the storage group",
+				Description:         "The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				MarkdownDescription: "The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(64),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9_-]*$`),
+						"must contain only alphanumeric characters and _-",
+					),
+				},
 			},
 			"slo": schema.StringAttribute{
 				Optional:            true,
@@ -353,7 +364,7 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 	stateID := state.StorageGroupID.ValueString()
 	sgID := stateID
 	payload := r.client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, r.client.SymmetrixID, sgID)
-
+	updateName := false
 	// Storage Group update need to be done separately because only one payload is accepted by the REST API
 	// Rename
 	planID := plan.StorageGroupID.ValueString()
@@ -376,6 +387,12 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 			sgID = planID
 			state.StorageGroupID = types.StringValue(planID)
 		}
+		updateName = true
+	}
+
+	// Recreate the modify storage group param with the new name on a rename job
+	if updateName {
+		payload = r.client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, r.client.SymmetrixID, planID)
 	}
 
 	// Edit Compression

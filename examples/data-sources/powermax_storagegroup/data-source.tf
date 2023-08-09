@@ -16,7 +16,7 @@ limitations under the License.
 */
 data "powermax_storagegroup" "test" {
   filter {
-    names = ["esa_sg572"]
+    names = ["example_sg"]
   }
 }
 
