@@ -21,12 +21,14 @@ import (
 	"context"
 	pmax "dell/powermax-go-client"
 	"fmt"
+	"regexp"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -34,8 +36,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -91,6 +93,137 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 	if err != nil {
 		return
 	}
+
+	hostDefaultObj, _ := basetypes.NewObjectValue(
+		map[string]attr.Type{
+			"volume_set_addressing": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"disable_q_reset_on_ua": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"environ_set": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"openvms": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"avoid_reset_broadcast": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"scsi_3": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"spc2_protocol_version": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+			"scsi_support1": types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"override": types.BoolType,
+					"enabled":  types.BoolType,
+				},
+			},
+		},
+		map[string]attr.Value{
+			"volume_set_addressing": objd,
+			"disable_q_reset_on_ua": objd,
+			"environ_set":           objd,
+			"openvms":               objd,
+			"avoid_reset_broadcast": objd,
+			"scsi_3":                objd,
+			"spc2_protocol_version": objd,
+			"scsi_support1":         objd,
+		},
+	)
+
+	hostFlagAttr := map[string]schema.Attribute{
+		"volume_set_addressing": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "It enables the volume set addressing mode.",
+			MarkdownDescription: "It enables the volume set addressing mode.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"disable_q_reset_on_ua": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
+			MarkdownDescription: "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"environ_set": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "It enables the environmental error reporting by the storage system to the host on the specific port.",
+			MarkdownDescription: "It enables the environmental error reporting by the storage system to the host on the specific port.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"openvms": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "This attribute enables an Open VMS fibre connection.",
+			MarkdownDescription: "This attribute enables an Open VMS fibre connection.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"avoid_reset_broadcast": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "It enables a SCSI bus reset to only occur to the port that received the reset.",
+			MarkdownDescription: "It enables a SCSI bus reset to only occur to the port that received the reset.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"scsi_3": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
+			MarkdownDescription: "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"spc2_protocol_version": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "When setting this flag, the port must be offline.",
+			MarkdownDescription: "When setting this flag, the port must be offline.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+		"scsi_support1": schema.SingleNestedAttribute{
+			Optional:            true,
+			Computed:            true,
+			Attributes:          hostFlagNestedAttr,
+			Description:         "This attribute provides a stricter compliance with SCSI standards.",
+			MarkdownDescription: "This attribute provides a stricter compliance with SCSI standards.",
+			Default:             objectdefault.StaticValue(objd),
+		},
+	}
+
 	resp.Schema = schema.Schema{
 
 		// This description is used by the documentation generator and the language server.
@@ -106,8 +239,16 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the host.",
-				MarkdownDescription: "The name of the host.",
+				Description:         "The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				MarkdownDescription: "The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(64),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9_-]*$`),
+						"must contain only alphanumeric characters and _-",
+					),
+				},
 			},
 			"num_of_masking_views": schema.Int64Attribute{
 				Computed:            true,
@@ -177,81 +318,10 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 				MarkdownDescription: "Specifies the bandwidth limit for a host.",
 			},
 			"host_flags": schema.SingleNestedAttribute{
-				Required: true,
-				Attributes: map[string]schema.Attribute{
-					"volume_set_addressing": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "It enables the volume set addressing mode.",
-						MarkdownDescription: "It enables the volume set addressing mode.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"disable_q_reset_on_ua": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
-						MarkdownDescription: "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"environ_set": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "It enables the environmental error reporting by the storage system to the host on the specific port.",
-						MarkdownDescription: "It enables the environmental error reporting by the storage system to the host on the specific port.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"openvms": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "This attribute enables an Open VMS fibre connection.",
-						MarkdownDescription: "This attribute enables an Open VMS fibre connection.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"avoid_reset_broadcast": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "It enables a SCSI bus reset to only occur to the port that received the reset.",
-						MarkdownDescription: "It enables a SCSI bus reset to only occur to the port that received the reset.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"scsi_3": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
-						MarkdownDescription: "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"spc2_protocol_version": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "When setting this flag, the port must be offline.",
-						MarkdownDescription: "When setting this flag, the port must be offline.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-					"scsi_support1": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
-						Attributes:          hostFlagNestedAttr,
-						Description:         "This attribute provides a stricter compliance with SCSI standards.",
-						MarkdownDescription: "This attribute provides a stricter compliance with SCSI standards.",
-						PlanModifiers:       []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
-						Default:             objectdefault.StaticValue(objd),
-					},
-				},
+				Optional:            true,
+				Computed:            true,
+				Default:             objectdefault.StaticValue(hostDefaultObj),
+				Attributes:          hostFlagAttr,
 				Description:         "Flags set for the host. When host_flags = {} then default flags will be considered.",
 				MarkdownDescription: "Flags set for the host. When host_flags = {} then default flags will be considered.",
 			},

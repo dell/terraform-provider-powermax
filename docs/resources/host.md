@@ -64,13 +64,13 @@ resource "powermax_host" "host_1" {
 
 ### Required
 
-- `host_flags` (Attributes) Flags set for the host. When host_flags = {} then default flags will be considered. (see [below for nested schema](#nestedatt--host_flags))
 - `initiator` (List of String) The initiators associated with the host.
-- `name` (String) The name of the host.
+- `name` (String) The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.
 
 ### Optional
 
 - `consistent_lun` (Boolean) It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values.
+- `host_flags` (Attributes) Flags set for the host. When host_flags = {} then default flags will be considered. (see [below for nested schema](#nestedatt--host_flags))
 
 ### Read-Only
 
