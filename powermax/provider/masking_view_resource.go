@@ -21,6 +21,7 @@ import (
 	"context"
 	pmax "dell/powermax-go-client"
 	"fmt"
+	"regexp"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -73,6 +74,11 @@ func (r *maskingView) Schema(ctx context.Context, req resource.SchemaRequest, re
 				MarkdownDescription: "Unique identifier of the masking view.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(64),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9_-]*$`),
+						"must contain only alphanumeric characters and _-",
+					),
 				},
 			},
 			"storage_group_id": schema.StringAttribute{
@@ -205,6 +211,30 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	plan.StorageGroupID = types.StringValue(*maskingView.StorageGroupId)
+	if plan.HostGroupID.ValueString() != "" && maskingView.HostId != nil {
+		resp.Diagnostics.AddError("Error creating masking view", fmt.Sprintf("The host_group_id '%s' is actually a host_id, change '%s' to host_id to create a masking view with this host", plan.HostGroupID, plan.HostGroupID))
+		// Attempt to clean up the errored masking view after the host/hostgroup mistake
+		_, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString()).Execute()
+		if err != nil {
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			tflog.Error(ctx, "Error deleting maskingview after host_group error"+message)
+			return
+		}
+		return
+	}
+	if plan.HostID.ValueString() != "" && maskingView.HostGroupId != nil {
+		resp.Diagnostics.AddError("Error creating masking view", fmt.Sprintf("The host_id '%s' is actually a host_group_id, change '%s' to host_group_id to create a masking view with this host_group", plan.HostID, plan.HostID))
+		// Attempt to clean up the errored masking view after the host/hostgroup mistake
+		_, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString()).Execute()
+		if err != nil {
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			tflog.Error(ctx, "Error deleting maskingview after host error"+message)
+			return
+		}
+		return
+	}
 	if maskingView.HostId != nil {
 		plan.HostID = types.StringValue(*maskingView.HostId)
 	}
