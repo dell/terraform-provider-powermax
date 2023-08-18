@@ -21,6 +21,7 @@ import (
 	"context"
 	"dell/powermax-go-client"
 	"fmt"
+	"net/http"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
@@ -81,4 +82,9 @@ func PortDetailMapper(ctx context.Context, port *powermax.DirectorPort) (models.
 		return model, err
 	}
 	return model, nil
+}
+
+// GetPort Get details of a specific port
+func GetPort(ctx context.Context, client client.Client, directorID string, portID string) (*powermax.DirectorPort, *http.Response, error) {
+	return client.PmaxOpenapiClient.SystemApi.GetDirectorPorts1(ctx, client.SymmetrixID, directorID, portID).Execute()
 }

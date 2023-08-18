@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# v1.0.0-beta2
+# v1.0.0
 ## Release Summary
 The release supports resources and data sources mentioned in the Features section for Dell PowerMax.
 ## Features
@@ -25,6 +25,9 @@ The release supports resources and data sources mentioned in the Features sectio
 * `powermax_portgroups` for reading port groups in PowerMax.
 * `powermax_storagegroup` for reading storage groups in PowerMax.
 * `powermax_volume` for reading volumes in PowerMax.
+* `powermax_snapshotpolicy` for reading snapshot policies on PowerMax.
+* `powermax_port` for reading ports on PowerMax.
+* `powermax_snapshot` for reading snapshots on PowerMax.
 
 ### Resources
 * `powermax_host` for managing hosts in PowerMax.
@@ -33,6 +36,8 @@ The release supports resources and data sources mentioned in the Features sectio
 * `powermax_portgroup` for managing port groups in PowerMax.
 * `powermax_storagegroup` for managing storage groups in PowerMax.
 * `powermax_volume` for managing volumes in PowerMax.
+* `powermax_snapshotpolicy` for readomg snapshot policies on PowerMax.
+* `powermax_snapshot` for reading snapshots on PowerMax.
 
 ### Others
 N/A

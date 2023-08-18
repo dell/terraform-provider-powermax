@@ -548,8 +548,7 @@ func (r *Host) Read(ctx context.Context, req resource.ReadRequest, resp *resourc
 		return
 	}
 	hostID := hostState.HostID.ValueString()
-	getReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, r.client.SymmetrixID, hostID)
-	host, _, err := getReq.Execute()
+	host, _, err := helper.GetHost(ctx, *r.client, hostID)
 	if err != nil {
 		errStr := constants.ReadHostDetailsErrorMsg + hostID + " with error: "
 		message := helper.GetErrorString(err, errStr)

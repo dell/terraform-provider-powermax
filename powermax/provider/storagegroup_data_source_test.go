@@ -18,8 +18,12 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
+	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -29,10 +33,6 @@ func TestAccStorageGroupDataSource(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// create the storage group to be tested as a data source
-			{
-				Config: ProviderConfig + StorageGroupResourceConfig,
-			},
 			// filter read testing
 			{
 				Config: ProviderConfig + StorageGroupResourceConfig + SgDataSourceConfig,
@@ -64,10 +64,63 @@ func TestAccStorageGroupDataSource(t *testing.T) {
 	})
 }
 
+func TestAccStorageGroupDataSourceErrorNotFound(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      ProviderConfig + SgDataSourceConfigError,
+				ExpectError: regexp.MustCompile(`.*StorageGroup error_fake_sg_datasoure is not on the powermax*.`),
+			},
+		},
+	})
+}
+
+func TestAccStorageGroupDataSourceError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetStorageGroupList).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SgAllDataSourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccStorageGroupDataSourceMapperError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SgDataSourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
 var SgDataSourceConfig = `
 data "powermax_storagegroup" "test" {
   filter {
     names = ["tfacc_sg_1"]
+  }
+}
+`
+
+var SgDataSourceConfigError = `
+data "powermax_storagegroup" "test" {
+  filter {
+    names = ["error_fake_sg_datasoure"]
   }
 }
 `

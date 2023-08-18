@@ -18,15 +18,19 @@ limitations under the License.
 package provider
 
 import (
+	"dell/powermax-go-client"
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccMaskingView_CreateMaskingViewWithHost(t *testing.T) {
+func TestAccMaskingViewResourceCreateMaskingViewWithHost(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -52,7 +56,7 @@ func TestAccMaskingView_CreateMaskingViewWithHost(t *testing.T) {
 	})
 }
 
-func TestAccMaskingView_CreateMaskingViewWithHostGroup(t *testing.T) {
+func TestAccMaskingViewResourceCreateMaskingViewWithHostGroup(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -70,7 +74,7 @@ func TestAccMaskingView_CreateMaskingViewWithHostGroup(t *testing.T) {
 	})
 }
 
-func TestAccMaskingView_UpdateMaskingView(t *testing.T) {
+func TestAccMaskingViewResourceUpdateMaskingView(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -102,7 +106,73 @@ func TestAccMaskingView_UpdateMaskingView(t *testing.T) {
 	})
 }
 
-func TestAccMaskingView_ImportSuccess(t *testing.T) {
+func TestAccMaskingViewResourceCreateErrors(t *testing.T) {
+	idError := "someErrorId"
+	sgID := "someSg"
+	hostGroupErrorResponse := powermax.MaskingView{
+		HostId:         &idError,
+		StorageGroupId: &sgID,
+	}
+	hostErrorResponse := powermax.MaskingView{
+		HostGroupId:    &idError,
+		StorageGroupId: &sgID,
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.CreateMaskingView).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.CopyFields).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.GetMaskingView).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.GetMaskingView).Return(&hostGroupErrorResponse, nil, nil).Build()
+				},
+				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
+				ExpectError: regexp.MustCompile(`.*Error creating masking view*.`),
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.GetMaskingView).Return(&hostErrorResponse, nil, nil).Build()
+				},
+				Config:      ProviderConfig + maskingViewCreateWithHost,
+				ExpectError: regexp.MustCompile(`.*Error creating masking view*.`),
+			},
+		},
+	})
+}
+
+func TestAccMaskingViewResourceImportSuccess(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -126,7 +196,7 @@ func TestAccMaskingView_ImportSuccess(t *testing.T) {
 	})
 }
 
-func TestAccMaskingView_ImportFailure(t *testing.T) {
+func TestAccMaskingViewResourceImportFailure(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },

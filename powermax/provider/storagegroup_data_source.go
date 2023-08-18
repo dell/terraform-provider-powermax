@@ -282,8 +282,7 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 	var sgIDs []string
 	// Get storage group IDs from config or query all if not specified
 	if data.StorageGroupFilter == nil || len(data.StorageGroupFilter.IDs) == 0 {
-		sgModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListStorageGroups(ctx, d.client.SymmetrixID)
-		storageGroupIDList, _, err := sgModel.Execute()
+		storageGroupIDList, _, err := helper.GetStorageGroupList(ctx, d.client)
 		if err != nil {
 			errStr := ""
 			message := helper.GetErrorString(err, errStr)
@@ -304,7 +303,7 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 		err := helper.UpdateSgState(ctx, d.client, sgID, &sg)
 		if err != nil {
 			resp.Diagnostics.AddError("Error reading storage group", err.Error())
-			continue
+			return
 		}
 		state.StorageGroups = append(state.StorageGroups, sg)
 	}

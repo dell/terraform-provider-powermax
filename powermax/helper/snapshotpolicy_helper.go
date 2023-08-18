@@ -19,9 +19,11 @@ package helper
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	pmax "dell/powermax-go-client"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"terraform-provider-powermax/client"
@@ -87,8 +89,15 @@ func ConvertTimeStringToMinutes(timeStr string) (int64, error) {
 // UpdateSnapshotPolicyResourceState updates snapshot policy state.
 func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail *pmax.SnapshotPolicy, state *models.SnapshotPolicyResource, storageGroups *pmax.StorageGroupList) error {
 	err := CopyFields(ctx, snapshotPolicyDetail, state)
-	state.Interval = types.StringValue(ConvertToTimeString(*snapshotPolicyDetail.IntervalMinutes))
-	state.ID = types.StringValue(snapshotPolicyDetail.SnapshotPolicyName)
+	if err != nil {
+		return err
+	}
+	if snapshotPolicyDetail != nil {
+		if !state.IntervalMinutes.IsNull() {
+			state.Interval = types.StringValue(ConvertToTimeString(*snapshotPolicyDetail.IntervalMinutes))
+		}
+		state.ID = types.StringValue(snapshotPolicyDetail.SnapshotPolicyName)
+	}
 	storageGoupsList := []attr.Value{}
 	if storageGroups != nil && len(storageGroups.Name) > 0 {
 		for _, sg := range storageGroups.Name {
@@ -96,10 +105,6 @@ func UpdateSnapshotPolicyResourceState(ctx context.Context, snapshotPolicyDetail
 		}
 	}
 	state.StorageGroups, _ = types.SetValue(types.StringType, storageGoupsList)
-
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -236,4 +241,56 @@ func AddOrRemoveStorageGroups(ctx context.Context, client client.Client, plan *m
 		}
 	}
 	return errorMessages
+}
+
+// GetSnapshotPolicies get a list of all the snapshot policies
+func GetSnapshotPolicies(ctx context.Context, client client.Client) (*pmax.SnapshotPolicyList, *http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicies(ctx, client.SymmetrixID).Execute()
+}
+
+// GetSnapshotPolicy get the details of a specific policy
+func GetSnapshotPolicy(ctx context.Context, client client.Client, id string) (*pmax.SnapshotPolicy, *http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicy(ctx, client.SymmetrixID, id).Execute()
+}
+
+// DeleteSnapshotPolicy delete a specific policy
+func DeleteSnapshotPolicy(ctx context.Context, client client.Client, snapPolicyID string) (*http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.DeleteSnapshotPolicy(ctx, client.SymmetrixID, snapPolicyID).Execute()
+}
+
+// GetSnapshotPolicyStorageGroups get Storage Groups associated with the snapshot policy
+func GetSnapshotPolicyStorageGroups(ctx context.Context, client client.Client, snapPolicyID string) (*powermax.StorageGroupList, *http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, client.SymmetrixID, snapPolicyID).Execute()
+}
+
+// CreateSnapshotPolicy get the snapshot policy
+func CreateSnapshotPolicy(ctx context.Context, client client.Client, planSnapPolicy models.SnapshotPolicyResource) (*pmax.SnapshotPolicy, *http.Response, error) {
+	snapPolicyCreateReq := client.PmaxOpenapiClient.ReplicationApi.CreateSnapshotPolicy(ctx, client.SymmetrixID)
+
+	// Create Param
+	createSnapPolicyParam := pmax.NewSnapshotPolicyCreate()
+	createSnapPolicyParam.SetSnapshotPolicyName(planSnapPolicy.SnapshotPolicyName.ValueString())
+	createSnapPolicyParam.SetComplianceCountCritical(planSnapPolicy.ComplianceCountCritical.ValueInt64())
+	createSnapPolicyParam.SetComplianceCountWarning(planSnapPolicy.ComplianceCountWarning.ValueInt64())
+	createSnapPolicyParam.SetInterval(planSnapPolicy.Interval.ValueString())
+	if planSnapPolicy.OffsetMinutes.ValueInt64() != 0 {
+		createSnapPolicyParam.SetOffsetMins(int32(planSnapPolicy.OffsetMinutes.ValueInt64()))
+	}
+
+	if planSnapPolicy.ProviderName.ValueString() != "" {
+		// Cloud Provider
+		cloudSnapshotPolicyDetails := pmax.NewCloudSnapshotPolicyDetails()
+		cloudSnapshotPolicyDetails.SetCloudRetentionDays(int32(planSnapPolicy.RetentionDays.ValueInt64()))
+		cloudSnapshotPolicyDetails.SetCloudProviderName(planSnapPolicy.ProviderName.ValueString())
+		createSnapPolicyParam.SetCloudSnapshotPolicyDetails(*cloudSnapshotPolicyDetails)
+	} else {
+		// Local
+		localSnapshotPolicyDetails := pmax.NewLocalSnapshotPolicyDetails()
+		localSnapshotPolicyDetails.SetSecure(planSnapPolicy.Secure.ValueBool())
+		localSnapshotPolicyDetails.SetSnapshotCount(int32(planSnapPolicy.SnapshotCount.ValueInt64()))
+		createSnapPolicyParam.SetLocalSnapshotPolicyDetails(*localSnapshotPolicyDetails)
+	}
+
+	snapPolicyCreateReq = snapPolicyCreateReq.SnapshotPolicyCreate(*createSnapPolicyParam)
+	return snapPolicyCreateReq.Execute()
 }

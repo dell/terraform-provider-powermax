@@ -39,9 +39,9 @@ The Terraform Provider for Dell PowerMax is released and licensed under the MPL-
 
 ## Prerequisites
 
-| **Terraform Provider** | **PowerMax Unisphere Version** | **OS** | **Terraform** | **Golang** |
-|---------------------|-----------------------|-------|--------------------|--------------------------|
-| v1.0.0-beta2 | 10.0 | ubuntu22.04 <br> rhel8.x <br> rhel7.x | 1.3.2 | 1.19.x
+| **Terraform Provider** | **PowerMax Unisphere Version** | **OS**                                | **Terraform**            | **Golang** |
+|------------------------|--------------------------------|---------------------------------------|--------------------------|
+| v1.0.0                 | 10.0                           | ubuntu22.04 <br> rhel9.x <br> rhel8.x | 1.4.x <br> 1.5.x         | 1.20.x
 
 ## List of DataSources in Terraform Provider for Dell PowerMax
   * [Volume](docs/data-sources/volume.md)
@@ -50,6 +50,9 @@ The Terraform Provider for Dell PowerMax is released and licensed under the MPL-
   * [Host](docs/data-sources/host.md)
   * [Host Group](docs/data-sources/hostgroup.md)
   * [Masking View](docs/data-sources/maskingview.md)
+  * [Port](docs/data-sources/port.md)
+  * [Snapshot Policy](docs/data-sources/snapshotpolicy.md)
+  * [Snapshot](docs/data-sources/snapshot.md)
 
 ## List of Resources in Terraform Provider for Dell PowerMax
   * [Volume](docs/resources/volume.md)
@@ -58,6 +61,8 @@ The Terraform Provider for Dell PowerMax is released and licensed under the MPL-
   * [Host](docs/resources/host.md)
   * [Host Group](docs/resources/hostgroup.md)
   * [Masking View](docs/resources/maskingview.md)
+  * [Snapshot Policy](docs/resources/snapshotpolicy.md)
+  * [Snapshot](docs/resources/snapshot.md)
 
 ## Installation and execution of Terraform Provider for Dell PowerMax
 The installation and execution steps of Terraform Provider for Dell PowerMax can be found [here](about/INSTALLATION.md). 

@@ -19,6 +19,7 @@ package helper
 
 import (
 	"context"
+	"dell/powermax-go-client"
 	pmax "dell/powermax-go-client"
 	"errors"
 	"fmt"
@@ -50,6 +51,13 @@ func UpdateHostState(hostState *models.HostModel, planInitiators []string, hostR
 	if hostNumOfPowerPathHosts, ok := hostResponse.GetNumOfPowerpathHostsOk(); ok {
 		hostState.NumPowerPathHosts = types.Int64Value(*hostNumOfPowerPathHosts)
 	}
+
+	var initators []attr.Value
+	for _, attribute := range planInitiators {
+		initators = append(initators, types.StringValue(attribute))
+	}
+	hostState.Initiators, _ = types.ListValue(types.StringType, initators)
+
 	hostBwLimit := hostResponse.GetBwLimit()
 	hostState.BWLimit = types.Int64Value(hostBwLimit)
 
@@ -247,6 +255,11 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
+// GetHostList returns the full host list
+func GetHostList(ctx context.Context, client client.Client) (*powermax.ListHostResult, *http.Response, error) {
+	return client.PmaxOpenapiClient.SLOProvisioningApi.ListHosts(ctx, client.SymmetrixID).Execute()
+}
+
 // ModifyHost modify host.
 func ModifyHost(ctx context.Context, client client.Client, hostID string, edit pmax.EditHostActionParam) (*pmax.Host, error) {
 	modifyParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyHost(ctx, client.SymmetrixID, hostID)
@@ -319,4 +332,9 @@ func setHostFlags(flags string, isEnabled bool, hostState *models.HostModel) {
 			}
 		}
 	}
+}
+
+// GetHost get a specific host
+func GetHost(ctx context.Context, client client.Client, hostID string) (*powermax.Host, *http.Response, error) {
+	return client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, client.SymmetrixID, hostID).Execute()
 }

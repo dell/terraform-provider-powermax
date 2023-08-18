@@ -18,9 +18,13 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -76,6 +80,40 @@ func TestAccHostGroupDatasourceFilteredError(t *testing.T) {
 			{
 				Config:      ProviderConfig + HostGroupDataSourceFilterError,
 				ExpectError: regexp.MustCompile(`.*Error getting the details of host group*.`),
+			},
+		},
+	})
+}
+
+func TestAccHostGroupDatasourceFilteredIdError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.FilterHostGroupIds).Return(nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + HostGroupDataSourceParamsFiltered,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccHostGroupDatasourceHostGroupDetailMapperError(t *testing.T) {
+	var diags diag.Diagnostics
+	diags.AddError("MapError", "mock error")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.HostGroupDetailMapper).Return(nil, diags).Build()
+				},
+				Config:      ProviderConfig + HostGroupDataSourceParamsAll,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
 			},
 		},
 	})

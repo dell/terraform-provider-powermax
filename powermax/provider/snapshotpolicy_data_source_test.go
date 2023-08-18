@@ -18,13 +18,16 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccSnapshotPolicyDataSource(t *testing.T) {
+func TestAccSnapshotPolicyDs(t *testing.T) {
 	var snapshotPolicyTerraformName = "data.powermax_snapshotpolicy.SnapshotPolicyAll"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -39,7 +42,7 @@ func TestAccSnapshotPolicyDataSource(t *testing.T) {
 		},
 	})
 }
-func TestAccSnapshotPolicyFilteredDataSource(t *testing.T) {
+func TestAccSnapshotPolicyDsFiltered(t *testing.T) {
 	var snapshotPolicyTerraformName = "data.powermax_snapshotpolicy.SnapshotPolicyFiltered"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -63,6 +66,54 @@ func TestAccSnapshotPolicyDsError(t *testing.T) {
 			{
 				Config:      ProviderConfig + snapshotPolicyDsError,
 				ExpectError: regexp.MustCompile(`.*Error reading snapshot policy with id*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotPolicyDsGetListError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetSnapshotPolicies).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + snapshotPolicyAllDatasourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotPolicyDsGetSpecificPolicyError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + snapshotPolicyAllDatasourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotPolicyDsMappingError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.CopyFields).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + snapshotPolicyAllDatasourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
 			},
 		},
 	})

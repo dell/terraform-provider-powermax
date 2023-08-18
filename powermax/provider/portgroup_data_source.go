@@ -20,7 +20,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -172,35 +171,14 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	var pgNames []string
-	//Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
-	portGroupsParam := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroups(ctx, d.client.SymmetrixID)
-	var typeStr string = ""
-	if pgPlan.PgFilter != nil {
-		if !pgPlan.PgFilter.Type.IsNull() {
-			typeStr = pgPlan.PgFilter.Type.ValueString()
-		}
-	}
-	if typeStr == "iscsi" {
-		portGroupsParam = portGroupsParam.Iscsi("true")
-	} else { //default Fiber
-		portGroupsParam = portGroupsParam.Fibre("true")
-	}
-	//err GenericOpenAPIError;
 
-	portGroupIDList, resp1, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroupsExecute(portGroupsParam)
+	portGroupIDList, _, err := helper.GetPortGroupList(ctx, *d.client, pgPlan)
 	if err != nil {
 		errStr := ""
 		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Unable to Read PowerMax Port Groups", msgStr,
 		)
-	}
-	if resp1.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			"Unable to Read PowerMax Port Groups. Got http error - %s",
-			resp1.Status,
-		)
-		return
 	}
 	// Get portgroup IDs from config or query all if not specified
 	if pgPlan.PgFilter == nil || len(pgPlan.PgFilter.Names) == 0 {
@@ -233,10 +211,6 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		var pg models.PortGroup
 		// Copy fields from the provider client data into the Terraform state
 		helper.UpdatePGState(&pg, &pg, pgResponse)
-		if err != nil {
-			resp.Diagnostics.AddError("Error copying port group fields", err.Error())
-			return
-		}
 		portGroups = append(portGroups, pg)
 	}
 	pgState.PortGroups = portGroups

@@ -444,8 +444,7 @@ func (d *portDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 	for _, val := range portIds {
-		portParam := d.client.PmaxOpenapiClient.SystemApi.GetDirectorPorts1(ctx, d.client.SymmetrixID, val.DirectorId, val.PortId)
-		port, _, err := portParam.Execute()
+		port, _, err := helper.GetPort(ctx, *d.client, val.DirectorId, val.PortId)
 		if err != nil {
 			errStr := constants.ReadPortDetailErrorMsg + "with error: "
 			message := helper.GetErrorString(err, errStr)

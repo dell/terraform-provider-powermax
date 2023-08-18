@@ -19,7 +19,6 @@ package provider
 
 import (
 	"context"
-	pmax "dell/powermax-go-client"
 	"fmt"
 	"regexp"
 	"terraform-provider-powermax/client"
@@ -214,34 +213,7 @@ func (r *SnapshotPolicy) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	snapPolicyCreateReq := r.client.PmaxOpenapiClient.ReplicationApi.CreateSnapshotPolicy(ctx, r.client.SymmetrixID)
-
-	// Create Param
-	createSnapPolicyParam := pmax.NewSnapshotPolicyCreate()
-	createSnapPolicyParam.SetSnapshotPolicyName(planSnapPolicy.SnapshotPolicyName.ValueString())
-	createSnapPolicyParam.SetComplianceCountCritical(planSnapPolicy.ComplianceCountCritical.ValueInt64())
-	createSnapPolicyParam.SetComplianceCountWarning(planSnapPolicy.ComplianceCountWarning.ValueInt64())
-	createSnapPolicyParam.SetInterval(planSnapPolicy.Interval.ValueString())
-	if planSnapPolicy.OffsetMinutes.ValueInt64() != 0 {
-		createSnapPolicyParam.SetOffsetMins(int32(planSnapPolicy.OffsetMinutes.ValueInt64()))
-	}
-
-	if planSnapPolicy.ProviderName.ValueString() != "" {
-		// Cloud Provider
-		cloudSnapshotPolicyDetails := pmax.NewCloudSnapshotPolicyDetails()
-		cloudSnapshotPolicyDetails.SetCloudRetentionDays(int32(planSnapPolicy.RetentionDays.ValueInt64()))
-		cloudSnapshotPolicyDetails.SetCloudProviderName(planSnapPolicy.ProviderName.ValueString())
-		createSnapPolicyParam.SetCloudSnapshotPolicyDetails(*cloudSnapshotPolicyDetails)
-	} else {
-		// Local
-		localSnapshotPolicyDetails := pmax.NewLocalSnapshotPolicyDetails()
-		localSnapshotPolicyDetails.SetSecure(planSnapPolicy.Secure.ValueBool())
-		localSnapshotPolicyDetails.SetSnapshotCount(int32(planSnapPolicy.SnapshotCount.ValueInt64()))
-		createSnapPolicyParam.SetLocalSnapshotPolicyDetails(*localSnapshotPolicyDetails)
-	}
-
-	snapPolicyCreateReq = snapPolicyCreateReq.SnapshotPolicyCreate(*createSnapPolicyParam)
-	snapPolicyCreateResp, _, err := snapPolicyCreateReq.Execute()
+	snapPolicyCreateResp, _, err := helper.CreateSnapshotPolicy(ctx, *r.client, planSnapPolicy)
 	if err != nil {
 		snapPolicyID := planSnapPolicy.SnapshotPolicyName.ValueString()
 		errStr := constants.CreateSnapPolicyDetailErrorMsg + snapPolicyID + ": "
@@ -254,8 +226,7 @@ func (r *SnapshotPolicy) Create(ctx context.Context, req resource.CreateRequest,
 		req := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicy(ctx, r.client.SymmetrixID, snapPolicyID)
 		snapPolicyGetResp, _, getSnapPolicyErr := req.Execute()
 		if snapPolicyGetResp != nil || getSnapPolicyErr == nil {
-			delReq := r.client.PmaxOpenapiClient.ReplicationApi.DeleteSnapshotPolicy(ctx, r.client.SymmetrixID, snapPolicyID)
-			_, err := delReq.Execute()
+			_, err := helper.DeleteSnapshotPolicy(ctx, *r.client, snapPolicyID)
 			if err != nil {
 				errStr := constants.CreateSnapPolicyDetailErrorMsg + snapPolicyID + "with error: "
 				message := helper.GetErrorString(err, errStr)
@@ -271,12 +242,22 @@ func (r *SnapshotPolicy) Create(ctx context.Context, req resource.CreateRequest,
 		"Create Snapshot Policy Response": snapPolicyCreateResp,
 	})
 	//Get Storage Groups associated with the snapshot policy
-	storageGroupReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, r.client.SymmetrixID, planSnapPolicy.SnapshotPolicyName.ValueString())
-	storageGroups, _, errStorageGroup := storageGroupReq.Execute()
+	storageGroups, _, errStorageGroup := helper.GetSnapshotPolicyStorageGroups(ctx, *r.client, planSnapPolicy.SnapshotPolicyName.ValueString())
 	if errStorageGroup != nil {
 		errStr := ""
-		msgStr := helper.GetErrorString(err, errStr)
+		msgStr := helper.GetErrorString(errStorageGroup, errStr)
 		resp.Diagnostics.AddError("Error getting Snapshot Policy storage groups", msgStr)
+		// Attempt to cleanup after failure
+		_, err := helper.DeleteSnapshotPolicy(ctx, *r.client, planSnapPolicy.SnapshotPolicyName.ValueString())
+		if err != nil {
+			errStr := constants.CreateSnapPolicyDetailErrorMsg + planSnapPolicy.SnapshotPolicyName.ValueString() + "with error: "
+			message := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError(
+				"Error deleting the invalid snapshot policy, This may be a dangling resource and needs to be deleted manually",
+				message,
+			)
+		}
+		return
 	}
 
 	var result models.SnapshotPolicyResource
@@ -284,9 +265,17 @@ func (r *SnapshotPolicy) Create(ctx context.Context, req resource.CreateRequest,
 	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapPolicyCreateResp, &result, storageGroups)
 
 	if errCpy != nil {
-		errStr := ""
-		msgStr := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error copying Snapshot Policy", msgStr)
+		resp.Diagnostics.AddError("Error copying Snapshot Policy", errCpy.Error())
+		// Attempt to cleanup after failure
+		_, err := helper.DeleteSnapshotPolicy(ctx, *r.client, planSnapPolicy.SnapshotPolicyName.ValueString())
+		if err != nil {
+			errStr := constants.CreateSnapPolicyDetailErrorMsg + planSnapPolicy.SnapshotPolicyName.ValueString() + "with error: "
+			message := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError(
+				"Error deleting the invalid snapshot policy, This may be a dangling resource and needs to be deleted manually",
+				message,
+			)
+		}
 		return
 	}
 	diags = resp.State.Set(ctx, result)
@@ -409,8 +398,7 @@ func (r *SnapshotPolicy) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	snapshotPolicyID := snapPolicyState.SnapshotPolicyName.ValueString()
-	getReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicy(ctx, r.client.SymmetrixID, snapshotPolicyID)
-	snapshotPolicy, _, err := getReq.Execute()
+	snapshotPolicy, _, err := helper.GetSnapshotPolicy(ctx, *r.client, snapshotPolicyID)
 	if err != nil {
 		errStr := constants.ReadSnapPolicyDetailsErrorMsg + snapshotPolicyID + " with error: "
 		message := helper.GetErrorString(err, errStr)
@@ -421,12 +409,11 @@ func (r *SnapshotPolicy) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	// Get Storage Groups associated with the snapshot policy
-	storageGroupReq := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, r.client.SymmetrixID, snapshotPolicyID)
-	storageGroups, _, errStorageGroup := storageGroupReq.Execute()
+	storageGroups, _, errStorageGroup := helper.GetSnapshotPolicyStorageGroups(ctx, *r.client, snapshotPolicyID)
 	if errStorageGroup != nil {
 		errStr := ""
-		msgStr := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error getting Snapshot Policy storage groups", msgStr)
+		msgStr := helper.GetErrorString(errStorageGroup, errStr)
+		resp.Diagnostics.AddError("Error getting snapshot policy storage groups", msgStr)
 	}
 
 	tflog.Debug(ctx, "Updating snapshot policy state")
@@ -434,9 +421,7 @@ func (r *SnapshotPolicy) Read(ctx context.Context, req resource.ReadRequest, res
 	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapshotPolicy, &snapPolicyState, storageGroups)
 
 	if errCpy != nil {
-		errStr := ""
-		msgStr := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error copying Snapshot Policy", msgStr)
+		resp.Diagnostics.AddError("Error reading snapshot policy", errCpy.Error())
 		return
 	}
 	diags = resp.State.Set(ctx, snapPolicyState)
@@ -485,9 +470,7 @@ func (r *SnapshotPolicy) ImportState(ctx context.Context, req resource.ImportSta
 	tflog.Debug(ctx, "updating snapshot policy state after import")
 	errCpy := helper.UpdateSnapshotPolicyResourceState(ctx, snapshotPolicyResponse, &snapPolicyState, storageGroups)
 	if errCpy != nil {
-		errStr := ""
-		msgStr := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error copying Snapshot Policy", msgStr)
+		resp.Diagnostics.AddError("Error copying Snapshot Policy", errCpy.Error())
 		return
 	}
 

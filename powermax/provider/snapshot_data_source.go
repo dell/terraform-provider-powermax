@@ -286,8 +286,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	listParam := d.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshots(ctx, d.client.SymmetrixID, plan.StorageGroup.Name.ValueString())
-	list, _, err := listParam.Execute()
+	list, _, err := helper.GetStorageGroupSnapshots(ctx, *d.client, plan.StorageGroup.Name.ValueString())
 	if err != nil {
 		errStr := constants.ReadSnapshots + "with error: "
 		message := helper.GetErrorString(err, errStr)
@@ -300,8 +299,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	// Get the list of snapids
 	for _, sngc := range list.SnapshotNamesAndCounts {
-		snapIDParam := d.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, d.client.SymmetrixID, plan.StorageGroup.Name.ValueString(), *sngc.Name)
-		val, _, err := snapIDParam.Execute()
+		val, _, err := helper.GetStorageGroupSnapshotSnapIDs(ctx, *d.client, plan.StorageGroup.Name.ValueString(), *sngc.Name)
 		if err != nil {
 			errStr := constants.ReadSnapshots + "with error: "
 			message := helper.GetErrorString(err, errStr)
@@ -313,8 +311,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 		for _, id := range val.Snapids {
 			var detail models.SnapshotDetailModal
-			detailsParam := d.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotSnapIDSG(ctx, d.client.SymmetrixID, plan.StorageGroup.Name.ValueString(), *sngc.Name, id)
-			snapDetail, _, err := detailsParam.Execute()
+			snapDetail, _, err := helper.GetSnapshotSnapIDSG(ctx, *d.client, plan.StorageGroup.Name.ValueString(), *sngc.Name, id)
 			if err != nil {
 				errStr := constants.ReadSnapshots + "with error: "
 				message := helper.GetErrorString(err, errStr)

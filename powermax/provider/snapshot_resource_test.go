@@ -18,8 +18,12 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
+	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -84,6 +88,203 @@ func TestAccSnapshotResource(t *testing.T) {
 		},
 	})
 }
+
+func TestAccSnapshotResourceReadError(t *testing.T) {
+	var snapshotTerraformName = "powermax_snapshot.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: ProviderConfig + SnapshotResourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(snapshotTerraformName, "name", "tfacc_snapshot_1"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "linked_storage_group.#", "0"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "linked", "false"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "restored", "false"),
+					resource.TestCheckNoResourceAttr(snapshotTerraformName, "secure_expiry_date"),
+				),
+			},
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceLinkConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceLinkConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccSnapshotResourceModifyError(t *testing.T) {
+	var snapshotTerraformName = "powermax_snapshot.test"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: ProviderConfig + SnapshotResourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(snapshotTerraformName, "name", "tfacc_snapshot_1"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "linked_storage_group.#", "0"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "linked", "false"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "restored", "false"),
+					resource.TestCheckNoResourceAttr(snapshotTerraformName, "secure_expiry_date"),
+				),
+			},
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.ModifySnapshot).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceLinkConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccSnapshotResourceSGNameError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      ProviderConfig + SnapshotResourceConfigSgNameError,
+				ExpectError: regexp.MustCompile(`.*Error creating snapshot*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotResourceCreateSnapshotError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.CreateSnapshot).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotResourceSnapshotsSnapIdsError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetStorageGroupSnapshotSnapIDs).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotResourceSnapshotsSnapDetailsError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotResourceSnapshotMapperError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotResourceImportError(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
+				ResourceName:  "powermax_snapshot.test",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`.*Error importing snapshot*`),
+				ImportStateId: "badsnapshot",
+			},
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
+				ResourceName:  "powermax_snapshot.test",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`.*mock error*`),
+				ImportStateId: "sg.snap",
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
+				ResourceName:  "powermax_snapshot.test",
+				ImportState:   true,
+				ExpectError:   regexp.MustCompile(`.*mock error*`),
+				ImportStateId: "sg.snap",
+			},
+		},
+	})
+}
+
+var SnapshotResourceConfigSgNameError = `
+resource "powermax_snapshot" "test" {
+	storage_group {
+		name = ""
+	}
+	snapshot_actions {
+		# Required, name of new snapshot
+		name = "tfacc_snapshot_1"
+	}
+}
+`
 
 var SnapshotResourceConfig = `
 resource "powermax_snapshot" "test" {

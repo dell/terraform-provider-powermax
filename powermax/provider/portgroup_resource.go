@@ -19,7 +19,6 @@ package provider
 
 import (
 	"context"
-	pmax "dell/powermax-go-client"
 	"fmt"
 	"regexp"
 	"strings"
@@ -170,23 +169,8 @@ func (r *PortGroup) Create(ctx context.Context, req resource.CreateRequest, resp
 		"plan": plan,
 		"resp": resp,
 	})
-	pmaxPorts := helper.GetPmaxPortsFromTfsdkPG(plan)
 
-	tflog.Debug(ctx, "calling create port group on pmax client", map[string]interface{}{
-		"symmetrixID": r.client.SymmetrixID,
-		"name":        plan.Name.ValueString(),
-		"ports":       pmaxPorts,
-	})
-	//Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
-	portGroups := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroup(ctx, r.client.SymmetrixID) //(ctx, d.client.SymmetrixID, state.Type.ValueString())
-
-	createParam := pmax.NewCreatePortGroupParam(plan.Name.ValueString())
-	createParam.SetPortGroupProtocol(plan.Protocol.ValueString())
-	createParam.SetSymmetrixPortKey(pmaxPorts)
-
-	portGroups = portGroups.CreatePortGroupParam(*createParam)
-
-	pgResponse, _, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroupExecute(portGroups)
+	pgResponse, _, err := helper.CreatePortGroup(ctx, *r.client, plan)
 
 	if err != nil {
 		errStr := constants.CreatePGDetailErrorMsg + plan.Name.ValueString() + " with error: "

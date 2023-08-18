@@ -19,7 +19,6 @@ package provider
 
 import (
 	"context"
-	"dell/powermax-go-client"
 	"fmt"
 	"strings"
 	"terraform-provider-powermax/client"
@@ -458,24 +457,7 @@ func (r *snapshotResource) Create(ctx context.Context, req resource.CreateReques
 		)
 		return
 	}
-	// Create Param Attributes
-	snapshotCreateParam := powermax.StorageGroupSnapshotCreate{}
-	if plan.Snapshot.Secure != nil && plan.Snapshot.Secure.Secure.ValueInt64() != 0 {
-		secure := int32(plan.Snapshot.Secure.Secure.ValueInt64())
-		snapshotCreateParam.Secure = &secure
-	}
-	if plan.Snapshot.TimeToLive != nil && plan.Snapshot.TimeToLive.TimeToLive.ValueInt64() != 0 {
-		ttl := int32(plan.Snapshot.TimeToLive.TimeToLive.ValueInt64())
-		snapshotCreateParam.TimeToLive = &ttl
-		snapshotCreateParam.TimeInHours = plan.Snapshot.TimeToLive.TimeInHours.ValueBoolPointer()
-	}
-	snapshotCreateParam.Bothsides = plan.Snapshot.Bothsides.ValueBoolPointer()
-	snapshotCreateParam.SnapshotName = plan.Snapshot.Name.ValueString()
-
-	createParam := r.client.PmaxOpenapiClient.ReplicationApi.CreateSnapshot1(ctx, r.client.SymmetrixID, plan.StorageGroup.Name.ValueString())
-	createParam = createParam.StorageGroupSnapshotCreate(snapshotCreateParam)
-
-	_, _, err := createParam.Execute()
+	_, _, err := helper.CreateSnapshot(ctx, *r.client, plan.StorageGroup.Name.ValueString(), plan)
 	if err != nil {
 		errStr := fmt.Sprintf("Could not create snapshot %s with error:", plan.Snapshot.Name)
 		msgStr := helper.GetErrorString(err, errStr)
@@ -486,22 +468,20 @@ func (r *snapshotResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	// Get the new snapId Id
-	snapIDParam := r.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, r.client.SymmetrixID, plan.StorageGroup.Name.ValueString(), plan.Snapshot.Name.ValueString())
-	val, _, err := snapIDParam.Execute()
+	// Get the new snapID Id
+	val, _, err := helper.GetStorageGroupSnapshotSnapIDs(ctx, *r.client, plan.StorageGroup.Name.ValueString(), plan.Snapshot.Name.ValueString())
 	if err != nil {
 		errStr := constants.ReadSnapshots + "with error: "
 		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
-			"Error getting the new snapId",
+			"Error getting the new snapID",
 			message,
 		)
 		return
 	}
 
 	// Get the new Snapshot
-	getParam := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotSnapIDSG(ctx, r.client.SymmetrixID, plan.StorageGroup.Name.ValueString(), plan.Snapshot.Name.ValueString(), val.Snapids[0])
-	snapDetail, _, err := getParam.Execute()
+	snapDetail, _, err := helper.GetSnapshotSnapIDSG(ctx, *r.client, plan.StorageGroup.Name.ValueString(), plan.Snapshot.Name.ValueString(), val.Snapids[0])
 	if err != nil {
 		errStr := fmt.Sprintf("Could not find snapshot %s after create with error:", plan.Snapshot.Name)
 		msgStr := helper.GetErrorString(err, errStr)
@@ -538,8 +518,7 @@ func (r *snapshotResource) Read(ctx context.Context, req resource.ReadRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	getParam := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotSnapIDSG(ctx, r.client.SymmetrixID, state.StorageGroup.Name.ValueString(), state.Name.ValueString(), state.Snapid.ValueInt64())
-	snapDetail, _, err := getParam.Execute()
+	snapDetail, _, err := helper.GetSnapshotSnapIDSG(ctx, *r.client, state.StorageGroup.Name.ValueString(), state.Name.ValueString(), state.Snapid.ValueInt64())
 	if err != nil {
 		errStr := fmt.Sprintf("Could not find snapshot %s with error:", state.Name)
 		msgStr := helper.GetErrorString(err, errStr)
@@ -662,7 +641,7 @@ func (r *snapshotResource) ImportState(ctx context.Context, req resource.ImportS
 	}
 
 	var state models.SnapshotResourceModel
-	// Get the snapId Id
+	// Get the snapID Id
 	snapIDParam := r.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, r.client.SymmetrixID, sgName, snapshotName)
 	val, _, err := snapIDParam.Execute()
 	if err != nil {
@@ -675,8 +654,7 @@ func (r *snapshotResource) ImportState(ctx context.Context, req resource.ImportS
 		return
 	}
 	// Get the details
-	getParam := r.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotSnapIDSG(ctx, r.client.SymmetrixID, sgName, snapshotName, val.Snapids[0])
-	snapDetail, _, err := getParam.Execute()
+	snapDetail, _, err := helper.GetSnapshotSnapIDSG(ctx, *r.client, sgName, snapshotName, val.Snapids[0])
 	if err != nil {
 		errStr := fmt.Sprintf("Could not find snapshot %s with error:", state.Name)
 		msgStr := helper.GetErrorString(err, errStr)

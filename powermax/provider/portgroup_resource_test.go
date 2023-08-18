@@ -18,9 +18,12 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -52,6 +55,8 @@ resource "powermax_portgroup" "test_portgroup" {
 
 func TestAccPortgroupResource(t *testing.T) {
 	var portgroupTerraformName = "powermax_portgroup.test_portgroup"
+	var errorString []string
+	errorString = append(errorString, "mock error")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -95,11 +100,46 @@ func TestAccPortgroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr(portgroupTerraformName, "type", "SCSI_FC"),
 				),
 			},
+			// Read test Error
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.ReadPortgroupByID).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + createPortGroupConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			// Modify Error
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.UpdatePortGroup).Return(nil, nil, errorString).Build()
+				},
+				Config:      ProviderConfig + createPortGroupConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
 			// auto checks delete to clean up the test
 		},
 	})
 }
 
+func TestAccPortgroupResourceCreateError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read test
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.CreatePortGroup).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + createPortGroupConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
 func TestAccPortGroupResourceError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },

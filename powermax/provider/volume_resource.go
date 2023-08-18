@@ -306,6 +306,16 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 	if response.Diagnostics.HasError() {
 		return
 	}
+	if !plan.Size.IsNull() {
+		size, _ := plan.Size.ValueBigFloat().Float64()
+		if plan.CapUnit.ValueString() == "CYL" && size != float64(int(size)) {
+			response.Diagnostics.AddError(
+				"Error creating volume",
+				fmt.Sprintf("Could not create volume %s with error: %s", plan.VolumeIdentifier.ValueString(), "Invalid Config, size type 'CYL' must be integer"),
+			)
+			return
+		}
+	}
 
 	if plan.StorageGroupName.ValueString() == "" {
 		response.Diagnostics.AddError(
@@ -314,46 +324,8 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 		)
 		return
 	}
-	volumeAttributes := make([]powermax.VolumeAttribute, 0)
-	num := int64(0)
-	volumeAttributes = append(volumeAttributes, powermax.VolumeAttribute{
-		CapacityUnit: plan.CapUnit.ValueString(),
-		NumOfVols:    &num,
-		VolumeSize:   plan.Size.ValueBigFloat().String(),
-		VolumeIdentifier: &powermax.VolumeIdentifier{
-			VolumeIdentifierChoice: "identifier_name",
-			IdentifierName:         plan.VolumeIdentifier.ValueStringPointer(),
-		},
-	})
-	tflog.Info(ctx, fmt.Sprintf("Create Volume att Param: %v", volumeAttributes))
-	createNewVol := true
-	emulation := "FBA"
-	tflog.Debug(ctx, "calling create volume in storage groups on pmax client", map[string]interface{}{
-		"symmetrixID":      r.client.SymmetrixID,
-		"storageGroupName": plan.StorageGroupName.ValueString(),
-		"name":             plan.VolumeIdentifier.ValueString(),
-		"volumeAttributes": volumeAttributes,
-	})
-	createParam := r.client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, r.client.SymmetrixID, plan.StorageGroupName.ValueString())
-	createParam = createParam.EditStorageGroupParam(
-		powermax.EditStorageGroupParam{
-			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
-				ExpandStorageGroupParam: &powermax.ExpandStorageGroupParam{
-					AddVolumeParam: &powermax.AddVolumeParam{
-						CreateNewVolumes: &createNewVol,
-						EnableMobilityId: plan.MobilityIDEnabled.ValueBoolPointer(),
-						VolumeAttributes: volumeAttributes,
-						Emulation:        &emulation,
-						VolumeIdentifier: &powermax.VolumeIdentifier{
-							VolumeIdentifierChoice: "identifier_name",
-							IdentifierName:         plan.VolumeIdentifier.ValueStringPointer(),
-						},
-					},
-				},
-			},
-		},
-	)
-	volResponse, _, err := createParam.Execute()
+
+	volResponse, _, err := helper.CreateVolume(ctx, *r.client, plan)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -366,9 +338,7 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 	})
 	// Extrct the new volume ID from the storage group
 	volState := models.VolumeResource{}
-	param := r.client.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, r.client.SymmetrixID)
-	param = param.StorageGroupId(plan.StorageGroupName.ValueString())
-	volumeIDListInStorageGroup, _, err := param.Execute()
+	volumeIDListInStorageGroup, _, err := helper.ListVolumes(ctx, *r.client, plan)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -384,13 +354,12 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 	}
 	if volID == "" {
 		response.Diagnostics.AddError("Error creating volume",
-			fmt.Sprintf("Could not find find volume id for %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
+			fmt.Sprintf("Could not find find volume id for %s after creating", plan.VolumeIdentifier.ValueString()),
 		)
 		return
 	}
 	// Now that we have the ID get the specific volume info
-	paramVol := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volID)
-	vol, _, err := paramVol.Execute()
+	vol, _, err := helper.GetVolume(ctx, *r.client, volID)
 
 	if err != nil {
 		errStr := ""
@@ -437,8 +406,7 @@ func (r volumeResource) Read(ctx context.Context, request resource.ReadRequest, 
 		"symmetrixID": r.client.SymmetrixID,
 		"volumeID":    volID,
 	})
-	param := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volID)
-	volResponse, _, err := param.Execute()
+	volResponse, _, err := helper.GetVolume(ctx, *r.client, volID)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -491,6 +459,17 @@ func (r volumeResource) Update(ctx context.Context, request resource.UpdateReque
 		return
 	}
 
+	if !planVol.Size.IsNull() {
+		size, _ := planVol.Size.ValueBigFloat().Float64()
+		if planVol.CapUnit.ValueString() == "CYL" && size != float64(int(size)) {
+			response.Diagnostics.AddError(
+				"Error updating volume",
+				fmt.Sprintf("Could not create volume %s with error: %s", planVol.VolumeIdentifier.ValueString(), "Invalid Config, size type 'CYL' must be integer"),
+			)
+			return
+		}
+	}
+
 	tflog.Debug(ctx, "calling update volume on pmax client", map[string]interface{}{
 		"planVol":  planVol,
 		"stateVol": stateVol,
@@ -508,8 +487,7 @@ func (r volumeResource) Update(ctx context.Context, request resource.UpdateReque
 		"symmetrixID": r.client.SymmetrixID,
 		"volumeID":    volID,
 	})
-	param := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, r.client.SymmetrixID, volID)
-	volResponse, _, err := param.Execute()
+	volResponse, _, err := helper.GetVolume(ctx, *r.client, volID)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)

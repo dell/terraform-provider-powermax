@@ -280,12 +280,8 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	sgModel := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateStorageGroup(ctx, r.client.SymmetrixID)
-	create := powermax.NewCreateStorageGroupParam(plan.StorageGroupID.ValueString())
-	create.SetSrpId(plan.Srp.ValueString())
-	create.SetSloBasedStorageGroupParam(helper.CreateSloParam(plan))
-	sgModel = sgModel.CreateStorageGroupParam(*create)
-	sg, _, err := sgModel.Execute()
+
+	sg, _, err := helper.CreateStorageGroup(ctx, r.client, plan)
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
@@ -303,14 +299,28 @@ func (r *StorageGroup) Create(ctx context.Context, req resource.CreateRequest, r
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError("Failed to update volume", message)
+		// Should attempt delete since it failed to fully create
+		_, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteStorageGroup(ctx, r.client.SymmetrixID, plan.StorageGroupID.ValueString()).Execute()
+		if err != nil {
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			tflog.Debug(ctx, message)
+			return
+		}
 		return
 	}
 
 	err = helper.UpdateSgState(ctx, r.client, plan.StorageGroupID.ValueString(), &state)
 	if err != nil {
-		errStr := ""
-		message := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error updating state for storage group", message)
+		resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
+		// Should attempt delete since it failed to fully create
+		_, err := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteStorageGroup(ctx, r.client.SymmetrixID, plan.StorageGroupID.ValueString()).Execute()
+		if err != nil {
+			errStr := ""
+			message := helper.GetErrorString(err, errStr)
+			tflog.Debug(ctx, message)
+			return
+		}
 		return
 	}
 
@@ -334,9 +344,7 @@ func (r *StorageGroup) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	err := helper.UpdateSgState(ctx, r.client, state.StorageGroupID.ValueString(), &state)
 	if err != nil {
-		errStr := ""
-		message := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error updating state for storage group", message)
+		resp.Diagnostics.AddError("Error updating state for storage group", err.Error())
 		return
 	}
 
@@ -515,17 +523,13 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 	// Update Volume
 	err := helper.AddRemoveVolume(ctx, &plan, &state, r.client, sgID)
 	if err != nil {
-		errStr := ""
-		message := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Failed to update volume:", message)
+		resp.Diagnostics.AddError(fmt.Sprintf("Failed to update volume on storage group %s:", sgID), err.Error())
 		return
 	}
 
 	err = helper.UpdateSgState(ctx, r.client, sgID, &state)
 	if err != nil {
-		errStr := ""
-		message := helper.GetErrorString(err, errStr)
-		resp.Diagnostics.AddError("Error updating state for storage group:", message)
+		resp.Diagnostics.AddError("Error updating state for storage group:", err.Error())
 		return
 	}
 

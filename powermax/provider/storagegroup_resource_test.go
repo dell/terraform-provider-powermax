@@ -18,13 +18,16 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccStorageGroupA(t *testing.T) {
+func TestAccStorageGroupResourceA(t *testing.T) {
 	var storageGroupTerraformName = "powermax_storagegroup.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -34,8 +37,8 @@ func TestAccStorageGroupA(t *testing.T) {
 			{
 				Config: ProviderConfig + StorageGroupResourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(storageGroupTerraformName, "name", "tfacc_sg_1"),
-					resource.TestCheckResourceAttr(storageGroupTerraformName, "id", "tfacc_sg_1"),
+					resource.TestCheckResourceAttr(storageGroupTerraformName, "name", "tfacc_sg_resource"),
+					resource.TestCheckResourceAttr(storageGroupTerraformName, "id", "tfacc_sg_resource"),
 					resource.TestCheckResourceAttr(storageGroupTerraformName, "srp_id", "SRP_1"),
 					resource.TestCheckResourceAttr(storageGroupTerraformName, "slo", "Gold"),
 					resource.TestCheckResourceAttr(storageGroupTerraformName, "service_level", "Gold"),
@@ -60,11 +63,11 @@ func TestAccStorageGroupA(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: ProviderConfig + StorageGroupResourceConfig + StorageGroupVolumeResourceConfig,
+				Config: ProviderConfig + StorageGroupResourceConfig,
 			},
 			// Update compression, volume_id and host_io_limit, then Read testing
 			{
-				Config: ProviderConfig + StorageGroupVolumeResourceConfig + StorageGroupVolumeDataResourceConfig + StorageGroupUpdateResourceConfig,
+				Config: ProviderConfig + StorageGroupUpdateResourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(storageGroupTerraformName, "name", "tfacc_sg_rename"),
 					resource.TestCheckResourceAttr(storageGroupTerraformName, "id", "tfacc_sg_rename"),
@@ -84,12 +87,65 @@ func TestAccStorageGroupA(t *testing.T) {
 				// Remove volume ahead of storage group
 				Config: ProviderConfig + StorageGroupUpdateVolumeResourceConfig,
 			},
+			// Read Mapping Error Check
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + StorageGroupResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
 
-func TestAccStorageGroupNoHostIOLimit(t *testing.T) {
+func TestAccStorageGroupResourceCreateErrors(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.CreateStorageGroup).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + StorageGroupResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + StorageGroupResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccStorageGroupResourceAddRemoveErrors(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.AddRemoveVolume).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + StorageGroupResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccStorageGroupResourceNoHostIOLimit(t *testing.T) {
 	var storageGroupTerraformName = "powermax_storagegroup.tfacc_sg_no_host_io_limit"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -118,7 +174,7 @@ func TestAccStorageGroupNoHostIOLimit(t *testing.T) {
 	})
 }
 
-func TestAccStorageGroupCreateError(t *testing.T) {
+func TestAccStorageGroupResourceCreateError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -131,7 +187,7 @@ func TestAccStorageGroupCreateError(t *testing.T) {
 	})
 }
 
-func TestAccStorageGroupUpdateError(t *testing.T) {
+func TestAccStorageGroupResourceUpdateError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -149,7 +205,7 @@ func TestAccStorageGroupUpdateError(t *testing.T) {
 
 var StorageGroupResourceConfig = `
 resource "powermax_storagegroup" "test" {
-	name             = "tfacc_sg_1"
+	name             = "tfacc_sg_resource"
   	srp_id           = "SRP_1"
   	slo              = "Gold"
   	host_io_limit = {
@@ -157,23 +213,6 @@ resource "powermax_storagegroup" "test" {
     	host_io_limit_mb_sec = "1000"
     	dynamic_distribution  = "Never"
   	}
-}
-`
-
-var StorageGroupVolumeResourceConfig = `
-resource "powermax_volume" "volume_test" {
-	vol_name = "tfacc_sg_vol_1"
-	size = 2.45
-	cap_unit = "GB"
-	sg_name = "tfacc_sg_1"
-}
-`
-
-var StorageGroupVolumeDataResourceConfig = `
-data "powermax_volume" "volume_datasource_test" {
-	filter {
-		volume_identifier = "tfacc_sg_vol_1"
-	}
 }
 `
 
@@ -188,7 +227,7 @@ resource "powermax_storagegroup" "test" {
     	host_io_limit_mb_sec = "2000"
     	dynamic_distribution  = "Never"
   	}
-	volume_ids = [data.powermax_volume.volume_datasource_test.volumes.0.id]
+	volume_ids = ["005C6"]
 }
 `
 

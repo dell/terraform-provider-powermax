@@ -19,15 +19,16 @@ package provider
 
 import (
 	"fmt"
-	. "github.com/bytedance/mockey"
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/joho/godotenv"
 	"log"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
+
+	. "github.com/bytedance/mockey"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/joho/godotenv"
 )
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
@@ -88,6 +89,10 @@ func testAccPreCheck(t *testing.T) {
 	}
 
 	t.Log(ProviderConfig)
+	// Before each test clear out the mocker
+	if FunctionMocker != nil {
+		FunctionMocker.UnPatch()
+	}
 }
 
 func RandResNameSuffix(length int) string {

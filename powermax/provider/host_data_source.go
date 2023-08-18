@@ -20,7 +20,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -268,20 +267,12 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	// Get host IDs from config or query all if not specified
 	if state.HostFilter == nil || len(state.HostFilter.Names) == 0 {
 		// Read all the hosts
-		hosts := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHosts(ctx, d.client.SymmetrixID)
-		hostIDList, response, err := d.client.PmaxOpenapiClient.SLOProvisioningApi.ListHostsExecute(hosts)
+		hostIDList, _, err := helper.GetHostList(ctx, *d.client)
 
 		if err != nil {
 			errStr := ""
 			msgStr := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError("Error reading host ids", msgStr)
-			return
-		}
-		if response.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				"Unable to Read PowerMax Host List. Got http error - %s",
-				response.Status,
-			)
 			return
 		}
 		hostIds = hostIDList.HostId
@@ -295,19 +286,12 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	// iterate Host IDs and Get Host with each id
 	for _, id := range hostIds {
 		getHostReq := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, d.client.SymmetrixID, id)
-		hostResponse, response1, err := getHostReq.Execute()
+		hostResponse, _, err := getHostReq.Execute()
 		if err != nil || hostResponse == nil {
 			errStr := ""
 			msgStr := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError("Error reading host with id", msgStr)
 			continue
-		}
-		if response1.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				"Unable to Read PowerMax Host. Got http error - %s",
-				response1.Status,
-			)
-			return
 		}
 		var host models.HostModel
 		tflog.Debug(ctx, "Updating host state")

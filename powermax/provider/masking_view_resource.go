@@ -157,28 +157,7 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to create MaskingView - %s", plan.Name.ValueString()))
 
-	hostOrHostGroupSelection := *pmax.NewHostOrHostGroupSelection()
-	if isHost {
-		hostOrHostGroupSelection.UseExistingHostParam = pmax.NewUseExistingHostParam(hostOrHostGroupID)
-
-	} else {
-		hostOrHostGroupSelection.UseExistingHostGroupParam = pmax.NewUseExistingHostGroupParam(hostOrHostGroupID)
-	}
-
-	portGroupSelection := *pmax.NewPortGroupSelection()
-	portGroupSelection.UseExistingPortGroupParam = pmax.NewUseExistingPortGroupParam(plan.PortGroupID.ValueString())
-
-	storageGroupSelection := *pmax.NewStorageGroupSelection()
-	storageGroupSelection.UseExistingStorageGroupParam = pmax.NewUseExistingStorageGroupParam(plan.StorageGroupID.ValueString())
-
-	createMaskingViewParam := pmax.NewCreateMaskingViewParam(plan.Name.ValueString())
-	createMaskingViewParam.SetHostOrHostGroupSelection(hostOrHostGroupSelection)
-	createMaskingViewParam.SetPortGroupSelection(portGroupSelection)
-	createMaskingViewParam.SetStorageGroupSelection(storageGroupSelection)
-
-	maskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.CreateMaskingView(ctx, r.client.SymmetrixID)
-	maskingViewReq = maskingViewReq.CreateMaskingViewParam(*createMaskingViewParam)
-	maskingView, _, err := maskingViewReq.Execute()
+	maskingView, _, err := helper.CreateMaskingView(ctx, *r.client, plan, hostOrHostGroupID, isHost)
 
 	if err != nil {
 		errStr := ""
@@ -193,19 +172,31 @@ func (r *maskingView) Create(ctx context.Context, req resource.CreateRequest, re
 	})
 
 	tflog.Debug(ctx, fmt.Sprintf("Calling api to get MaskingView - %s", plan.Name.ValueString()))
-	getMaskingViewReq := r.client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString())
-	maskingView, _, err = getMaskingViewReq.Execute()
+	maskingView, _, err = helper.GetMaskingView(ctx, *r.client, plan.Name.ValueString())
 
 	if err != nil {
 		errStr := ""
 		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError("Error reading masking view", message)
-
+		// Attempt to clean up the errored masking view after the host/hostgroup mistake
+		_, delErr := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString()).Execute()
+		if delErr != nil {
+			errStr := ""
+			message := helper.GetErrorString(delErr, errStr)
+			tflog.Error(ctx, "Error deleting maskingview after host_group error"+message)
+		}
 		return
 	}
 
 	err = helper.CopyFields(ctx, maskingView, &plan)
 	if err != nil {
+		// Attempt to clean up the errored masking view after the host/hostgroup mistake
+		_, delErr := r.client.PmaxOpenapiClient.SLOProvisioningApi.DeleteMaskingView(ctx, r.client.SymmetrixID, plan.Name.ValueString()).Execute()
+		if delErr != nil {
+			errStr := ""
+			message := helper.GetErrorString(delErr, errStr)
+			tflog.Error(ctx, "Error deleting maskingview after host_group error"+message)
+		}
 		resp.Diagnostics.AddError("Error copying masking view fields", err.Error())
 		return
 	}

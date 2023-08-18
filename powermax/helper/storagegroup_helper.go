@@ -21,6 +21,7 @@ import (
 	"context"
 	"dell/powermax-go-client"
 	"fmt"
+	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
@@ -177,10 +178,10 @@ func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedSt
 // UpdateSgState update the state of storage group based on the current state of the storage group.
 func UpdateSgState(ctx context.Context, client *client.Client, sgID string, state *models.StorageGroupResourceModel) error {
 	// Update all fields of state
-	sgModel := client.PmaxOpenapiClient.SLOProvisioningApi.GetStorageGroup2(ctx, client.SymmetrixID, sgID)
-	storageGroup, _, err := sgModel.Execute()
+	storageGroup, _, err := client.PmaxOpenapiClient.SLOProvisioningApi.GetStorageGroup2(ctx, client.SymmetrixID, sgID).Execute()
+
 	if err != nil {
-		return err
+		return fmt.Errorf(fmt.Sprintf("StorageGroup %s is not on the powermax: ", sgID) + err.Error())
 	}
 
 	err = CopyFields(ctx, storageGroup, state)
@@ -256,4 +257,19 @@ func ConstructHostIOLimit(plan models.StorageGroupResourceModel) *pmaxTypes.SetH
 		return hostIOLimitParam
 	}
 	return nil
+}
+
+// GetStorageGroupList Get the StorageGroupList
+func GetStorageGroupList(ctx context.Context, client *client.Client) (*powermax.ListStorageGroupResult, *http.Response, error) {
+	return client.PmaxOpenapiClient.SLOProvisioningApi.ListStorageGroups(ctx, client.SymmetrixID).Execute()
+}
+
+// CreateStorageGroup create the StorageGroup
+func CreateStorageGroup(ctx context.Context, client *client.Client, plan models.StorageGroupResourceModel) (*powermax.StorageGroup, *http.Response, error) {
+	sgModel := client.PmaxOpenapiClient.SLOProvisioningApi.CreateStorageGroup(ctx, client.SymmetrixID)
+	create := powermax.NewCreateStorageGroupParam(plan.StorageGroupID.ValueString())
+	create.SetSrpId(plan.Srp.ValueString())
+	create.SetSloBasedStorageGroupParam(CreateSloParam(plan))
+	sgModel = sgModel.CreateStorageGroupParam(*create)
+	return sgModel.Execute()
 }

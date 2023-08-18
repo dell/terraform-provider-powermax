@@ -21,6 +21,7 @@ import (
 	"context"
 	"dell/powermax-go-client"
 	"fmt"
+	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
@@ -243,4 +244,41 @@ func ModifySnapshot(ctx context.Context, client client.Client, plan *models.Snap
 	}
 
 	return nil
+}
+
+// GetStorageGroupSnapshots get SG snapshots
+func GetStorageGroupSnapshots(ctx context.Context, client client.Client, sgName string) (*powermax.StorageGroupSnapshotList, *http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshots(ctx, client.SymmetrixID, sgName).Execute()
+}
+
+// GetStorageGroupSnapshotSnapIDs get SG snapshots snap ids
+func GetStorageGroupSnapshotSnapIDs(ctx context.Context, client client.Client, sgName string, snapIDName string) (*powermax.StorageGroupSnapshotSnapIDList, *http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, client.SymmetrixID, sgName, snapIDName).Execute()
+}
+
+// GetSnapshotSnapIDSG get SG snapshots snap details
+func GetSnapshotSnapIDSG(ctx context.Context, client client.Client, sgName string, snapIDName string, snapID int64) (*powermax.SnapVXSnapshotInstance, *http.Response, error) {
+	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotSnapIDSG(ctx, client.SymmetrixID, sgName, snapIDName, snapID).Execute()
+}
+
+// CreateSnapshot creates a snapshot on a particular SG
+func CreateSnapshot(ctx context.Context, client client.Client, sgName string, plan models.SnapshotResourceModel) (*powermax.SnapVXSnapshotGeneration, *http.Response, error) {
+	// Create Param Attributes
+	snapshotCreateParam := powermax.StorageGroupSnapshotCreate{}
+	if plan.Snapshot.Secure != nil && plan.Snapshot.Secure.Secure.ValueInt64() != 0 {
+		secure := int32(plan.Snapshot.Secure.Secure.ValueInt64())
+		snapshotCreateParam.Secure = &secure
+	}
+	if plan.Snapshot.TimeToLive != nil && plan.Snapshot.TimeToLive.TimeToLive.ValueInt64() != 0 {
+		ttl := int32(plan.Snapshot.TimeToLive.TimeToLive.ValueInt64())
+		snapshotCreateParam.TimeToLive = &ttl
+		snapshotCreateParam.TimeInHours = plan.Snapshot.TimeToLive.TimeInHours.ValueBoolPointer()
+	}
+	snapshotCreateParam.Bothsides = plan.Snapshot.Bothsides.ValueBoolPointer()
+	snapshotCreateParam.SnapshotName = plan.Snapshot.Name.ValueString()
+
+	createParam := client.PmaxOpenapiClient.ReplicationApi.CreateSnapshot1(ctx, client.SymmetrixID, plan.StorageGroup.Name.ValueString())
+	createParam = createParam.StorageGroupSnapshotCreate(snapshotCreateParam)
+
+	return createParam.Execute()
 }

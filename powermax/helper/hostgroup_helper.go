@@ -186,20 +186,21 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 				add = append(add, hostID)
 			}
 		}
+		if len(add) > 0 {
+			edit := &powermax.EditHostGroupActionParam{
+				AddHostParam: &powermax.AddHostParam{
+					Host: add,
+				},
+			}
 
-		edit := &powermax.EditHostGroupActionParam{
-			AddHostParam: &powermax.AddHostParam{
-				Host: add,
-			},
-		}
+			_, doReturn, err := ModifyHostGroup(ctx, client, state.ID.ValueString(), *edit)
 
-		_, doReturn, err := ModifyHostGroup(ctx, client, state.ID.ValueString(), *edit)
-
-		if doReturn {
-			updateFailedParameters = append(updateFailedParameters, "host_ids")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to Add host_ids: %s", err.Error()))
-		} else {
-			updatedParameters = append(updatedParameters, "host_ids")
+			if doReturn {
+				updateFailedParameters = append(updateFailedParameters, "host_ids")
+				errorMessages = append(errorMessages, fmt.Sprintf("Failed to Add host_ids: %s", err.Error()))
+			} else {
+				updatedParameters = append(updatedParameters, "host_ids")
+			}
 		}
 
 		// Hosts to remove
@@ -210,20 +211,21 @@ func UpdateHostGroup(ctx context.Context, client client.Client, plan, state mode
 				remove = append(remove, hostID)
 			}
 		}
+		if len(remove) > 0 {
+			editRemove := &powermax.EditHostGroupActionParam{
+				RemoveHostParam: &powermax.RemoveHostParam{
+					Host: remove,
+				},
+			}
 
-		editRemove := &powermax.EditHostGroupActionParam{
-			RemoveHostParam: &powermax.RemoveHostParam{
-				Host: remove,
-			},
-		}
+			_, doReturnRemove, errRemove := ModifyHostGroup(ctx, client, state.ID.ValueString(), *editRemove)
 
-		_, doReturnRemove, errRemove := ModifyHostGroup(ctx, client, state.ID.ValueString(), *editRemove)
-
-		if doReturnRemove {
-			updateFailedParameters = append(updateFailedParameters, "host_ids")
-			errorMessages = append(errorMessages, fmt.Sprintf("Failed to Remove host_ids: %s", errRemove.Error()))
-		} else {
-			updatedParameters = append(updatedParameters, "host_ids")
+			if doReturnRemove {
+				updateFailedParameters = append(updateFailedParameters, "host_ids")
+				errorMessages = append(errorMessages, fmt.Sprintf("Failed to Remove host_ids: %s", errRemove.Error()))
+			} else {
+				updatedParameters = append(updatedParameters, "host_ids")
+			}
 		}
 	}
 

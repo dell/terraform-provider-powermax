@@ -19,7 +19,6 @@ package provider
 
 import (
 	"context"
-	"dell/powermax-go-client"
 	"fmt"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
@@ -515,7 +514,7 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		)
 		return
 	}
-	state.Volumes, err = updateVolumeState(ctx, d.client, param)
+	state.Volumes, err = helper.UpdateVolumeState(ctx, d.client, param)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to update volume state",
@@ -530,45 +529,4 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-}
-
-// updateVolumeState iterates over the volume list and update the state.
-func updateVolumeState(ctx context.Context, p *client.Client, params powermax.ApiListVolumesRequest) (response []models.VolumeDatasourceEntity, err error) {
-	volIDs, _, err := params.Execute()
-	if err != nil {
-		errStr := ""
-		message := helper.GetErrorString(err, errStr)
-		return nil, fmt.Errorf(message)
-	}
-
-	for _, vol := range volIDs.ResultList.GetResult() {
-		for _, volumeID := range vol {
-			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeID))
-			volResponse, _, err := volumeModel.Execute()
-			if err != nil {
-				errStr := ""
-				message := helper.GetErrorString(err, errStr)
-				return nil, fmt.Errorf(message)
-
-			}
-			volState := models.VolumeDatasourceEntity{}
-			err = helper.CopyFields(ctx, volResponse, &volState)
-			volState.SymmetrixPortKey, _ = helper.GetSymmetrixPortKeyObjects(volResponse)
-			volState.StorageGroups, _ = helper.GetStorageGroupObjects(volResponse)
-			volState.RfdGroupIDList, _ = helper.GetRfdGroupIdsObjects(volResponse)
-			if id, ok := volResponse.GetVolumeIdOk(); ok {
-				volState.VolumeID = types.StringValue(*id)
-			}
-			if mobid, ok := volResponse.GetMobilityIdEnabledOk(); ok {
-				volState.MobilityIDEnabled = types.BoolValue(*mobid)
-			}
-			if err != nil {
-				return nil, err
-			}
-			volState.VolumeID = types.StringValue(volResponse.VolumeId)
-			volState.MobilityIDEnabled = types.BoolValue(*volResponse.MobilityIdEnabled)
-			response = append(response, volState)
-		}
-	}
-	return response, nil
 }

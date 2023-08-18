@@ -20,7 +20,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/constants"
 	"terraform-provider-powermax/powermax/helper"
@@ -198,7 +197,7 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	for _, hostGroupID := range hostGroupIDs {
 		tflog.Debug(ctx, hostGroupID)
 		groupDetailModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, d.client.SymmetrixID, hostGroupID)
-		groupDetail, resp1, err := groupDetailModel.Execute()
+		groupDetail, _, err := groupDetailModel.Execute()
 		if err != nil {
 			errStr := constants.ReadHostGroupListDetailsErrorMsg + "with error: "
 			message := helper.GetErrorString(err, errStr)
@@ -208,24 +207,14 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 			)
 			return
 		}
-		if resp1.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				"Unable to Read PowerMax Host Groups. Got http error:",
-				resp1.Status,
-			)
-			return
-		}
 		model, diag := helper.HostGroupDetailMapper(groupDetail)
 		if diag.HasError() {
-			resp.Diagnostics.AddError(
-				"Error Unknown Error",
-				constants.ReadHostGroupListDetailsErrorMsg+"with error: "+err.Error(),
-			)
+			resp.Diagnostics.Append(diag...)
 			return
 		}
 		state.HostGroupDetails = append(state.HostGroupDetails, model)
 	}
-	state.ID = types.StringValue("1")
+	state.ID = types.StringValue("HostGroupDatasoure")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

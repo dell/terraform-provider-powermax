@@ -20,7 +20,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
@@ -180,20 +179,11 @@ func (d *snapshotPolicyDataSource) Read(ctx context.Context, req datasource.Read
 	// Get snapshot policy IDs from config or query all if not specified
 	if state.SnapshotPolicyFilter == nil || len(state.SnapshotPolicyFilter.Names) == 0 {
 		// Read all the snapshot policies
-		snapshotPolicies := d.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicies(ctx, d.client.SymmetrixID)
-		snapshotPolicyList, response, err := snapshotPolicies.Execute()
-
+		snapshotPolicyList, _, err := helper.GetSnapshotPolicies(ctx, *d.client)
 		if err != nil {
 			errStr := ""
 			msgStr := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError("Error reading Snapshot Policy ids", msgStr)
-			return
-		}
-		if response.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				"Unable to Read PowerMax Snapshot Policy List. Got http error - %s",
-				response.Status,
-			)
 			return
 		}
 		snapshotPolicyIds = snapshotPolicyList.Name
@@ -204,29 +194,19 @@ func (d *snapshotPolicyDataSource) Read(ctx context.Context, req datasource.Read
 		}
 	}
 	for _, id := range snapshotPolicyIds {
-		getSnapshotPolicyReq := d.client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicy(ctx, d.client.SymmetrixID, id)
-		snapshotPolicyResponse, response1, err := getSnapshotPolicyReq.Execute()
+		snapshotPolicyResponse, _, err := helper.GetSnapshotPolicy(ctx, *d.client, id)
 		if err != nil || snapshotPolicyResponse == nil {
 			errStr := ""
 			msgStr := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError("Error reading snapshot policy with id", msgStr)
 			continue
 		}
-		if response1.StatusCode != http.StatusOK {
-			resp.Diagnostics.AddError(
-				"Unable to Read PowerMax snapshotPolicy. Got http error - %s",
-				response1.Status,
-			)
-			return
-		}
 		var snapshotPolicy models.SnapshotPolicyModel
 		tflog.Debug(ctx, "Updating snapshot policy state")
 		// Copy values with the same fields
 		errCpy := helper.CopyFields(ctx, snapshotPolicyResponse, &snapshotPolicy)
 		if errCpy != nil {
-			errStr := ""
-			msgStr := helper.GetErrorString(err, errStr)
-			resp.Diagnostics.AddError("Error copying Snapshot Policies", msgStr)
+			resp.Diagnostics.AddError("Error copying Snapshot Policies", errCpy.Error())
 			return
 		}
 		state.SnapshotPolicies = append(state.SnapshotPolicies, snapshotPolicy)

@@ -18,11 +18,16 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+var deleteMocker *Mocker
 
 func TestAccSnapshotPolicyResource(t *testing.T) {
 	var snapPolicyTerraformName = "powermax_snapshotpolicy.terraform_test_sp"
@@ -82,12 +87,53 @@ func TestAccSnapshotPolicyResource(t *testing.T) {
 					resource.TestCheckResourceAttr(snapPolicyTerraformName, "storage_groups.#", "0"),
 				),
 			},
+			// Modify Error Check
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.ModifySnapshotPolicy).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			// Read Policy Error Check
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.GetSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
+				ExpectError: regexp.MustCompile(`.*Error reading snapshot policy*.`),
+			},
+			// Read SG Error Check
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.GetSnapshotPolicyStorageGroups).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
+				ExpectError: regexp.MustCompile(`.*Error getting snapshot policy storage groups*.`),
+			},
+			// Read Mapping Error Check
+			{
+				PreConfig: func() {
+					if FunctionMocker != nil {
+						FunctionMocker.UnPatch()
+					}
+					FunctionMocker = Mock(helper.UpdateSnapshotPolicyResourceState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
+				ExpectError: regexp.MustCompile(`.*Error reading snapshot policy*.`),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
 }
 
-func TestSnapshotPolicyResourceError(t *testing.T) {
+func TestAccSnapshotPolicyResourceError(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -105,6 +151,65 @@ func TestSnapshotPolicyResourceError(t *testing.T) {
 	})
 }
 
+func TestAccSnapshotPolicyResourceCreateError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					deleteMocker = Mock(helper.DeleteSnapshotPolicy).Return(nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = Mock(helper.CreateSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+			// Do the delete successfully to cleanup after the test
+			{
+				PreConfig: func() {
+					if deleteMocker != nil {
+						deleteMocker.UnPatch()
+					}
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotPolicyResourceSgError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetSnapshotPolicyStorageGroups).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccSnapshotPolicyResourceMapperError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.UpdateSnapshotPolicyResourceState).Return(fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
 var SnapshotPolicyResourceConfig = `
 resource "powermax_snapshotpolicy" "terraform_test_sp" {
 	snapshot_policy_name = "terraform_test_sp"
@@ -115,6 +220,13 @@ resource "powermax_snapshotpolicy" "terraform_test_sp" {
 var SnapshotPolicyResourceUpdate = `
 resource "powermax_snapshotpolicy" "terraform_test_sp" {
 	snapshot_policy_name = "terraform_test_sp1"
+	interval = "1 Day"
+	compliance_count_critical = 29
+  }
+`
+var SnapshotPolicyResourceUpdateErr = `
+resource "powermax_snapshotpolicy" "terraform_test_sp" {
+	snapshot_policy_name = "terraform_test_sp3"
 	interval = "1 Day"
 	compliance_count_critical = 29
   }

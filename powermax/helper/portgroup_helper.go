@@ -27,6 +27,7 @@ import (
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
+	"dell/powermax-go-client"
 	pmax "dell/powermax-go-client"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -51,6 +52,47 @@ func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmax.SymmetrixPortKey {
 		return pmaxPorts
 	}
 	return nil
+}
+
+// GetPortGroupList get the list of portgroups
+func GetPortGroupList(ctx context.Context, client client.Client, pgPlan models.PortgroupsDataSourceModel) (*powermax.ListPortGroupResult, *http.Response, error) {
+	// Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
+	portGroupsParam := client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroups(ctx, client.SymmetrixID)
+	var typeStr string = ""
+	if pgPlan.PgFilter != nil {
+		if !pgPlan.PgFilter.Type.IsNull() {
+			typeStr = pgPlan.PgFilter.Type.ValueString()
+		}
+	}
+	if typeStr == "iscsi" {
+		portGroupsParam = portGroupsParam.Iscsi("true")
+	} else { //default Fiber
+		portGroupsParam = portGroupsParam.Fibre("true")
+	}
+
+	return client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroupsExecute(portGroupsParam)
+}
+
+// CreatePortGroup get the list of portgroups
+func CreatePortGroup(ctx context.Context, client client.Client, plan models.PortGroup) (*powermax.PortGroup, *http.Response, error) {
+	pmaxPorts := GetPmaxPortsFromTfsdkPG(plan)
+	// Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
+	//Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
+	portGroups := client.PmaxOpenapiClient.SLOProvisioningApi.CreatePortGroup(ctx, client.SymmetrixID) //(ctx, d.client.SymmetrixID, state.Type.ValueString())
+
+	createParam := pmax.NewCreatePortGroupParam(plan.Name.ValueString())
+	createParam.SetPortGroupProtocol(plan.Protocol.ValueString())
+	createParam.SetSymmetrixPortKey(pmaxPorts)
+
+	portGroups = portGroups.CreatePortGroupParam(*createParam)
+
+	tflog.Debug(ctx, "calling create port group on pmax client", map[string]interface{}{
+		"symmetrixID": client.SymmetrixID,
+		"name":        plan.Name.ValueString(),
+		"ports":       pmaxPorts,
+	})
+
+	return portGroups.Execute()
 }
 
 // UpdatePGState updates the state of a PortGroup.

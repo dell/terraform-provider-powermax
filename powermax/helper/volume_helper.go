@@ -22,6 +22,7 @@ import (
 	"dell/powermax-go-client"
 	"fmt"
 	"math/big"
+	"net/http"
 	"reflect"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
@@ -207,6 +208,103 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
+// GetVolume on SG
+func GetVolume(ctx context.Context, client client.Client, volID string) (*powermax.Volume, *http.Response, error) {
+	return client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, client.SymmetrixID, volID).Execute()
+}
+
+// ListVolumes on SG
+func ListVolumes(ctx context.Context, client client.Client, plan models.VolumeResource) (*powermax.Iterator, *http.Response, error) {
+	param := client.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, client.SymmetrixID)
+	param = param.StorageGroupId(plan.StorageGroupName.ValueString())
+	return param.Execute()
+}
+
+// CreateVolume on SG
+func CreateVolume(ctx context.Context, client client.Client, plan models.VolumeResource) (*powermax.StorageGroup, *http.Response, error) {
+	volumeAttributes := make([]powermax.VolumeAttribute, 0)
+	num := int64(1)
+	volumeAttributes = append(volumeAttributes, powermax.VolumeAttribute{
+		CapacityUnit: plan.CapUnit.ValueString(),
+		NumOfVols:    &num,
+		VolumeSize:   plan.Size.ValueBigFloat().String(),
+		VolumeIdentifier: &powermax.VolumeIdentifier{
+			VolumeIdentifierChoice: "identifier_name",
+			IdentifierName:         plan.VolumeIdentifier.ValueStringPointer(),
+		},
+	})
+	tflog.Info(ctx, fmt.Sprintf("Create Volume att Param: %v", volumeAttributes))
+	createNewVol := true
+	emulation := "FBA"
+	tflog.Debug(ctx, "calling create volume in storage groups on pmax client", map[string]interface{}{
+		"symmetrixID":      client.SymmetrixID,
+		"storageGroupName": plan.StorageGroupName.ValueString(),
+		"name":             plan.VolumeIdentifier.ValueString(),
+		"volumeAttributes": volumeAttributes,
+	})
+	createParam := client.PmaxOpenapiClient.SLOProvisioningApi.ModifyStorageGroup(ctx, client.SymmetrixID, plan.StorageGroupName.ValueString())
+	createParam = createParam.EditStorageGroupParam(
+		powermax.EditStorageGroupParam{
+			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
+				ExpandStorageGroupParam: &powermax.ExpandStorageGroupParam{
+					AddVolumeParam: &powermax.AddVolumeParam{
+						CreateNewVolumes: &createNewVol,
+						EnableMobilityId: plan.MobilityIDEnabled.ValueBoolPointer(),
+						VolumeAttributes: volumeAttributes,
+						Emulation:        &emulation,
+						VolumeIdentifier: &powermax.VolumeIdentifier{
+							VolumeIdentifierChoice: "identifier_name",
+							IdentifierName:         plan.VolumeIdentifier.ValueStringPointer(),
+						},
+					},
+				},
+			},
+		},
+	)
+	return createParam.Execute()
+}
+
+// UpdateVolumeState iterates over the volume list and update the state.
+func UpdateVolumeState(ctx context.Context, p *client.Client, params powermax.ApiListVolumesRequest) (response []models.VolumeDatasourceEntity, err error) {
+	volIDs, _, err := params.Execute()
+	if err != nil {
+		errStr := ""
+		message := GetErrorString(err, errStr)
+		return nil, fmt.Errorf(message)
+	}
+	for _, vol := range volIDs.ResultList.GetResult() {
+		for _, volumeID := range vol {
+			tflog.Info(ctx, fmt.Sprint(volumeID))
+			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeID))
+			volResponse, _, err := volumeModel.Execute()
+			if err != nil {
+				errStr := ""
+				message := GetErrorString(err, errStr)
+				return nil, fmt.Errorf(message)
+
+			}
+			volState := models.VolumeDatasourceEntity{}
+			err = CopyFields(ctx, volResponse, &volState)
+			volState.SymmetrixPortKey, _ = GetSymmetrixPortKeyObjects(volResponse)
+			volState.StorageGroups, _ = GetStorageGroupObjects(volResponse)
+			volState.RfdGroupIDList, _ = GetRfdGroupIdsObjects(volResponse)
+			if id, ok := volResponse.GetVolumeIdOk(); ok {
+				volState.VolumeID = types.StringValue(*id)
+			}
+			if mobid, ok := volResponse.GetMobilityIdEnabledOk(); ok {
+				volState.MobilityIDEnabled = types.BoolValue(*mobid)
+			}
+			if err != nil {
+				return nil, err
+			}
+			volState.VolumeID = types.StringValue(volResponse.VolumeId)
+			volState.MobilityIDEnabled = types.BoolValue(*volResponse.MobilityIdEnabled)
+			response = append(response, volState)
+		}
+	}
+	return response, nil
+}
+
 // GetVolumeFilterParam returns volume filter parameters.
 func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.VolumeDatasource) (powermax.ApiListVolumesRequest, error) {
 	filter := model.VolumeFilter
@@ -230,9 +328,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.EncapsulatedWwn(val)
+				param = param.EncapsulatedWwn(stringValue.ValueString())
 			}
 		case "WWN":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -240,9 +336,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.Wwn(val)
+				param = param.Wwn(stringValue.ValueString())
 			}
 		case "Symmlun":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -250,9 +344,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.Symmlun(val)
+				param = param.Symmlun(stringValue.ValueString())
 			}
 		case "Status":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -260,9 +352,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.Status(val)
+				param = param.Status(stringValue.ValueString())
 			}
 		case "PhysicalName":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -270,9 +360,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.PhysicalName(val)
+				param = param.PhysicalName(stringValue.ValueString())
 			}
 		case "VolumeIdentifier":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -280,9 +368,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.VolumeIdentifier(val)
+				param = param.VolumeIdentifier(stringValue.ValueString())
 			}
 		case "AllocatedPercent":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -290,9 +376,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.AllocatedPercent(val)
+				param = param.AllocatedPercent(stringValue.ValueString())
 			}
 		case "CapTb":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -300,9 +384,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.CapTb(val)
+				param = param.CapTb(stringValue.ValueString())
 			}
 		case "CapGb":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -310,9 +392,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.CapGb(val)
+				param = param.CapGb(stringValue.ValueString())
 			}
 		case "CapMb":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -320,9 +400,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.CapMb(val)
+				param = param.CapMb(stringValue.ValueString())
 			}
 		case "CapCYL":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -330,9 +408,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.CapCyl(val)
+				param = param.CapCyl(stringValue.ValueString())
 			}
 		case "NumOfStorageGroups":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -340,9 +416,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.NumOfStorageGroups(val)
+				param = param.NumOfStorageGroups(stringValue.ValueString())
 			}
 		case "NumOfMaskingViews":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -350,9 +424,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.NumOfMaskingViews(val)
+				param = param.NumOfMaskingViews(stringValue.ValueString())
 			}
 		case "NumOfFrontEndPaths":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -360,9 +432,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.NumOfFrontEndPaths(val)
+				param = param.NumOfFrontEndPaths(stringValue.ValueString())
 			}
 		case "VirtualVolumes":
 			stringValue, ok := v.Field(i).Interface().(types.Bool)
@@ -498,9 +568,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.Emulation(val)
+				param = param.Emulation(stringValue.ValueString())
 			}
 		case "SplitName":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -508,9 +576,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.SplitName(val)
+				param = param.SplitName(stringValue.ValueString())
 			}
 		case "CuImageNum":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -518,9 +584,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.CuImageNum(val)
+				param = param.CuImageNum(stringValue.ValueString())
 			}
 		case "CuImageSsid":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -528,9 +592,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.CuImageSsid(val)
+				param = param.CuImageSsid(stringValue.ValueString())
 			}
 		case "RdfGroupNumber":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -538,9 +600,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.RdfGroupNumber(val)
+				param = param.RdfGroupNumber(stringValue.ValueString())
 			}
 		case "HasEffectiveWwn":
 			stringValue, ok := v.Field(i).Interface().(types.Bool)
@@ -556,9 +616,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.EffectiveWwn(val)
+				param = param.EffectiveWwn(stringValue.ValueString())
 			}
 		case "Type":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -566,9 +624,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.Type_(val)
+				param = param.Type_(stringValue.ValueString())
 			}
 		case "OracleInstanceName":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -576,9 +632,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.OracleInstanceName(val)
+				param = param.OracleInstanceName(stringValue.ValueString())
 			}
 		case "MobilityIDEnabled":
 			stringValue, ok := v.Field(i).Interface().(types.Bool)
@@ -594,9 +648,7 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.UnreducibleDataGb(val)
+				param = param.UnreducibleDataGb(stringValue.ValueString())
 			}
 		case "Nguid":
 			stringValue, ok := v.Field(i).Interface().(types.String)
@@ -604,12 +656,11 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
 			}
 			if !stringValue.IsNull() {
-				val := make([]string, 0)
-				val = append(val, stringValue.ValueString())
-				param = param.Nguid(val)
+				param = param.Nguid(stringValue.ValueString())
 			}
 		}
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("Param!!!! %v", param))
 	return param, nil
 }

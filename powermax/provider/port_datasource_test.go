@@ -18,9 +18,12 @@ limitations under the License.
 package provider
 
 import (
+	"fmt"
 	"regexp"
+	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
+	. "github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -75,6 +78,38 @@ func TestAccPortDatasourceFilteredError(t *testing.T) {
 			{
 				Config:      ProviderConfig + PortDataSourceFilterError,
 				ExpectError: regexp.MustCompile(`.*invalid format for port filter*.`),
+			},
+		},
+	})
+}
+
+func TestAccPortDatasourceDetailError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.GetPort).Return(nil, nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + PortDataSourceParamsFiltered,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
+			},
+		},
+	})
+}
+
+func TestAccPortDatasourceDetailMapperError(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					FunctionMocker = Mock(helper.PortDetailMapper).Return(nil, fmt.Errorf("mock error")).Build()
+				},
+				Config:      ProviderConfig + PortDataSourceParamsFiltered,
+				ExpectError: regexp.MustCompile(`.*mock error*.`),
 			},
 		},
 	})
