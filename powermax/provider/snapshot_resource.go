@@ -645,7 +645,7 @@ func (r *snapshotResource) ImportState(ctx context.Context, req resource.ImportS
 	snapIDParam := r.client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, r.client.SymmetrixID, sgName, snapshotName)
 	val, _, err := snapIDParam.Execute()
 	if err != nil {
-		errStr := constants.ReadSnapshots + "with error: "
+		errStr := constants.ReadSnapshots + " with error: "
 		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error importing snapshot",

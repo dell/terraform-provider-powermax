@@ -346,40 +346,50 @@ func (r volumeResource) Create(ctx context.Context, request resource.CreateReque
 			fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
 		return
 	}
-	volID := ""
+
+	var vol *powermax.Volume
 	for _, v := range volumeIDListInStorageGroup.ResultList.Result {
 		for _, v2 := range v {
-			volID = fmt.Sprint(v2)
+			// Now that we have created. We need to get the ID to get the specific volume info
+			// Loop through each volumeId in the storage group and compare to the volumeIdentifier to make sure we have the correct volume id
+			id := fmt.Sprint(v2)
+			volTemp, _, err := helper.GetVolume(ctx, *r.client, id)
+
+			// If there is an error keep continuing to make sure we are able to check all of the volumes
+			// Fail if the `vol` variable is still null at the end
+			if err != nil {
+				errStr := ""
+				message := helper.GetErrorString(err, errStr)
+				tflog.Debug(ctx, fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
+				continue
+			}
+
+			// Filter is needed here incase there are muitlple volumes in the storage group
+			if volTemp != nil && *volTemp.VolumeIdentifier == plan.VolumeIdentifier.ValueString() {
+				vol = volTemp
+				break
+			}
 		}
 	}
-	if volID == "" {
-		response.Diagnostics.AddError("Error creating volume",
-			fmt.Sprintf("Could not find find volume id for %s after creating", plan.VolumeIdentifier.ValueString()),
-		)
-		return
-	}
-	// Now that we have the ID get the specific volume info
-	vol, _, err := helper.GetVolume(ctx, *r.client, volID)
 
-	if err != nil {
-		errStr := ""
-		message := helper.GetErrorString(err, errStr)
+	if vol == nil {
 		response.Diagnostics.AddError("Error creating volume",
-			fmt.Sprintf("Could not find volume %s after creating with error: %s", plan.VolumeIdentifier.ValueString(), message))
+			fmt.Sprintf("Could not find volume %s after attempting to create", plan.VolumeIdentifier.ValueString()))
 		return
 	}
+
 	tflog.Debug(ctx, "updating create volume state", map[string]interface{}{
 		"volResponse": volResponse,
 		"vol":         vol,
 		"plan":        plan,
 		"volState":    volState,
-		"volId":       volID,
+		"volId":       vol.VolumeId,
 	})
 	err = helper.UpdateVolResourceState(ctx, &volState, vol, &plan)
 	if err != nil {
 		response.Diagnostics.AddError(
 			"Error creating volume",
-			fmt.Sprintf("Could not upda volume state %s with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
+			fmt.Sprintf("Could not update volume state %s with error: %s", plan.VolumeIdentifier.ValueString(), err.Error()),
 		)
 		return
 	}

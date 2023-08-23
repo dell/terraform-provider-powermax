@@ -94,7 +94,7 @@ func TestAccVolumeResourceReadError(t *testing.T) {
 					FunctionMocker = Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeUpdateNameSizeMobility,
-				ExpectError: regexp.MustCompile(`.*mock error*.`),
+				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
 			},
 			{
 				PreConfig: func() {
@@ -104,7 +104,7 @@ func TestAccVolumeResourceReadError(t *testing.T) {
 					FunctionMocker = Mock(helper.UpdateVolResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
-				ExpectError: regexp.MustCompile(`.*mock error*.`),
+				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
 			},
 		},
 	})
@@ -219,7 +219,7 @@ func TestAccVolumeResourceVolumeDetailstError(t *testing.T) {
 					FunctionMocker = Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
-				ExpectError: regexp.MustCompile(`.*mock error*.`),
+				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
 			},
 		},
 	})
@@ -282,7 +282,7 @@ resource "powermax_volume" "volume_test" {
 
 var VolumeConfigWithCYL = fmt.Sprintf(`
 resource "powermax_volume" "volume_test" {
-	vol_name = "%s"
+	vol_name = "%s-modify"
 	size = 1
 	cap_unit = "CYL"
 	sg_name = "%s"

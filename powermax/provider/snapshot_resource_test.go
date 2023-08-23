@@ -244,7 +244,7 @@ func TestAccSnapshotResourceImportError(t *testing.T) {
 				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
 				ResourceName:  "powermax_snapshot.test",
 				ImportState:   true,
-				ExpectError:   regexp.MustCompile(`.*Error importing snapshot*`),
+				ExpectError:   regexp.MustCompile(`.*Error importing snapshot*.`),
 				ImportStateId: "badsnapshot",
 			},
 			{
@@ -254,7 +254,7 @@ func TestAccSnapshotResourceImportError(t *testing.T) {
 				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
 				ResourceName:  "powermax_snapshot.test",
 				ImportState:   true,
-				ExpectError:   regexp.MustCompile(`.*mock error*`),
+				ExpectError:   regexp.MustCompile(`.*Error importing snapshot*.`),
 				ImportStateId: "sg.snap",
 			},
 			{
@@ -267,7 +267,7 @@ func TestAccSnapshotResourceImportError(t *testing.T) {
 				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
 				ResourceName:  "powermax_snapshot.test",
 				ImportState:   true,
-				ExpectError:   regexp.MustCompile(`.*mock error*`),
+				ExpectError:   regexp.MustCompile(`.*Error importing snapshot*.`),
 				ImportStateId: "sg.snap",
 			},
 		},
