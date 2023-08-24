@@ -213,6 +213,14 @@ func (r *SnapshotPolicy) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	if !planSnapPolicy.StorageGroups.IsNull() && len(planSnapPolicy.StorageGroups.Elements()) > 0 {
+		resp.Diagnostics.AddError(
+			"Unable to create snapshot policy",
+			"Create snapshot policy does not support adding storage groups, only after the policy is created can you add storage groups",
+		)
+		return
+	}
+
 	snapPolicyCreateResp, _, err := helper.CreateSnapshotPolicy(ctx, *r.client, planSnapPolicy)
 	if err != nil {
 		snapPolicyID := planSnapPolicy.SnapshotPolicyName.ValueString()
