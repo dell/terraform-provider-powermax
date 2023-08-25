@@ -19,6 +19,7 @@ package provider
 
 import (
 	"context"
+	pmax "dell/powermax-go-client"
 	"fmt"
 	"regexp"
 	"terraform-provider-powermax/client"
@@ -173,8 +174,8 @@ func (r *SnapshotPolicy) Schema(ctx context.Context, req resource.SchemaRequest,
 				ElementType:         types.StringType,
 				Optional:            true,
 				Computed:            true,
-				Description:         "The storage groups associated with the snapshot policy.This field cannot be set during create and is only valid for Edit/Update.",
-				MarkdownDescription: "The storage groups associated with the snapshot policy..This field cannot be set during create and is only valid for Edit/Update.",
+				Description:         "The storage groups associated with the snapshot policy.This field cannot be set during create and is only valid for Edit/Update.If user wants to delete the snapshot policy all associated storage groups will also be unlinked from the Snapshot Policy.",
+				MarkdownDescription: "The storage groups associated with the snapshot policy..This field cannot be set during create and is only valid for Edit/Update.If user wants to delete the snapshot policy all associated storage groups will also be unlinked from the Snapshot Policy.",
 				Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
 			},
 		},
@@ -305,6 +306,31 @@ func (r *SnapshotPolicy) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 	snapPolicyID := snapPolicyState.SnapshotPolicyName.ValueString()
+
+	// Remove any associated storage groups from snapshot policy before deleting the snapshot policy
+	if !snapPolicyState.StorageGroups.IsNull() && len(snapPolicyState.StorageGroups.Elements()) > 0 {
+		remSGs := make([]string, 0, len(snapPolicyState.StorageGroups.Elements()))
+		for _, sg := range snapPolicyState.StorageGroups.Elements() {
+			remSGs = append(remSGs, sg.String()[1:len(sg.String())-1])
+		}
+		removeSnapshotPolicyParam := pmax.NewSnapshotPolicyStorageGroupAddRemove()
+		removeSnapshotPolicyParam.SetStorageGroupName(remSGs)
+		snapshotPolicyUpdate := pmax.SnapshotPolicyUpdate{
+			Action:                       "DisassociateFromStorageGroups",
+			DisassociateFromStorageGroup: removeSnapshotPolicyParam,
+		}
+
+		updateReq := r.client.PmaxOpenapiClient.ReplicationApi.UpdateSnapshotPolicy(ctx, r.client.SymmetrixID, snapPolicyID)
+		updateReq = updateReq.SnapshotPolicyUpdate(snapshotPolicyUpdate)
+		_, _, err := updateReq.Execute()
+
+		if err != nil {
+			errStr := constants.DeleteSnapPolicyDetailErrorMsg + snapPolicyID + "with error: "
+			message := helper.GetErrorString(err, errStr)
+			resp.Diagnostics.AddError("Could not remove associated storage groups from Snapshot Policy", message)
+			return
+		}
+	}
 	tflog.Debug(ctx, "deleting snapshot policy by snapPolicyId", map[string]interface{}{
 		"symmetrixID":  r.client.SymmetrixID,
 		"snapPolicyID": snapPolicyID,
