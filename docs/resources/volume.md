@@ -60,7 +60,7 @@ resource "powermax_volume" "test" {
 ### Required
 
 - `size` (Number) The size of the volume.
-- `vol_name` (String) The name of the volume.
+- `vol_name` (String) The name of the volume. Only alphanumeric characters, underscores ( _ )
 
 ### Optional
 

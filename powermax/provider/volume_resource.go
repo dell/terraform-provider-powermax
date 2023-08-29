@@ -21,6 +21,7 @@ import (
 	"context"
 	"dell/powermax-go-client"
 	"fmt"
+	"regexp"
 	"strings"
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/helper"
@@ -72,11 +73,16 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:            true,
 			},
 			"vol_name": schema.StringAttribute{
-				Description:         "The name of the volume.",
-				MarkdownDescription: "The name of the volume.",
+				Description:         "The name of the volume. Only alphanumeric characters, underscores ( _ )",
+				MarkdownDescription: "The name of the volume. Only alphanumeric characters, underscores ( _ )",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(64),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[a-zA-Z0-9_-]*$`),
+						"must contain only alphanumeric characters and _-",
+					),
 				},
 			},
 			"sg_name": schema.StringAttribute{

@@ -310,357 +310,361 @@ func GetVolumeFilterParam(ctx context.Context, p *client.Client, model models.Vo
 	filter := model.VolumeFilter
 	param := p.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, p.SymmetrixID)
 
-	v := reflect.ValueOf(filter).Elem()
-	for i := 0; i < v.NumField(); i++ {
-		key := v.Type().Field(i).Name
-		switch key {
-		case "StorageGroupID":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.StorageGroupId(stringValue.ValueString())
-			}
-		case "EncapsulatedWwn":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.EncapsulatedWwn(stringValue.ValueString())
-			}
-		case "WWN":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Wwn(stringValue.ValueString())
-			}
-		case "Symmlun":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Symmlun(stringValue.ValueString())
-			}
-		case "Status":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Status(stringValue.ValueString())
-			}
-		case "PhysicalName":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.PhysicalName(stringValue.ValueString())
-			}
-		case "VolumeIdentifier":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.VolumeIdentifier(stringValue.ValueString())
-			}
-		case "AllocatedPercent":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.AllocatedPercent(stringValue.ValueString())
-			}
-		case "CapTb":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.CapTb(stringValue.ValueString())
-			}
-		case "CapGb":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.CapGb(stringValue.ValueString())
-			}
-		case "CapMb":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.CapMb(stringValue.ValueString())
-			}
-		case "CapCYL":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.CapCyl(stringValue.ValueString())
-			}
-		case "NumOfStorageGroups":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.NumOfStorageGroups(stringValue.ValueString())
-			}
-		case "NumOfMaskingViews":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.NumOfMaskingViews(stringValue.ValueString())
-			}
-		case "NumOfFrontEndPaths":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.NumOfFrontEndPaths(stringValue.ValueString())
-			}
-		case "VirtualVolumes":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.VirtualVolumes(stringValue.String())
-			}
-		case "PrivateVolumes":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.PrivateVolumes(stringValue.String())
-			}
-		case "AvailableThinVolumes":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.AvailableThinVolumes(stringValue.String())
-			}
-		case "Tdev":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Tdev(stringValue.String())
-			}
-		case "ThinBcv":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.ThinBcv(stringValue.String())
-			}
-		case "Vdev":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Vdev(stringValue.String())
-			}
-		case "Gatekeeper":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Gatekeeper(stringValue.String())
-			}
-		case "DataVolume":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.DataVolume(stringValue.String())
-			}
-		case "Dld":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Dld(stringValue.String())
-			}
-		case "Drv":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Drv(stringValue.String())
-			}
-		case "Mapped":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Mapped(stringValue.String())
-			}
-		case "BoundTdev":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.BoundTdev(stringValue.String())
-			}
-		case "Reserved":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Reserved(stringValue.String())
-			}
-		case "Pinned":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Pinned(stringValue.String())
-			}
-		case "Encapsulated":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Encapsulated(stringValue.String())
-			}
-		case "Associated":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Associated(stringValue.String())
-			}
-		case "Emulation":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Emulation(stringValue.ValueString())
-			}
-		case "SplitName":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.SplitName(stringValue.ValueString())
-			}
-		case "CuImageNum":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.CuImageNum(stringValue.ValueString())
-			}
-		case "CuImageSsid":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.CuImageSsid(stringValue.ValueString())
-			}
-		case "RdfGroupNumber":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.RdfGroupNumber(stringValue.ValueString())
-			}
-		case "HasEffectiveWwn":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.HasEffectiveWwn(stringValue.String())
-			}
-		case "EffectiveWwn":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.EffectiveWwn(stringValue.ValueString())
-			}
-		case "Type":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Type_(stringValue.ValueString())
-			}
-		case "OracleInstanceName":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.OracleInstanceName(stringValue.ValueString())
-			}
-		case "MobilityIDEnabled":
-			stringValue, ok := v.Field(i).Interface().(types.Bool)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.MobilityIdEnabled(stringValue.String())
-			}
-		case "UnreducibleDataGb":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.UnreducibleDataGb(stringValue.ValueString())
-			}
-		case "Nguid":
-			stringValue, ok := v.Field(i).Interface().(types.String)
-			if !ok {
-				return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
-			}
-			if !stringValue.IsNull() {
-				param = param.Nguid(stringValue.ValueString())
+	if filter != nil {
+
+		v := reflect.ValueOf(filter).Elem()
+		for i := 0; i < v.NumField(); i++ {
+			key := v.Type().Field(i).Name
+			switch key {
+			case "StorageGroupID":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.StorageGroupId(stringValue.ValueString())
+				}
+			case "EncapsulatedWwn":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.EncapsulatedWwn(stringValue.ValueString())
+				}
+			case "WWN":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Wwn(stringValue.ValueString())
+				}
+			case "Symmlun":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Symmlun(stringValue.ValueString())
+				}
+			case "Status":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Status(stringValue.ValueString())
+				}
+			case "PhysicalName":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.PhysicalName(stringValue.ValueString())
+				}
+			case "VolumeIdentifier":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.VolumeIdentifier(stringValue.ValueString())
+				}
+			case "AllocatedPercent":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.AllocatedPercent(stringValue.ValueString())
+				}
+			case "CapTb":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.CapTb(stringValue.ValueString())
+				}
+			case "CapGb":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.CapGb(stringValue.ValueString())
+				}
+			case "CapMb":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.CapMb(stringValue.ValueString())
+				}
+			case "CapCYL":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.CapCyl(stringValue.ValueString())
+				}
+			case "NumOfStorageGroups":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.NumOfStorageGroups(stringValue.ValueString())
+				}
+			case "NumOfMaskingViews":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.NumOfMaskingViews(stringValue.ValueString())
+				}
+			case "NumOfFrontEndPaths":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.NumOfFrontEndPaths(stringValue.ValueString())
+				}
+			case "VirtualVolumes":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.VirtualVolumes(stringValue.String())
+				}
+			case "PrivateVolumes":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.PrivateVolumes(stringValue.String())
+				}
+			case "AvailableThinVolumes":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.AvailableThinVolumes(stringValue.String())
+				}
+			case "Tdev":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Tdev(stringValue.String())
+				}
+			case "ThinBcv":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.ThinBcv(stringValue.String())
+				}
+			case "Vdev":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Vdev(stringValue.String())
+				}
+			case "Gatekeeper":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Gatekeeper(stringValue.String())
+				}
+			case "DataVolume":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.DataVolume(stringValue.String())
+				}
+			case "Dld":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Dld(stringValue.String())
+				}
+			case "Drv":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Drv(stringValue.String())
+				}
+			case "Mapped":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Mapped(stringValue.String())
+				}
+			case "BoundTdev":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.BoundTdev(stringValue.String())
+				}
+			case "Reserved":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Reserved(stringValue.String())
+				}
+			case "Pinned":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Pinned(stringValue.String())
+				}
+			case "Encapsulated":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Encapsulated(stringValue.String())
+				}
+			case "Associated":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Associated(stringValue.String())
+				}
+			case "Emulation":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Emulation(stringValue.ValueString())
+				}
+			case "SplitName":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.SplitName(stringValue.ValueString())
+				}
+			case "CuImageNum":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.CuImageNum(stringValue.ValueString())
+				}
+			case "Ssid":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.CuImageSsid(stringValue.ValueString())
+				}
+			case "RdfGroupNumber":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.RdfGroupNumber(stringValue.ValueString())
+				}
+			case "HasEffectiveWwn":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.HasEffectiveWwn(stringValue.String())
+				}
+			case "EffectiveWwn":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.EffectiveWwn(stringValue.ValueString())
+				}
+			case "Type":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Type_(stringValue.ValueString())
+				}
+			case "OracleInstanceName":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.OracleInstanceName(stringValue.ValueString())
+				}
+			case "MobilityIDEnabled":
+				stringValue, ok := v.Field(i).Interface().(types.Bool)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.MobilityIdEnabled(stringValue.String())
+				}
+			case "UnreducibleDataGb":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.UnreducibleDataGb(stringValue.ValueString())
+				}
+			case "Nguid":
+				stringValue, ok := v.Field(i).Interface().(types.String)
+				if !ok {
+					return param, fmt.Errorf("failed to type assertion on field %s", v.Type().Field(i).Name)
+				}
+				if !stringValue.IsNull() {
+					param = param.Nguid(stringValue.ValueString())
+				}
 			}
 		}
-	}
 
+	}
 	tflog.Info(ctx, fmt.Sprintf("Param!!!! %v", param))
 	return param, nil
+
 }

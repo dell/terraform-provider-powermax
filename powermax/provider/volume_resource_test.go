@@ -152,7 +152,12 @@ func TestAccVolumeResource_Error_Updating(t *testing.T) {
 			// Invalid name
 			{
 				Config:      ProviderConfig + VolumeConfigInvalidName,
-				ExpectError: regexp.MustCompile("Failed to rename volume"),
+				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+			},
+			// Normal Config
+			{
+				Config:      ProviderConfig + VolumeConfigWithCYL,
+				ExpectError: nil,
 			},
 		},
 	})
