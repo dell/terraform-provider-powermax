@@ -49,7 +49,8 @@ resource "powermax_snapshotpolicy" "terraform_sp" {
 
   interval = "2 Hours"
 
-  // should only be set for modify/edit operation , not supported during create
+  // should only be set for modify/edit operation , not supported during create. 
+  // Also the destroy/delete will also unlink any associted storage groups from Snapshot Policy before deleting the snapshot policy.
   # storage_groups =  ["tfacc_sp_sg1", "tfacc_sp_sg2"]
 
   // Default values defined for some of the optional Fields
@@ -82,7 +83,7 @@ resource "powermax_snapshotpolicy" "terraform_sp" {
 - `retention_days` (Number) The number of days that snapshots will be retained in the cloud for. Only applies to cloud policies
 - `secure` (Boolean) Set if the snapshot policy creates secure snapshots
 - `snapshot_count` (Number) Number of snapshots that will be taken before the oldest ones are no longer required
-- `storage_groups` (Set of String) The storage groups associated with the snapshot policy..This field cannot be set during create and is only valid for Edit/Update.
+- `storage_groups` (Set of String) The storage groups associated with the snapshot policy..This field cannot be set during create and is only valid for Edit/Update.If user wants to delete the snapshot policy all associated storage groups will also be unlinked from the Snapshot Policy.
 - `suspended` (Boolean) Set if the snapshot policy has been suspended
 
 ### Read-Only
