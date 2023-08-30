@@ -288,7 +288,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	list, _, err := helper.GetStorageGroupSnapshots(ctx, *d.client, plan.StorageGroup.Name.ValueString())
 	if err != nil {
-		errStr := constants.ReadSnapshots + "with error: "
+		errStr := constants.ReadSnapshots + " with error: "
 		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error getting the list of snapshots",
@@ -301,7 +301,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 	for _, sngc := range list.SnapshotNamesAndCounts {
 		val, _, err := helper.GetStorageGroupSnapshotSnapIDs(ctx, *d.client, plan.StorageGroup.Name.ValueString(), *sngc.Name)
 		if err != nil {
-			errStr := constants.ReadSnapshots + "with error: "
+			errStr := constants.ReadSnapshots + " with error: "
 			message := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError(
 				"Error getting the list of snapshots Ids",
@@ -313,7 +313,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			var detail models.SnapshotDetailModal
 			snapDetail, _, err := helper.GetSnapshotSnapIDSG(ctx, *d.client, plan.StorageGroup.Name.ValueString(), *sngc.Name, id)
 			if err != nil {
-				errStr := constants.ReadSnapshots + "with error: "
+				errStr := constants.ReadSnapshots + " with error: "
 				message := helper.GetErrorString(err, errStr)
 				resp.Diagnostics.AddError(
 					"Error getting the list of snapshots snapIds",
@@ -323,7 +323,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			}
 			errState := helper.UpdateSnapshotDatasourceState(ctx, snapDetail, &detail)
 			if errState != nil {
-				errStr := constants.ReadSnapshots + "with error: "
+				errStr := constants.ReadSnapshots + " with error: "
 				message := helper.GetErrorString(errState, errStr)
 				resp.Diagnostics.AddError(
 					"Error getting the list of snapshots details",

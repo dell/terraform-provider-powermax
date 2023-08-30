@@ -212,7 +212,7 @@ func TestAccSnapshotResourceSnapshotsSnapDetailsError(t *testing.T) {
 					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceConfig,
-				ExpectError: regexp.MustCompile(`.*mock error*.`),
+				ExpectError: regexp.MustCompile(`.*Error creating snapshot*.`),
 			},
 		},
 	})
