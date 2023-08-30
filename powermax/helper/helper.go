@@ -191,7 +191,7 @@ func GetErrorString(err error, errStr string) string {
 		errStr = errStr + message
 	}
 	if message == "" {
-		msgStr = errStr + err.Error()
+		msgStr = errStr + " " + err.Error()
 	}
 	return msgStr
 }
