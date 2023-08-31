@@ -75,12 +75,6 @@ resource "powermax_snapshot" "snapshot_1" {
     #   copy = false
     # }
     # Optional
-    # set_mode = {
-    #   enable = true
-    #   target_storage_group = "test_target_sg"
-    #   copy = false
-    # }
-    # Optional
     # restore = {
     #   enable = true
     #   remote = false
@@ -153,7 +147,6 @@ Optional:
 - `remote` (Boolean) remote defaults to false. If true, The target storage group will not have compression turned on when the SRP is compression capable.
 - `restore` (Attributes) (see [below for nested schema](#nestedatt--snapshot_actions--restore))
 - `secure` (Attributes) (see [below for nested schema](#nestedatt--snapshot_actions--secure))
-- `set_mode` (Attributes) (see [below for nested schema](#nestedatt--snapshot_actions--set_mode))
 - `time_to_live` (Attributes) (see [below for nested schema](#nestedatt--snapshot_actions--time_to_live))
 
 <a id="nestedatt--snapshot_actions--link"></a>
@@ -185,16 +178,6 @@ Optional:
 - `enable` (Boolean) enable defaults to false. Flag to enable link on the snapshot
 - `secure` (Number) secure defaults to 1 day. The time that the snapshot generation is to be secure for.
 - `time_in_hours` (Boolean) time_in_hours or Days defaults to Days. False is days, true is hours.
-
-
-<a id="nestedatt--snapshot_actions--set_mode"></a>
-### Nested Schema for `snapshot_actions.set_mode`
-
-Optional:
-
-- `copy` (Boolean) copy defaults to false. If true Sets the link copy mode to perform background copy to the target volume(s).
-- `enable` (Boolean) enable defaults to false. Flag to enable link on the snapshot
-- `target_storage_group` (String) The target storage group to link
 
 
 <a id="nestedatt--snapshot_actions--time_to_live"></a>

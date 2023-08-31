@@ -43,12 +43,6 @@ resource "powermax_snapshot" "snapshot_1" {
     #   copy = false
     # }
     # Optional
-    # set_mode = {
-    #   enable = true
-    #   target_storage_group = "test_target_sg"
-    #   copy = false
-    # }
-    # Optional
     # restore = {
     #   enable = true
     #   remote = false

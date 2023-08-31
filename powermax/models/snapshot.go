@@ -77,7 +77,6 @@ type SnapshotResourceFields struct {
 	Name       types.String         `tfsdk:"name"`
 	Restore    *restoreActionFields `tfsdk:"restore"`
 	Link       *linkActionFields    `tfsdk:"link"`
-	SetMode    *setModeActionFields `tfsdk:"set_mode"`
 	TimeToLive *ttlActionFields     `tfsdk:"time_to_live"`
 	Secure     *secureActionFields  `tfsdk:"secure"`
 	Remote     types.Bool           `tfsdk:"remote"`
@@ -94,12 +93,6 @@ type linkActionFields struct {
 	TargetStorageGroup types.String `tfsdk:"target_storage_group"`
 	NoCompression      types.Bool   `tfsdk:"no_compression"`
 	Remote             types.Bool   `tfsdk:"remote"`
-	Copy               types.Bool   `tfsdk:"copy"`
-}
-
-type setModeActionFields struct {
-	Enable             types.Bool   `tfsdk:"enable"`
-	TargetStorageGroup types.String `tfsdk:"target_storage_group"`
 	Copy               types.Bool   `tfsdk:"copy"`
 }
 

@@ -320,31 +320,6 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 							},
 						},
 					},
-					"set_mode": schema.SingleNestedAttribute{
-						Optional: true,
-						Attributes: map[string]schema.Attribute{
-							"target_storage_group": schema.StringAttribute{
-								Description:         "The target storage group to link",
-								MarkdownDescription: "The target storage group to link",
-								Computed:            true,
-								Optional:            true,
-							},
-							"enable": schema.BoolAttribute{
-								Description:         "enable defaults to false. Flag to enable link on the snapshot",
-								MarkdownDescription: "enable defaults to false. Flag to enable link on the snapshot",
-								Optional:            true,
-								Computed:            true,
-								Default:             booldefault.StaticBool(false),
-							},
-							"copy": schema.BoolAttribute{
-								Description:         "copy defaults to false. If true Sets the link copy mode to perform background copy to the target volume(s).",
-								MarkdownDescription: "copy defaults to false. If true Sets the link copy mode to perform background copy to the target volume(s).",
-								Optional:            true,
-								Computed:            true,
-								Default:             booldefault.StaticBool(false),
-							},
-						},
-					},
 					"time_to_live": schema.SingleNestedAttribute{
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
