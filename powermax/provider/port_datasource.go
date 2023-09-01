@@ -435,7 +435,7 @@ func (d *portDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 	portIds, err := helper.FilterPortIds(ctx, &state, &plan, *d.client)
 	if err != nil {
-		errStr := constants.ReadPortDetailErrorMsg + "with error: "
+		errStr := constants.ReadPortDetailErrorMsg + "with error:"
 		message := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
 			"Error getting the list of ports",

@@ -150,7 +150,7 @@ func ModifySnapshot(ctx context.Context, client client.Client, plan *models.Snap
 
 		switch v {
 		case ActionSnapshotRestore:
-			if plan.Snapshot.Restore != nil && (plan.Snapshot.Restore.Enable.ValueBool() != state.Snapshot.Restore.Enable.ValueBool()) {
+			if plan.Snapshot.Restore != nil && (state.Snapshot.Restore == nil || plan.Snapshot.Restore.Enable.ValueBool() != state.Snapshot.Restore.Enable.ValueBool()) {
 				modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
 					Action: ActionSnapshotRestore,
 					Restore: &powermax.SnapVxRestoreOptions{
@@ -163,7 +163,7 @@ func ModifySnapshot(ctx context.Context, client client.Client, plan *models.Snap
 				}
 			}
 		case ActionSnapshotLink:
-			if plan.Snapshot.Link != nil && (plan.Snapshot.Link.Enable.ValueBool() != state.Snapshot.Link.Enable.ValueBool()) {
+			if plan.Snapshot.Link != nil && (state.Snapshot.Link == nil || plan.Snapshot.Link.Enable.ValueBool() != state.Snapshot.Link.Enable.ValueBool()) {
 				if plan.Snapshot.Link.Enable.ValueBool() {
 					modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
 						Action: ActionSnapshotLink,
