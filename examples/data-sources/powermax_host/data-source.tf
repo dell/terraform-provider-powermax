@@ -15,12 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+# This terraform DataSource is used to query the existing host from PowerMax array.
+# The information fetched from this data source can be used for getting the details / for further processing in resource block.
+
+
+# Returns all of the PowerMax hosts and their details
 data "powermax_host" "HostDsAll" {
 }
 
+output "hostDsResultAll" {
+  value = data.powermax_host.HostDsAll
+}
+
+# Returns a subset of the PowerMax hosts based on the names provided in the `names` filter block and their details
 data "powermax_host" "HostDsFiltered" {
   filter {
-    # Optional list of IDs to filter
+    # Optional list of names to filter upon
     names = [
       "Host124",
       "Host173",
@@ -28,10 +38,9 @@ data "powermax_host" "HostDsFiltered" {
   }
 }
 
-output "hostDsResultAll" {
-  value = data.powermax_host.HostDsAll
-}
-
 output "hostDsResult" {
   value = data.powermax_host.HostDsFiltered
 }
+
+# After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
+# Also, we can use the fetched information by the variable data.powermax_host.example

@@ -118,7 +118,7 @@ func TestAccVolumeResource_Invalid_Config(t *testing.T) {
 			// Config with no SG
 			{
 				Config:      ProviderConfig + VolumeConfigNoSG,
-				ExpectError: regexp.MustCompile("Error creating volume"),
+				ExpectError: regexp.MustCompile("Missing required argument"),
 			},
 			// Config with invalid unit
 			{

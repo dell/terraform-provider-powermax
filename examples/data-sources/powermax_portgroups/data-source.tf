@@ -15,6 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+# This terraform DataSource is used to query the existing port group from PowerMax array.
+# The information fetched from this data source can be used for getting the details / for further processing in resource block.
+
 # List fibre portgroups.
 data "powermax_portgroups" "fibreportgroups" {
   # Optional filter to list specified Portgroups names and/or type
@@ -47,3 +50,5 @@ data "powermax_portgroups" "allportgroups" {
   #}
 }
 
+# After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
+# Also, we can use the fetched information by the variable data.powermax_portgroups.example

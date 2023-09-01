@@ -63,8 +63,8 @@ func (r volumeResource) Metadata(ctx context.Context, req resource.MetadataReque
 func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing Volumes in PowerMax array. Updates are supported for the following parameters: 'vol_name', 'mobility_id_enabled', 'size', 'cap_unit'",
-		Description:         "Resource for managing Volumes in PowerMax array. Updates are supported for the following parameters: 'vol_name', 'mobility_id_enabled', 'size', 'cap_unit'",
+		MarkdownDescription: "Resource for managing Volumes in PowerMax array. Supported Update (vol_name, mobility_id_enabled, size, cap_unit). PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
+		Description:         "Resource for managing Volumes in PowerMax array. Supported Update (vol_name, mobility_id_enabled, size, cap_unit). PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -73,8 +73,8 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:            true,
 			},
 			"vol_name": schema.StringAttribute{
-				Description:         "The name of the volume. Only alphanumeric characters, underscores ( _ )",
-				MarkdownDescription: "The name of the volume. Only alphanumeric characters, underscores ( _ )",
+				Description:         "The name of the volume. Only alphanumeric characters, underscores ( _ ). (Update Supported)",
+				MarkdownDescription: "The name of the volume. Only alphanumeric characters, underscores ( _ ). (Update Supported)",
 				Required:            true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -88,17 +88,16 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"sg_name": schema.StringAttribute{
 				Description:         "The name of the storage group. sg_name is required while creating the volume.",
 				MarkdownDescription: "The name of the storage group. sg_name is required while creating the volume.",
-				Computed:            true,
-				Optional:            true,
+				Required:            true,
 			},
 			"size": schema.NumberAttribute{
-				Description:         "The size of the volume.",
-				MarkdownDescription: "The size of the volume.",
+				Description:         "The size of the volume. (Update Supported)",
+				MarkdownDescription: "The size of the volume. (Update Supported)",
 				Required:            true,
 			},
 			"cap_unit": schema.StringAttribute{
-				Description:         "The Capacity Unit corresponding to the size.",
-				MarkdownDescription: "The Capacity Unit corresponding to the size.",
+				Description:         "The Capacity Unit corresponding to the size. (Update Supported)",
+				MarkdownDescription: "The Capacity Unit corresponding to the size. (Update Supported)",
 				Computed:            true,
 				Optional:            true,
 				Default:             stringdefault.StaticString(helper.CapacityUnitGb),
@@ -216,8 +215,8 @@ func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"mobility_id_enabled": schema.BoolAttribute{
 				Computed:            true,
 				Optional:            true,
-				Description:         "States whether mobility ID is enabled on the volume.",
-				MarkdownDescription: "States whether mobility ID is enabled on the volume.",
+				Description:         "States whether mobility ID is enabled on the volume. (Update Supported)",
+				MarkdownDescription: "States whether mobility ID is enabled on the volume. (Update Supported)",
 			},
 			"unreducible_data_gb": schema.NumberAttribute{
 				Computed:            true,

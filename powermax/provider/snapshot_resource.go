@@ -60,8 +60,8 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing Snapshots in PowerMax array. Updates are supported for the following parameters: rename, restore, link, unlink, secure, time_to_live ",
-		Description:         "Resource for managing Snapshots in PowerMax array. Updates are supported for the following parameters: rename, restore, link, unlink, secure, time_to_live",
+		MarkdownDescription: "Resource for managing Snapshots in PowerMax array. Supported Update (name, secure, time_to_live, link, restore). PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data. ",
+		Description:         "Resource for managing Snapshots in PowerMax array. Supported Update (name, secure, time_to_live, link, restore). PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -258,12 +258,14 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 			"snapshot_actions": schema.SingleNestedBlock{
 				Attributes: map[string]schema.Attribute{
 					"name": schema.StringAttribute{
-						Description:         "Name of the snapshot",
-						MarkdownDescription: "Name of the snapshot",
+						Description:         "Name of the snapshot. (Update Supported)",
+						MarkdownDescription: "Name of the snapshot. (Update Supported)",
 						Required:            true,
 					},
 					"restore": schema.SingleNestedAttribute{
-						Optional: true,
+						Optional:            true,
+						Description:         "Restore a snapshot generation. (Update Supported)",
+						MarkdownDescription: "Restore a snapshot generation. (Update Supported)",
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
 								Description:         "enable defaults to false. Flag to enable restore on the snapshot",
@@ -282,7 +284,9 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 						},
 					},
 					"link": schema.SingleNestedAttribute{
-						Optional: true,
+						Optional:            true,
+						Description:         "Link a snapshot generation. (Update Supported)",
+						MarkdownDescription: "Link a snapshot generation. (Update Supported)",
 						Attributes: map[string]schema.Attribute{
 							"target_storage_group": schema.StringAttribute{
 								Description:         "The target storage group to link the snapshot too",
@@ -321,7 +325,9 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 						},
 					},
 					"time_to_live": schema.SingleNestedAttribute{
-						Optional: true,
+						Description:         "Set the number of days or hours for a snapshot generation before it auto-terminates (provided it is not linked). (Update Supported)",
+						MarkdownDescription: "Set the number of days or hours for a snapshot generation before it auto-terminates (provided it is not linked). (Update Supported)",
+						Optional:            true,
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
 								Description:         "enable defaults to false. Flag to enable link on the snapshot",
@@ -347,7 +353,9 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 						},
 					},
 					"secure": schema.SingleNestedAttribute{
-						Optional: true,
+						Description:         "Set the number of days or hours for a snapshot generation to be secure before it auto-terminates (provided it is not linked). (Update Supported)",
+						MarkdownDescription: "Set the number of days or hours for a snapshot generation to be secure before it auto-terminates (provided it is not linked). (Update Supported)",
+						Optional:            true,
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
 								Description:         "enable defaults to false. Flag to enable link on the snapshot",

@@ -53,8 +53,8 @@ func (d *snapshotDataSource) Metadata(_ context.Context, req datasource.Metadata
 func (d *snapshotDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data source for a specific StorageGroup Snapshots in PowerMax array.",
-		Description:         "Data source for a specific StorageGroup Snapshots in PowerMax array.",
+		MarkdownDescription: "Data source for a specific StorageGroup Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
+		Description:         "Data source for a specific StorageGroup Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Identifier",

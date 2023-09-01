@@ -62,8 +62,8 @@ func (r *StorageGroup) Metadata(ctx context.Context, req resource.MetadataReques
 func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: `name`, `srp`, `enable_compression`, `service_level`, `host_io_limits`, `volume_ids`, `snapshot_policies`.",
-		Description:         "Resource for managing StorageGroups in PowerMax array. Updates are supported for the following parameters: `name`, `srp`, `enable_compression`, `service_level`, `host_io_limits`, `volume_ids`, `snapshot_policies`.",
+		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array. Supported Update (name, compression, host_io_limit, workload, slo, srp_id, volume_ids) PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
+		Description:         "Resource for managing StorageGroups in PowerMax array. Supported Update (name, compression, host_io_limit, workload, slo, srp_id, volume_ids) PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -73,8 +73,8 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
-				MarkdownDescription: "The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Description:         "The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed. (Update Supported)",
+				MarkdownDescription: "The name of the storage group. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed. (Update Supported)",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.LengthAtMost(64),
@@ -87,13 +87,13 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"slo": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The service level associated with the storage group",
-				MarkdownDescription: "The service level associated with the storage group",
+				Description:         "The service level associated with the storage group. (Update Supported)",
+				MarkdownDescription: "The service level associated with the storage group. (Update Supported)",
 			},
 			"srp_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The Srp to be associated with the Storage Group. An existing Srpor 'none' must be specified",
-				MarkdownDescription: "The Srp to be associated with the Storage Group. An existing Srpor 'none' must be specified",
+				Description:         "The Srp to be associated with the Storage Group. If you dont want an SRP the srp_id can be set to 'None'. (Update Supported)",
+				MarkdownDescription: "The Srp to be associated with the Storage Group. If you dont want an SRP the srp_id can be set to 'None'. (Update Supported)",
 			},
 			"service_level": schema.StringAttribute{
 				Computed:            true,
@@ -103,8 +103,8 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"workload": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The workload associated with the storage group",
-				MarkdownDescription: "The workload associated with the storage group",
+				Description:         "The workload associated with the storage group. (Update Supported)",
+				MarkdownDescription: "The workload associated with the storage group. (Update Supported)",
 			},
 			"slo_compliance": schema.StringAttribute{
 				Computed:            true,
@@ -149,7 +149,6 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"device_emulation": schema.StringAttribute{
 				Computed:            true,
-				Optional:            true,
 				Description:         "The emulation of the volumes in the storage group",
 				MarkdownDescription: "The emulation of the volumes in the storage group",
 			},
@@ -190,8 +189,8 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"host_io_limit": schema.ObjectAttribute{
 				Computed:            true,
 				Optional:            true,
-				Description:         "Host IO limit of the storage group",
-				MarkdownDescription: "Host IO limit of the storage group",
+				Description:         "Host IO limit of the storage group. (Update Supported)",
+				MarkdownDescription: "Host IO limit of the storage group. (Update Supported)",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
@@ -204,8 +203,8 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"compression": schema.BoolAttribute{
 				Computed:            true,
 				Optional:            true,
-				Description:         "States whether compression is enabled on storage group",
-				MarkdownDescription: "States whether compression is enabled on storage group",
+				Description:         "States whether compression is enabled on storage group. (Update Supported)",
+				MarkdownDescription: "States whether compression is enabled on storage group. (Update Supported)",
 			},
 			"compression_ratio": schema.StringAttribute{
 				Computed:            true,
@@ -241,8 +240,8 @@ func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, r
 				ElementType:         types.StringType,
 				Optional:            true,
 				Computed:            true,
-				Description:         "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.",
-				MarkdownDescription: "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here.",
+				Description:         "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here. (Update Supported)",
+				MarkdownDescription: "The IDs of the volume associated with the storage group. Only pre-existing volumes are considered here. (Update Supported)",
 			},
 		},
 	}

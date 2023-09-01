@@ -15,16 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-# List all hostgroups
+# This terraform DataSource is used to query the existing hostgroup from PowerMax array.
+# The information fetched from this data source can be used for getting the details / for further processing in resource block.
+
+# Returns all of the PowerMax host groups and their details
 data "powermax_hostgroup" "all" {}
 
 output "all" {
   value = data.powermax_hostgroup.all
 }
 
-# List a specific hostgroup
+# Returns a subset of the PowerMax host groups based on the names provided in the `names` filter block and their details
 data "powermax_hostgroup" "groups" {
   filter {
+    # Optional list of names to filter upon
     names = ["host_group_example_1", "host_group_example_2"]
   }
 }
@@ -32,3 +36,6 @@ data "powermax_hostgroup" "groups" {
 output "groups" {
   value = data.powermax_hostgroup.groups
 }
+
+# After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
+# Also, we can use the fetched information by the variable data.powermax_hostgroup.example

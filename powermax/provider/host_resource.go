@@ -162,64 +162,64 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "It enables the volume set addressing mode.",
-			MarkdownDescription: "It enables the volume set addressing mode.",
+			Description:         "It enables the volume set addressing mode. (Update Supported)",
+			MarkdownDescription: "It enables the volume set addressing mode. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"disable_q_reset_on_ua": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
-			MarkdownDescription: "It is used for hosts that do not expect the queue to be flushed on a 0629 sense.",
+			Description:         "It is used for hosts that do not expect the queue to be flushed on a 0629 sense. (Update Supported)",
+			MarkdownDescription: "It is used for hosts that do not expect the queue to be flushed on a 0629 sense. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"environ_set": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "It enables the environmental error reporting by the storage system to the host on the specific port.",
-			MarkdownDescription: "It enables the environmental error reporting by the storage system to the host on the specific port.",
+			Description:         "It enables the environmental error reporting by the storage system to the host on the specific port. (Update Supported)",
+			MarkdownDescription: "It enables the environmental error reporting by the storage system to the host on the specific port. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"openvms": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "This attribute enables an Open VMS fibre connection.",
-			MarkdownDescription: "This attribute enables an Open VMS fibre connection.",
+			Description:         "This attribute enables an Open VMS fibre connection. (Update Supported)",
+			MarkdownDescription: "This attribute enables an Open VMS fibre connection. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"avoid_reset_broadcast": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "It enables a SCSI bus reset to only occur to the port that received the reset.",
-			MarkdownDescription: "It enables a SCSI bus reset to only occur to the port that received the reset.",
+			Description:         "It enables a SCSI bus reset to only occur to the port that received the reset. (Update Supported)",
+			MarkdownDescription: "It enables a SCSI bus reset to only occur to the port that received the reset. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"scsi_3": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
-			MarkdownDescription: "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol.",
+			Description:         "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol. (Update Supported)",
+			MarkdownDescription: "Alters the inquiry data to report that the storage system supports the SCSI-3 protocol. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"spc2_protocol_version": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "When setting this flag, the port must be offline.",
-			MarkdownDescription: "When setting this flag, the port must be offline.",
+			Description:         "When setting this flag, the port must be offline. (Update Supported)",
+			MarkdownDescription: "When setting this flag, the port must be offline. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 		"scsi_support1": schema.SingleNestedAttribute{
 			Optional:            true,
 			Computed:            true,
 			Attributes:          hostFlagNestedAttr,
-			Description:         "This attribute provides a stricter compliance with SCSI standards.",
-			MarkdownDescription: "This attribute provides a stricter compliance with SCSI standards.",
+			Description:         "This attribute provides a stricter compliance with SCSI standards. (Update Supported)",
+			MarkdownDescription: "This attribute provides a stricter compliance with SCSI standards. (Update Supported)",
 			Default:             objectdefault.StaticValue(objd),
 		},
 	}
@@ -227,8 +227,8 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 	resp.Schema = schema.Schema{
 
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing Host in PowerMax array.",
-		Description:         "Resource for managing Host in PowerMax array.",
+		MarkdownDescription: "Resource for managing Host in PowerMax array. Supported Update (name, initiator, consistent_lun, host_flags). PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
+		Description:         "Resource for managing Host in PowerMax array. Supported Update (name, initiator, consistent_lun, host_flags). PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
 
 		Attributes: map[string]schema.Attribute{
 
@@ -239,8 +239,8 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
-				MarkdownDescription: "The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Description:         "The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed. (Update Supported)",
+				MarkdownDescription: "The name of the host. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed. (Update Supported)",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.LengthAtMost(64),
@@ -273,8 +273,8 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 			"consistent_lun": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values.",
-				MarkdownDescription: "It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values.",
+				Description:         "It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values. (Update Supported)",
+				MarkdownDescription: "It enables the rejection of any masking operation involving this host that would result in inconsistent LUN values. (Update Supported)",
 				Default:             booldefault.StaticBool(false),
 			},
 			"type": schema.StringAttribute{
@@ -285,8 +285,8 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 			"initiator": schema.ListAttribute{
 				ElementType:         types.StringType,
 				Required:            true,
-				Description:         "The initiators associated with the host.",
-				MarkdownDescription: "The initiators associated with the host.",
+				Description:         "The initiators associated with the host. (Update Supported)",
+				MarkdownDescription: "The initiators associated with the host. (Update Supported)",
 			},
 			"hostgroup": schema.ListAttribute{
 				ElementType:         types.StringType,
@@ -322,8 +322,8 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 				Computed:            true,
 				Default:             objectdefault.StaticValue(hostDefaultObj),
 				Attributes:          hostFlagAttr,
-				Description:         "Flags set for the host. When host_flags = {} then default flags will be considered.",
-				MarkdownDescription: "Flags set for the host. When host_flags = {} then default flags will be considered.",
+				Description:         "Flags set for the host. When host_flags = {} then default flags will be considered. (Update Supported)",
+				MarkdownDescription: "Flags set for the host. When host_flags = {} then default flags will be considered. (Update Supported)",
 			},
 		},
 	}

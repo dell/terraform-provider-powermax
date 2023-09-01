@@ -11,6 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+# This terraform DataSource is used to query the existing snapshot_policy from PowerMax array.
+# The information fetched from this data source can be used for getting the details / for further processing in resource block.
+
+# Returns all of the PowerMax snapshot policies and their details
 data "powermax_snapshotpolicy" "SnapshotPolicyAll" {
 }
 
@@ -18,17 +22,19 @@ output "SnapshotPolicyAll" {
   value = data.powermax_snapshotpolicy.SnapshotPolicyAll
 }
 
+# Returns a subset of the PowerMax snapshot policies based on the names provided in the `names` filter block and their details
 data "powermax_snapshotpolicy" "SnapshotPolicyFiltered" {
   filter {
-    # Optional list of names to filter
+    # Optional list of names to filter upon
     names = [
       "tfacc_snapshotPolicy1",
     ]
   }
 }
 
-
-
 output "SnapshotPolicyFiltered" {
   value = data.powermax_snapshotpolicy.SnapshotPolicyFiltered
 }
+
+# After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
+# Also, we can use the fetched information by the variable data.powermax_snapshotpolicy.example

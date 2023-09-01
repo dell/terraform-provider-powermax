@@ -59,8 +59,8 @@ func (r *maskingView) Metadata(ctx context.Context, req resource.MetadataRequest
 func (r *maskingView) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing MaskingViews in PowerMax array. Updates are supported for the following parameters: `name`.",
-		Description:         "Resource for managing MaskingViews in PowerMax array. Updates are supported for the following parameters: `name`.",
+		MarkdownDescription: "Resource for managing MaskingViews in PowerMax array. Supported Update (name). PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries..",
+		Description:         "Resource for managing MaskingViews in PowerMax array. Supported Update (name). PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.`.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -70,8 +70,8 @@ func (r *maskingView) Schema(ctx context.Context, req resource.SchemaRequest, re
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "Unique identifier of the masking view.",
-				MarkdownDescription: "Unique identifier of the masking view.",
+				Description:         "Unique identifier of the masking view. (Update Supported)",
+				MarkdownDescription: "Unique identifier of the masking view. (Update Supported)",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.LengthAtMost(64),

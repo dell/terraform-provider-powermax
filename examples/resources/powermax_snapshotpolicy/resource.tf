@@ -11,22 +11,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+# Available actions: Create, Update (snapshot_policy_name, storage_groups, interval, snapshot_count, compliance_count_critical, compliance_count_warning, offset_minutes, secure), Delete and Import an existing snapshot policy from the PowerMax Array.
+# After `terraform apply` of this example file it will create a new snapshot policy with the name set in `snapshot_policy_name` attribute on the PowerMax
+
+# PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group).
+# The resource simplifies snapshot management for standard and cloud snapshots.
+# This resouce will take snapshots on a periodic basic based on the configuration below.
+
 resource "powermax_snapshotpolicy" "terraform_sp" {
-  # Required Field
+
+  # Attributes which are able to be modified after create (snapshot_policy_name, storage_groups, interval, snapshot_count, compliance_count_critical, compliance_count_warning, offset_minutes, secure)
+
+  # Required Field will become the name of the snapshot policy
   snapshot_policy_name = "terraform_sp"
 
-  interval = "2 Hours"
-
-  // should only be set for modify/edit operation , not supported during create. 
-  // Also the destroy/delete will also unlink any associted storage groups from Snapshot Policy before deleting the snapshot policy.
+  # should only be set for modify/edit operation , not supported during create. 
+  # Also the destroy/delete will also unlink any associted storage groups from Snapshot Policy before deleting the snapshot policy.
   # storage_groups =  ["tfacc_sp_sg1", "tfacc_sp_sg2"]
 
-  // Default values defined for some of the optional Fields
+  # Default values are defined below and can be modifed before or after create 
+
+  # The interval between snapshots
   # interval             = "1 Hour"
+
+  # The number of the snapshots that will be maintained by the snapshot policy
   # snapshot_count       = "48"
+
+  # The number of snapshots which are not failed or bad when compliance changes to critical.
   # compliance_count_critical = 46
+
+  # The number of snapshots which are not failed or bad when compliance changes to warning.
   # compliance_count_warning  = 47
+
+  # The number of minutes from 00:00 on a Monday morning when the policy should run. Default is 0 if not specified.
   # offset_minutes            = 420
+
+  # The snapshot policy will create secure snapshots
   # secure = false
 
 }
+
+# After the execution of above resource block, a PowerMax snapshot policy has been created at PowerMax array.
+# For more information about the newly created resource use the `terraform show` command to review the current state

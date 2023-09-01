@@ -14,8 +14,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-# List a specific ports
+
+# This terraform DataSource is used to query the existing port from PowerMax array.
+# The information fetched from this data source can be used for getting the details / for further processing in resource block.
+
+# Returns all of the PowerMax ports and their details
+data "powermax_port" "all" {}
+
+output "all" {
+  value = data.powermax_port.all
+}
+
+# Returns a subset of the PowerMax ports based on the names provided in the `names` filter block and their details
 data "powermax_port" "portFilter" {
+  # Optional list of names to filter upon
   filter {
     # Should be in the format ["directorId:portId"]
     port_ids = ["OR-1C:2"]
@@ -26,9 +38,5 @@ output "portFilter" {
   value = data.powermax_port.portFilter
 }
 
-# List all ports
-data "powermax_port" "all" {}
-
-output "all" {
-  value = data.powermax_port.all
-}
+# After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
+# Also, we can use the fetched information by the variable data.powermax_port.example

@@ -57,8 +57,8 @@ type PortGroup struct {
 func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing PortGroups in PowerMax array. Updates are supported for the following parameters: `name`, `ports`.",
-		Description:         "Resource for managing PortGroups in PowerMax array. Updates are supported for the following parameters: `name`, `ports`.",
+		MarkdownDescription: "Resource for managing PortGroups in PowerMax array. Supported Update (name, ports). PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group",
+		Description:         "Resource for managing PortGroups in PowerMax array. Supported Update (name, ports). PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -68,8 +68,8 @@ func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
-				MarkdownDescription: "The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed.",
+				Description:         "The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed. (Update Supported)",
+				MarkdownDescription: "The name of the portgroup. Only alphanumeric characters, underscores ( _ ), and hyphens (-) are allowed. (Update Supported)",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 					stringvalidator.LengthAtMost(64),
@@ -91,8 +91,8 @@ func (r *PortGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 						},
 					},
 				},
-				Description:         "The list of ports associated with the portgroup.",
-				MarkdownDescription: "The list of ports associated with the portgroup.",
+				Description:         "The list of ports associated with the portgroup. (Update Supported)",
+				MarkdownDescription: "The list of ports associated with the portgroup. (Update Supported)",
 			},
 			"protocol": schema.StringAttribute{
 				Required:            true,

@@ -55,8 +55,8 @@ func (d *StorageGroupDataSource) Metadata(ctx context.Context, req datasource.Me
 func (d *StorageGroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data Source for reading StorageGroups in PowerMax array",
-		Description:         "Data Source for reading StorageGroups in PowerMax array",
+		MarkdownDescription: "Data Source for reading StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
+		Description:         "Data Source for reading StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

@@ -52,8 +52,8 @@ func (d *snapshotPolicyDataSource) Metadata(_ context.Context, req datasource.Me
 func (d *snapshotPolicyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data source for a specific Snapshot Policy in PowerMax array.",
-		Description:         "Data source for a specific Snapshot Policy in PowerMax array.",
+		MarkdownDescription: "Data source for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
+		Description:         "Data source for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Identifier",

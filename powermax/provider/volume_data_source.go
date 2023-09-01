@@ -49,7 +49,8 @@ func (d *volumeDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 
 func (d *volumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Data source for reading Volumes in PowerMax array.",
+		Description:         "Data source for reading Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
+		MarkdownDescription: "Data source for reading Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Placeholder for acc testing",
