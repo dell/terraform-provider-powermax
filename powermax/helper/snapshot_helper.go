@@ -163,7 +163,7 @@ func ModifySnapshot(ctx context.Context, client client.Client, plan *models.Snap
 				}
 			}
 		case ActionSnapshotLink:
-			if plan.Snapshot.Link != nil && (plan.Snapshot.Link.Enable.ValueBool() != state.Snapshot.Link.Enable.ValueBool()) {
+			if plan.Snapshot != nil && plan.Snapshot.Link != nil && (plan.Snapshot.Link.Enable.ValueBool() != state.Snapshot.Link.Enable.ValueBool()) {
 				if plan.Snapshot.Link.Enable.ValueBool() {
 					modifyParam := modifyParam.StorageGroupSnapshotInstanceUpdate(powermax.StorageGroupSnapshotInstanceUpdate{
 						Action: ActionSnapshotLink,
