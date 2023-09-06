@@ -432,9 +432,9 @@ func (r *StorageGroup) Update(ctx context.Context, req resource.UpdateRequest, r
 		payload = payload.EditStorageGroupParam(powermax.EditStorageGroupParam{
 			EditStorageGroupActionParam: powermax.EditStorageGroupActionParam{
 				SetHostIOLimitsParam: &powermax.SetHostIOLimitsParam{
-					HostIoLimitMbSec:    &hostIOLimit.HostIOLimitMBSec,
-					HostIoLimitIoSec:    &hostIOLimit.HostIOLimitIOSec,
-					DynamicDistribution: &hostIOLimit.DynamicDistribution,
+					HostIoLimitMbSec:    hostIOLimit.HostIOLimitMBSec.ValueStringPointer(),
+					HostIoLimitIoSec:    hostIOLimit.HostIOLimitIOSec.ValueStringPointer(),
+					DynamicDistribution: hostIOLimit.DynamicDistribution.ValueStringPointer(),
 				},
 			},
 		})

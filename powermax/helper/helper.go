@@ -31,7 +31,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// CopyFields copy the source of gopowermax struct to destination of struct with terraform types.
+// CopyFields copy the source of struct to destination of struct with terraform types.
 func CopyFields(ctx context.Context, source, destination interface{}) error {
 	tflog.Debug(ctx, "Copy fields", map[string]interface{}{
 		"source":      source,

@@ -25,7 +25,6 @@ import (
 	"terraform-provider-powermax/client"
 	"terraform-provider-powermax/powermax/models"
 
-	pmaxTypes "github.com/dell/gopowermax/v2/types/v100"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -150,9 +149,9 @@ func CreateSloParam(plan models.StorageGroupResourceModel) []powermax.SloBasedSt
 					},
 				},
 				SetHostIOLimitsParam: &powermax.SetHostIOLimitsParam{
-					HostIoLimitMbSec:    &hostIOLimit.HostIOLimitMBSec,
-					HostIoLimitIoSec:    &hostIOLimit.HostIOLimitIOSec,
-					DynamicDistribution: &hostIOLimit.DynamicDistribution,
+					HostIoLimitMbSec:    hostIOLimit.HostIOLimitMBSec.ValueStringPointer(),
+					HostIoLimitIoSec:    hostIOLimit.HostIOLimitIOSec.ValueStringPointer(),
+					DynamicDistribution: hostIOLimit.DynamicDistribution.ValueStringPointer(),
 				},
 			},
 		}
@@ -245,16 +244,11 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 }
 
 // ConstructHostIOLimit constructs the host io limit param based on the plan.
-func ConstructHostIOLimit(plan models.StorageGroupResourceModel) *pmaxTypes.SetHostIOLimitsParam {
+func ConstructHostIOLimit(plan models.StorageGroupResourceModel) *models.SetHostIOLimitsParam {
 	if !plan.HostIOLimit.IsNull() && !plan.HostIOLimit.IsUnknown() {
 		hostIOLimit := models.SetHostIOLimitsParam{}
 		tfsdk.ValueAs(context.Background(), plan.HostIOLimit, &hostIOLimit)
-		hostIOLimitParam := &pmaxTypes.SetHostIOLimitsParam{
-			HostIOLimitIOSec:    hostIOLimit.HostIOLimitIOSec.ValueString(),
-			HostIOLimitMBSec:    hostIOLimit.HostIOLimitMBSec.ValueString(),
-			DynamicDistribution: hostIOLimit.DynamicDistribution.ValueString(),
-		}
-		return hostIOLimitParam
+		return &hostIOLimit
 	}
 	return nil
 }
