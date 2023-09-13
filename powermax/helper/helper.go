@@ -187,7 +187,12 @@ func GetErrorString(err error, errStr string) string {
 	message := ""
 	msgStr := ""
 	if ok {
-		message, _ := ParseBody(err1.Body())
+		message, err := ParseBody(err1.Body())
+
+		// Handle case where we can pasrse the openapi error from the response
+		if err != nil {
+			message = ""
+		}
 		errStr = errStr + message
 	}
 	if message == "" {

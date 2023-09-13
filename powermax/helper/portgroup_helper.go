@@ -217,7 +217,11 @@ func updatePortGroupParams(ctx context.Context, client client.Client, portGroupI
 		return pg, returnValue
 	}
 
-	portIDRegex, _ := regexp.Compile(`\\w+:(\\d+)`)
+	portIDRegex, err := regexp.Compile(`\\w+:(\\d+)`)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to update port group error: %s", err.Error())
+	}
 
 	// Create map of string "<DIRECTOR ID>/<PORT ID>" to a SymmetrixPortKeyType object based on what's found
 	// in the PortGroup

@@ -164,11 +164,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 			}
 			_, err := ModifyHost(ctx, client, state.HostID.ValueString(), *edit)
 			if err != nil {
-				err1, ok := err.(*pmax.GenericOpenAPIError)
-				message := ""
-				if ok {
-					message, _ = ParseBody(err1.Body())
-				}
+				message := GetErrorString(err, "")
 				updateFailedParameters = append(updateFailedParameters, "add_initiators")
 				errorMessages = append(errorMessages, fmt.Sprintf("Failed to add initiators to host: %s", message))
 			} else {
@@ -184,11 +180,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 			}
 			_, err := ModifyHost(ctx, client, state.HostID.ValueString(), *edit)
 			if err != nil {
-				err1, ok := err.(*pmax.GenericOpenAPIError)
-				message := ""
-				if ok {
-					message, _ = ParseBody(err1.Body())
-				}
+				message := GetErrorString(err, "")
 				updateFailedParameters = append(updateFailedParameters, "remove_initiators")
 				errorMessages = append(errorMessages, fmt.Sprintf("Failed to remove initiators from host: %s", message))
 			} else {
@@ -217,11 +209,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 		_, err := ModifyHost(ctx, client, state.HostID.ValueString(), *edit)
 
 		if err != nil {
-			err1, ok := err.(*pmax.GenericOpenAPIError)
-			message := ""
-			if ok {
-				message, _ = ParseBody(err1.Body())
-			}
+			message := GetErrorString(err, "")
 			updateFailedParameters = append(updateFailedParameters, "host_flags")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to modify the host flags: %s", message))
 		} else {
@@ -240,11 +228,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 		}
 		_, err := ModifyHost(ctx, client, state.Name.ValueString(), edit)
 		if err != nil {
-			err1, ok := err.(*pmax.GenericOpenAPIError)
-			message := ""
-			if ok {
-				message, _ = ParseBody(err1.Body())
-			}
+			message := GetErrorString(err, "")
 			updateFailedParameters = append(updateFailedParameters, "name")
 			errorMessages = append(errorMessages, fmt.Sprintf("Failed to rename host: %s", message))
 		} else {

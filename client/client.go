@@ -41,7 +41,11 @@ type Client struct {
 
 // NewClient returns the client.
 func NewClient(ctx context.Context, endpoint, username, password, serialNumber, pmaxVersion string, insecure bool) (*Client, error) {
-	openapiClient, _ := NewOpenApiClient(ctx, endpoint, username, password, serialNumber, pmaxVersion, insecure)
+	openapiClient, err := NewOpenApiClient(ctx, endpoint, username, password, serialNumber, pmaxVersion, insecure)
+	if err != nil {
+		tflog.Error(ctx, "Error Creating Client")
+		return nil, err
+	}
 	client := Client{
 		SymmetrixID:       serialNumber,
 		PmaxOpenapiClient: openapiClient,
