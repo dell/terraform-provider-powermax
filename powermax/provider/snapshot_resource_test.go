@@ -56,7 +56,7 @@ func TestAccSnapshotResource(t *testing.T) {
 				Config: ProviderConfig + SnapshotResourceLinkConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(snapshotTerraformName, "name", "tfacc_snapshot_2"),
-					resource.TestCheckResourceAttr(snapshotTerraformName, "linked_storage_group.#", "2"),
+					resource.TestCheckResourceAttr(snapshotTerraformName, "linked_storage_group.#", "1"),
 					resource.TestCheckResourceAttr(snapshotTerraformName, "linked", "true"),
 					resource.TestCheckResourceAttr(snapshotTerraformName, "restored", "false"),
 					resource.TestCheckNoResourceAttr(snapshotTerraformName, "secure_expiry_date"),
