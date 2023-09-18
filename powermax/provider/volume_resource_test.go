@@ -30,7 +30,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccVolumeResource(t *testing.T) {
+var createFunctionMockerLocal *Mocker
+var readFunctionMockerLocal *Mocker
+var readSpecificFunctionMockerLocal *Mocker
+var resourceVolSGName = "tfacc_ds_vol_sg_sOCTK"
+var resourceVolName = "tfacc_res_vol"
+
+func TestAccVolumeResourceA(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -85,12 +91,16 @@ func TestAccVolumeResource(t *testing.T) {
 }
 
 func TestAccVolumeResourceReadError(t *testing.T) {
+	createResponse := powermax.StorageGroup{
+		StorageGroupId: "123",
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
+					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
 					FunctionMocker = Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeUpdateNameSizeMobility,
@@ -117,6 +127,11 @@ func TestAccVolumeResource_Invalid_Config(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Config with no SG
 			{
+				PreConfig: func() {
+					if createFunctionMockerLocal != nil {
+						createFunctionMockerLocal.UnPatch()
+					}
+				},
 				Config:      ProviderConfig + VolumeConfigNoSG,
 				ExpectError: regexp.MustCompile("Missing required argument"),
 			},
@@ -144,20 +159,15 @@ func TestAccVolumeResource_Error_Updating(t *testing.T) {
 				Config:      ProviderConfig + VolumeConfigWithCYL,
 				ExpectError: nil,
 			},
-			// Invalid SG name
-			{
-				Config:      ProviderConfig + VolumeConfigInvalidSG,
-				ExpectError: regexp.MustCompile("Error updating volume"),
-			},
 			// Invalid name
 			{
 				Config:      ProviderConfig + VolumeConfigInvalidName,
 				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
 			},
-			// Normal Config
+			// Invalid SG name
 			{
-				Config:      ProviderConfig + VolumeConfigWithCYL,
-				ExpectError: nil,
+				Config:      ProviderConfig + VolumeConfigInvalidSG,
+				ExpectError: regexp.MustCompile("Error updating volume"),
 			},
 		},
 	})
@@ -180,12 +190,19 @@ func TestAccVolumeResourceCreateError(t *testing.T) {
 }
 
 func TestAccVolumeResourceListError(t *testing.T) {
+	createResponse := powermax.StorageGroup{
+		StorageGroupId: "123",
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
+					if createFunctionMockerLocal != nil {
+						createFunctionMockerLocal.UnPatch()
+					}
+					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
 					FunctionMocker = Mock(helper.ListVolumes).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
@@ -196,6 +213,9 @@ func TestAccVolumeResourceListError(t *testing.T) {
 }
 
 func TestAccVolumeResourceNewVolumeMissingError(t *testing.T) {
+	createResponse := powermax.StorageGroup{
+		StorageGroupId: "123",
+	}
 	missingPmax := powermax.Iterator{
 		ResultList: *powermax.NewResultListWithDefaults(),
 	}
@@ -205,6 +225,10 @@ func TestAccVolumeResourceNewVolumeMissingError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
+					if createFunctionMockerLocal != nil {
+						createFunctionMockerLocal.UnPatch()
+					}
+					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
 					FunctionMocker = Mock(helper.ListVolumes).Return(&missingPmax, nil, nil).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
@@ -215,12 +239,19 @@ func TestAccVolumeResourceNewVolumeMissingError(t *testing.T) {
 }
 
 func TestAccVolumeResourceVolumeDetailstError(t *testing.T) {
+	createResponse := powermax.StorageGroup{
+		StorageGroupId: "123",
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
+					if createFunctionMockerLocal != nil {
+						createFunctionMockerLocal.UnPatch()
+					}
+					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
 					FunctionMocker = Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
@@ -230,13 +261,35 @@ func TestAccVolumeResourceVolumeDetailstError(t *testing.T) {
 	})
 }
 
-func TestAccVolumeResourceVolumeMappertError(t *testing.T) {
+func TestAccVolumeResourceVolumeMapperError(t *testing.T) {
+	results := make([]map[string]interface{}, 0)
+	result := map[string]interface{}{
+		"FakeThing": "done",
+	}
+	results = append(results, result)
+	createResponse := powermax.StorageGroup{
+		StorageGroupId: "123",
+	}
+	fakeList := powermax.Iterator{
+		ResultList: powermax.ResultList{
+			Result: results,
+		},
+	}
+	fakeVol := powermax.Volume{
+		VolumeIdentifier: &resourceVolName,
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
+					if createFunctionMockerLocal != nil {
+						createFunctionMockerLocal.UnPatch()
+					}
+					readFunctionMockerLocal = Mock(helper.ListVolumes).Return(&fakeList, nil, nil).Build()
+					readSpecificFunctionMockerLocal = Mock(helper.GetVolume).Return(&fakeVol, nil, nil).Build()
+					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
 					FunctionMocker = Mock(helper.UpdateVolResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
@@ -245,9 +298,6 @@ func TestAccVolumeResourceVolumeMappertError(t *testing.T) {
 		},
 	})
 }
-
-var resourceVolSGName = "tfacc_ds_vol_sg_sOCTK"
-var resourceVolName = "tfacc_res_vol"
 
 var VolumeResourceConfig = fmt.Sprintf(`
 resource "powermax_volume" "volume_test" {

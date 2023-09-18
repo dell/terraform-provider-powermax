@@ -27,7 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccSnapshotResource(t *testing.T) {
+func TestAccSnapshotResourceA(t *testing.T) {
 	var snapshotTerraformName = "powermax_snapshot.test"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -35,7 +35,7 @@ func TestAccSnapshotResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: ProviderConfig + SnapshotResourceConfig,
+				Config: ProviderConfig + SnapshotResourcNoTTLeConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(snapshotTerraformName, "name", "tfacc_snapshot_1"),
 					resource.TestCheckResourceAttr(snapshotTerraformName, "linked_storage_group.#", "0"),
@@ -286,6 +286,18 @@ resource "powermax_snapshot" "test" {
 }
 `
 
+var SnapshotResourcNoTTLeConfig = `
+resource "powermax_snapshot" "test" {
+	storage_group {
+		name = "tfacc_sg_snapshot"
+	}
+	snapshot_actions {
+		# Required, name of new snapshot
+		name = "tfacc_snapshot_1"
+	}
+}
+`
+
 var SnapshotResourceConfig = `
 resource "powermax_snapshot" "test" {
 	storage_group {
@@ -294,6 +306,11 @@ resource "powermax_snapshot" "test" {
 	snapshot_actions {
 		# Required, name of new snapshot
 		name = "tfacc_snapshot_1"
+		time_to_live = {
+			enable = true
+			time_in_hours = true
+			time_to_live = 1
+		}
 	}
 }
 `
