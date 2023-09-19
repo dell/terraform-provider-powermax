@@ -19,12 +19,12 @@ linkTitle: "powermax_storagegroup"
 page_title: "powermax_storagegroup Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing StorageGroups in PowerMax array. Supported Update (name, compression, hostiolimit, workload, slo, srpid, volumeids) PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.
+  Resource for managing StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.
 ---
 
 # powermax_storagegroup (Resource)
 
-Resource for managing StorageGroups in PowerMax array. Supported Update (name, compression, host_io_limit, workload, slo, srp_id, volume_ids) PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.
+Resource for managing StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.
 
 
 ## Example Usage

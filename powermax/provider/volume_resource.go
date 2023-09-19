@@ -63,8 +63,8 @@ func (r volumeResource) Metadata(ctx context.Context, req resource.MetadataReque
 func (r volumeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing Volumes in PowerMax array. Supported Update (vol_name, mobility_id_enabled, size, cap_unit). PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
-		Description:         "Resource for managing Volumes in PowerMax array. Supported Update (vol_name, mobility_id_enabled, size, cap_unit). PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
+		MarkdownDescription: "Resource for managing Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
+		Description:         "Resource for managing Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

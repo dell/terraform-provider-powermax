@@ -19,12 +19,12 @@ linkTitle: "powermax_hostgroup"
 page_title: "powermax_hostgroup Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing HostGroups for a PowerMax Array. Supported Update (name, hostids, consistentlun, host_flags). PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.
+  Resource for managing HostGroups for a PowerMax Array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.
 ---
 
 # powermax_hostgroup (Resource)
 
-Resource for managing HostGroups for a PowerMax Array. Supported Update (name, host_ids, consistent_lun, host_flags). PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.
+Resource for managing HostGroups for a PowerMax Array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.
 
 
 ## Example Usage

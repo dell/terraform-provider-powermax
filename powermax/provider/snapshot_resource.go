@@ -60,8 +60,8 @@ func (r *snapshotResource) Schema(ctx context.Context, req resource.SchemaReques
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing Snapshots in PowerMax array. Supported Update (name, secure, time_to_live, link, restore). PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data. ",
-		Description:         "Resource for managing Snapshots in PowerMax array. Supported Update (name, secure, time_to_live, link, restore). PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
+		MarkdownDescription: "Resource for managing Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data. ",
+		Description:         "Resource for managing Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

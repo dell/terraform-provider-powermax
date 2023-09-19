@@ -19,12 +19,12 @@ linkTitle: "powermax_volume"
 page_title: "powermax_volume Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing Volumes in PowerMax array. Supported Update (volname, mobilityidenabled, size, capunit). PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.
+  Resource for managing Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.
 ---
 
 # powermax_volume (Resource)
 
-Resource for managing Volumes in PowerMax array. Supported Update (vol_name, mobility_id_enabled, size, cap_unit). PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.
+Resource for managing Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.
 
 
 ## Example Usage

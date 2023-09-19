@@ -19,12 +19,12 @@ linkTitle: "powermax_snapshot"
 page_title: "powermax_snapshot Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing Snapshots in PowerMax array. Supported Update (name, secure, timetolive, link, restore). PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.
+  Resource for managing Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.
 ---
 
 # powermax_snapshot (Resource)
 
-Resource for managing Snapshots in PowerMax array. Supported Update (name, secure, time_to_live, link, restore). PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.
+Resource for managing Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.
 
 
 ## Example Usage

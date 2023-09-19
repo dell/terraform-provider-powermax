@@ -63,8 +63,8 @@ func (d *maskingViewDataSource) Metadata(ctx context.Context, req datasource.Met
 func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data source for reading Masking Views in PowerMax array.",
-		Description:         "Data source for reading Masking Views in PowerMax array.",
+		MarkdownDescription: "Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.",
+		Description:         "Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

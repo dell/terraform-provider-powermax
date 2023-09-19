@@ -59,8 +59,8 @@ func (r *maskingView) Metadata(ctx context.Context, req resource.MetadataRequest
 func (r *maskingView) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing MaskingViews in PowerMax array. Supported Update (name). PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries..",
-		Description:         "Resource for managing MaskingViews in PowerMax array. Supported Update (name). PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.`.",
+		MarkdownDescription: "Resource for managing MaskingViews in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.",
+		Description:         "Resource for managing MaskingViews in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

@@ -19,12 +19,12 @@ linkTitle: "powermax_host"
 page_title: "powermax_host Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing Host in PowerMax array. Supported Update (name, initiator, consistentlun, hostflags). PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage
+  Resource for managing Host in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage
 ---
 
 # powermax_host (Resource)
 
-Resource for managing Host in PowerMax array. Supported Update (name, initiator, consistent_lun, host_flags). PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage
+Resource for managing Host in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage
 
 
 ## Example Usage

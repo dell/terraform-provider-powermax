@@ -62,8 +62,8 @@ func (r *StorageGroup) Metadata(ctx context.Context, req resource.MetadataReques
 func (r *StorageGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array. Supported Update (name, compression, host_io_limit, workload, slo, srp_id, volume_ids) PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
-		Description:         "Resource for managing StorageGroups in PowerMax array. Supported Update (name, compression, host_io_limit, workload, slo, srp_id, volume_ids) PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
+		MarkdownDescription: "Resource for managing StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
+		Description:         "Resource for managing StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

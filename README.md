@@ -74,3 +74,7 @@ Terraform Provider for Dell Technnologies PowerMax follows [Semantic Versioning]
 New versions will be release regularly if significant changes (bug fix or new feature) are made in the provider.
 
 Released code versions are located on tags in the form of "vx.y.z" where x.y.z corresponds to the version number.
+
+## Documentation
+
+For more detailed information, please refer to [Dell Terraform Providers Documentation](https://dell.github.io/terraform-docs/docs/storage/platforms/powermax/).

@@ -53,8 +53,8 @@ func (d *portDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 func (d *portDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data source for reading ports in PowerMax array.",
-		Description:         "Data source for reading ports in PowerMax array.",
+		MarkdownDescription: "Data source for reading ports in PowerMax array. A port typically refers to the interface that allows for connections between the PowerMax system and other devices.",
+		Description:         "Data source for reading ports in PowerMax array. A port typically refers to the interface that allows for connections between the PowerMax system and other devices.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Identifier",

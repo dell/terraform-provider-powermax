@@ -223,8 +223,8 @@ func (r *HostGroup) Schema(ctx context.Context, req resource.SchemaRequest, resp
 
 	resp.Schema = schema.Schema{
 		// Description for Docs
-		MarkdownDescription: "Resource for managing HostGroups for a PowerMax Array. Supported Update (name, host_ids, consistent_lun, host_flags). PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
-		Description:         "Resource for managing HostGroups for a PowerMax Array. Supported Update (name, host_ids, consistent_lun, host_flags). PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
+		MarkdownDescription: "Resource for managing HostGroups for a PowerMax Array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
+		Description:         "Resource for managing HostGroups for a PowerMax Array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,

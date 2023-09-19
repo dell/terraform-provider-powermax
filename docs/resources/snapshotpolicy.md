@@ -19,12 +19,12 @@ linkTitle: "powermax_snapshotpolicy"
 page_title: "powermax_snapshotpolicy Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for a specific Snapshot Policy in PowerMax array. Supported Update (snapshotpolicyname, storagegroups, interval, snapshotcount, compliancecountcritical, compliancecountwarning, offset_minutes, secure). PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.
+  Resource for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.
 ---
 
 # powermax_snapshotpolicy (Resource)
 
-Resource for a specific Snapshot Policy in PowerMax array. Supported Update (snapshot_policy_name, storage_groups, interval, snapshot_count, compliance_count_critical, compliance_count_warning, offset_minutes, secure). PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.
+Resource for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.
 
 
 ## Example Usage

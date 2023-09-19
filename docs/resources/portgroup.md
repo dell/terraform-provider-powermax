@@ -19,12 +19,12 @@ linkTitle: "powermax_portgroup"
 page_title: "powermax_portgroup Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing PortGroups in PowerMax array. Supported Update (name, ports). PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group
+  Resource for managing PortGroups in PowerMax array. PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group
 ---
 
 # powermax_portgroup (Resource)
 
-Resource for managing PortGroups in PowerMax array. Supported Update (name, ports). PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group
+Resource for managing PortGroups in PowerMax array. PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group
 
 
 ## Example Usage

@@ -19,12 +19,12 @@ linkTitle: "powermax_port"
 page_title: "powermax_port Data Source - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Data source for reading ports in PowerMax array.
+  Data source for reading ports in PowerMax array. A port typically refers to the interface that allows for connections between the PowerMax system and other devices.
 ---
 
 # powermax_port (Data Source)
 
-Data source for reading ports in PowerMax array.
+Data source for reading ports in PowerMax array. A port typically refers to the interface that allows for connections between the PowerMax system and other devices.
 
 ## Example Usage
 

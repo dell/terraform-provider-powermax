@@ -65,8 +65,8 @@ func (r *SnapshotPolicy) Schema(ctx context.Context, req resource.SchemaRequest,
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for a specific Snapshot Policy in PowerMax array. Supported Update (snapshot_policy_name, storage_groups, interval, snapshot_count, compliance_count_critical, compliance_count_warning, offset_minutes, secure). PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
-		Description:         "Resource for a specific Snapshot Policy in PowerMax array. Supported Update (snapshot_policy_name, storage_groups, interval, snapshot_count, compliance_count_critical, compliance_count_warning, offset_minutes, secure). PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
+		MarkdownDescription: "Resource for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
+		Description:         "Resource for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Identifier",
