@@ -59,7 +59,7 @@ func NewOpenApiClient(ctx context.Context, endpoint, username, password, serialN
 	}
 
 	httpclient := &http.Client{
-		Timeout: (2000 * time.Second),
+		Timeout: (time.Duration(60) * time.Second),
 		Jar:     jar,
 	}
 	if insecure {
