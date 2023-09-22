@@ -253,12 +253,12 @@ func ConstructHostIOLimit(plan models.StorageGroupResourceModel) *models.SetHost
 	return nil
 }
 
-// GetStorageGroupList Get the StorageGroupList
+// GetStorageGroupList Get the StorageGroupList.
 func GetStorageGroupList(ctx context.Context, client *client.Client) (*powermax.ListStorageGroupResult, *http.Response, error) {
 	return client.PmaxOpenapiClient.SLOProvisioningApi.ListStorageGroups(ctx, client.SymmetrixID).Execute()
 }
 
-// CreateStorageGroup create the StorageGroup
+// CreateStorageGroup create the StorageGroup.
 func CreateStorageGroup(ctx context.Context, client *client.Client, plan models.StorageGroupResourceModel) (*powermax.StorageGroup, *http.Response, error) {
 	sgModel := client.PmaxOpenapiClient.SLOProvisioningApi.CreateStorageGroup(ctx, client.SymmetrixID)
 	create := powermax.NewCreateStorageGroupParam(plan.StorageGroupID.ValueString())

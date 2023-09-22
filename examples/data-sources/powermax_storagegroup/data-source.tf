@@ -20,6 +20,11 @@ limitations under the License.
 
 # Returns all of the PowerMax storage groups and their details
 data "powermax_storagegroup" "testall" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "storagegroup_data_all" {
@@ -28,6 +33,12 @@ output "storagegroup_data_all" {
 
 # Returns a subset of the PowerMax storage groups based on the names provided in the `names` filter block and their details
 data "powermax_storagegroup" "test" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
+
   # Optional list of names to filter upon
   filter {
     names = ["example_sg"]

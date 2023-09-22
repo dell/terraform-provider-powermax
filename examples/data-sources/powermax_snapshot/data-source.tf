@@ -25,6 +25,12 @@ data "powermax_snapshot" "test" {
   storage_group {
     name = "example_storage_group"
   }
+
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "powermax_snapshot" {

@@ -50,23 +50,34 @@ limitations under the License.
 # The information fetched from this data source can be used for getting the details / for further processing in resource block.
 
 # Returns all of the PowerMax host groups and their details
-data "powermax_hostgroup" "all" {}
+data "powermax_hostgroup" "all" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
+}
 
 output "all" {
   value = data.powermax_hostgroup.all
 }
 
 # Returns a subset of the PowerMax host groups based on the names provided in the `names` filter block and their details
-data "powermax_hostgroup" "groups" {
-  filter {
-    # Optional list of names to filter upon
-    names = ["host_group_example_1", "host_group_example_2"]
-  }
-}
+# data "powermax_hostgroup" "groups" {
+#   # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+#   # If unset defaults to 2 minute timeout
+#   # timeouts = {
+#   #   read = "3m"
+#   # }
+#   filter {
+#     # Optional list of names to filter upon
+#     names = ["host_group_example_1", "host_group_example_2"]
+#   }
+# }
 
-output "groups" {
-  value = data.powermax_hostgroup.groups
-}
+# output "groups" {
+#   value = data.powermax_hostgroup.groups
+# }
 
 # After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
 # Also, we can use the fetched information by the variable data.powermax_hostgroup.example
@@ -78,6 +89,7 @@ output "groups" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -90,6 +102,14 @@ output "groups" {
 Optional:
 
 - `names` (Set of String)
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--host_group_details"></a>

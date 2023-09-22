@@ -17,7 +17,10 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // VolumeResource holds volume schema attribute details.
 type VolumeResource struct {
@@ -103,6 +106,7 @@ type VolumeDatasource struct {
 	// placeholder for acc testing
 	ID           types.String             `tfsdk:"id"`
 	Volumes      []VolumeDatasourceEntity `tfsdk:"volumes"`
+	Timeout      timeouts.Value           `tfsdk:"timeouts"`
 	VolumeFilter *VolumeDatasourceFilter  `tfsdk:"filter"`
 }
 

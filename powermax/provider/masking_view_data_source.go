@@ -28,6 +28,7 @@ import (
 
 	pmax "dell/powermax-go-client"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -67,6 +68,7 @@ func (d *maskingViewDataSource) Schema(ctx context.Context, req datasource.Schem
 		Description:         "Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.",
 
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Computed:            true,
 				Description:         "Unique identifier of the masking view instance.",
@@ -174,6 +176,13 @@ func (d *maskingViewDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, state.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
 
 	var maskingViewIds []string
 	// Get masking view IDs from config or query all if not specified

@@ -17,7 +17,10 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // StorageGroupResourceModel describes the resource data model.
 type StorageGroupResourceModel struct {
@@ -64,6 +67,7 @@ type SetHostIOLimitsParam struct {
 type StorageGroupDataSourceModel struct {
 	ID                 types.String                `tfsdk:"id"`
 	StorageGroups      []StorageGroupResourceModel `tfsdk:"storage_groups"`
+	Timeout            timeouts.Value              `tfsdk:"timeouts"`
 	StorageGroupFilter *sgFilterType               `tfsdk:"filter"`
 }
 

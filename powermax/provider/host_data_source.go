@@ -24,6 +24,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -51,7 +52,7 @@ func (d *HostDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 }
 
 // Schema returns the schema for host data source.
-func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *HostDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	hostFlagNestedAttr := map[string]schema.Attribute{
 		"override": schema.BoolAttribute{
 			Optional: true,
@@ -68,6 +69,7 @@ func (d *HostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 		MarkdownDescription: "Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
 		Description:         "Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description:         "Unique identifier of the host instance.",
 				MarkdownDescription: "Unique identifier of the host instance.",
@@ -263,6 +265,13 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, state.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	var hostIds []string
 	// Get host IDs from config or query all if not specified
 	if state.HostFilter == nil || len(state.HostFilter.Names) == 0 {
@@ -288,6 +297,11 @@ func (d *HostDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		getHostReq := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, d.client.SymmetrixID, id)
 		hostResponse, _, err := getHostReq.Execute()
 		if err != nil || hostResponse == nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			errStr := ""
 			msgStr := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError("Error reading host with id", msgStr)

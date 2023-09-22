@@ -17,7 +17,10 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // HostGroupModel HostGroup holds hostgroup schema attribute details.
 type HostGroupModel struct {
@@ -47,6 +50,7 @@ type HostGroupModel struct {
 
 // HostGroupDataSourceModel describes the hostgroup data source model.
 type HostGroupDataSourceModel struct {
+	Timeout          timeouts.Value         `tfsdk:"timeouts"`
 	ID               types.String           `tfsdk:"id"`
 	HostGroupDetails []HostGroupDetailModal `tfsdk:"host_group_details"`
 	HostGroupFilter  *filterType            `tfsdk:"filter"`

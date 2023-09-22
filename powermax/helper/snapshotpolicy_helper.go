@@ -171,7 +171,7 @@ func ModifySnapshotPolicy(ctx context.Context, client client.Client, plan *model
 	return nil
 }
 
-// AddOrRemoveStorageGroups add/remove storage group from snapshot policy
+// AddOrRemoveStorageGroups add/remove storage group from snapshot policy.
 func AddOrRemoveStorageGroups(ctx context.Context, client client.Client, plan *models.SnapshotPolicyResource, state *models.SnapshotPolicyResource) []string {
 	errorMessages := []string{}
 	var planStorageGroups []string
@@ -243,27 +243,27 @@ func AddOrRemoveStorageGroups(ctx context.Context, client client.Client, plan *m
 	return errorMessages
 }
 
-// GetSnapshotPolicies get a list of all the snapshot policies
+// GetSnapshotPolicies get a list of all the snapshot policies.
 func GetSnapshotPolicies(ctx context.Context, client client.Client) (*pmax.SnapshotPolicyList, *http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicies(ctx, client.SymmetrixID).Execute()
 }
 
-// GetSnapshotPolicy get the details of a specific policy
+// GetSnapshotPolicy get the details of a specific policy.
 func GetSnapshotPolicy(ctx context.Context, client client.Client, id string) (*pmax.SnapshotPolicy, *http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicy(ctx, client.SymmetrixID, id).Execute()
 }
 
-// DeleteSnapshotPolicy delete a specific policy
+// DeleteSnapshotPolicy delete a specific policy.
 func DeleteSnapshotPolicy(ctx context.Context, client client.Client, snapPolicyID string) (*http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.DeleteSnapshotPolicy(ctx, client.SymmetrixID, snapPolicyID).Execute()
 }
 
-// GetSnapshotPolicyStorageGroups get Storage Groups associated with the snapshot policy
+// GetSnapshotPolicyStorageGroups get Storage Groups associated with the snapshot policy.
 func GetSnapshotPolicyStorageGroups(ctx context.Context, client client.Client, snapPolicyID string) (*powermax.StorageGroupList, *http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotPolicyStorageGroups(ctx, client.SymmetrixID, snapPolicyID).Execute()
 }
 
-// CreateSnapshotPolicy get the snapshot policy
+// CreateSnapshotPolicy get the snapshot policy.
 func CreateSnapshotPolicy(ctx context.Context, client client.Client, planSnapPolicy models.SnapshotPolicyResource) (*pmax.SnapshotPolicy, *http.Response, error) {
 	snapPolicyCreateReq := client.PmaxOpenapiClient.ReplicationApi.CreateSnapshotPolicy(ctx, client.SymmetrixID)
 

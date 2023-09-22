@@ -50,24 +50,35 @@ limitations under the License.
 # The information fetched from this data source can be used for getting the details / for further processing in resource block.
 
 # Returns all of the PowerMax ports and their details
-data "powermax_port" "all" {}
+data "powermax_port" "all" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
+}
 
 output "all" {
   value = data.powermax_port.all
 }
 
 # Returns a subset of the PowerMax ports based on the names provided in the `names` filter block and their details
-data "powermax_port" "portFilter" {
-  # Optional list of names to filter upon
-  filter {
-    # Should be in the format ["directorId:portId"]
-    port_ids = ["OR-1C:2"]
-  }
-}
+# data "powermax_port" "portFilter" {
+#   # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+#   # If unset defaults to 2 minute timeout
+#   # timeouts = {
+#   #   read = "3m"
+#   # }
+#   # Optional list of names to filter upon
+#   filter {
+#     # Should be in the format ["directorId:portId"]
+#     port_ids = ["OR-1C:2"]
+#   }
+# }
 
-output "portFilter" {
-  value = data.powermax_port.portFilter
-}
+# output "portFilter" {
+#   value = data.powermax_port.portFilter
+# }
 
 # After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
 # Also, we can use the fetched information by the variable data.powermax_port.example
@@ -79,6 +90,7 @@ output "portFilter" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -91,6 +103,14 @@ output "portFilter" {
 Optional:
 
 - `port_ids` (Set of String) A set of port ids to filter on, should be look like the following ['directorId:portId']
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--port_details"></a>

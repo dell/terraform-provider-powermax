@@ -255,7 +255,7 @@ func UpdateHost(ctx context.Context, client client.Client, plan, state models.Ho
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-// GetHostList returns the full host list
+// GetHostList returns the full host list.
 func GetHostList(ctx context.Context, client client.Client) (*powermax.ListHostResult, *http.Response, error) {
 	return client.PmaxOpenapiClient.SLOProvisioningApi.ListHosts(ctx, client.SymmetrixID).Execute()
 }
@@ -334,7 +334,7 @@ func setHostFlags(flags string, isEnabled bool, hostState *models.HostModel) {
 	}
 }
 
-// GetHost get a specific host
+// GetHost get a specific host.
 func GetHost(ctx context.Context, client client.Client, hostID string) (*powermax.Host, *http.Response, error) {
 	return client.PmaxOpenapiClient.SLOProvisioningApi.GetHost(ctx, client.SymmetrixID, hostID).Execute()
 }

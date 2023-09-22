@@ -21,6 +21,11 @@ limitations under the License.
 # Returns all of the PowerMax volumes and their details
 # NOTE: PowerMax can have many volumes, running this command unfiltered can take several minutes
 data "powermax_volume" "volume_datasource_all" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "volume_datasource_output" {
@@ -31,6 +36,11 @@ output "volume_datasource_output" {
 # All filter values are optional
 # If you use more then one filter at a time, it will only show the subset of volumes which both of those filters satisfies 
 data "powermax_volume" "volume_datasource_test" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   filter {
 
     # Optional Volume ids from a single Storage Group only

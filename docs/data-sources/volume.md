@@ -52,6 +52,11 @@ limitations under the License.
 # Returns all of the PowerMax volumes and their details
 # NOTE: PowerMax can have many volumes, running this command unfiltered can take several minutes
 data "powermax_volume" "volume_datasource_all" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "volume_datasource_output" {
@@ -62,6 +67,11 @@ output "volume_datasource_output" {
 # All filter values are optional
 # If you use more then one filter at a time, it will only show the subset of volumes which both of those filters satisfies 
 data "powermax_volume" "volume_datasource_test" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   filter {
 
     # Optional Volume ids from a single Storage Group only
@@ -206,6 +216,7 @@ output "volume_datasource_output" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -260,6 +271,14 @@ Optional:
 - `virtual_volumes` (Boolean) Volumes that are virtual volumes (true/false).
 - `volume_identifier` (String) The specified volume volume identifier.
 - `wwn` (String) The specified volume wwn.
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--volumes"></a>

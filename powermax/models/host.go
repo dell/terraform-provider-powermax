@@ -17,7 +17,10 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // HostModel describes the resource data model.
 type HostModel struct {
@@ -59,8 +62,9 @@ type HostFlag struct {
 
 // HostsDataSourceModel describes the data source data model.
 type HostsDataSourceModel struct {
-	ID    types.String `tfsdk:"id"`
-	Hosts []HostModel  `tfsdk:"hosts"`
+	ID      types.String   `tfsdk:"id"`
+	Timeout timeouts.Value `tfsdk:"timeouts"`
+	Hosts   []HostModel    `tfsdk:"hosts"`
 
 	//filter
 	HostFilter *HostFilterType `tfsdk:"filter"`

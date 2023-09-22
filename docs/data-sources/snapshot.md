@@ -56,6 +56,12 @@ data "powermax_snapshot" "test" {
   storage_group {
     name = "example_storage_group"
   }
+
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "powermax_snapshot" {
@@ -72,6 +78,7 @@ output "powermax_snapshot" {
 ### Optional
 
 - `storage_group` (Block, Optional) (see [below for nested schema](#nestedblock--storage_group))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -84,6 +91,14 @@ output "powermax_snapshot" {
 Required:
 
 - `name` (String)
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--snapshots"></a>

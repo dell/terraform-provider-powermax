@@ -17,7 +17,10 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // PortGroup holds portgroup schema attribute details.
 type PortGroup struct {
@@ -47,8 +50,9 @@ type PortKey struct {
 
 // PortgroupsDataSourceModel describes the data source data model.
 type PortgroupsDataSourceModel struct {
-	ID         types.String `tfsdk:"id"`
-	PortGroups []PortGroup  `tfsdk:"port_groups"`
+	ID         types.String   `tfsdk:"id"`
+	PortGroups []PortGroup    `tfsdk:"port_groups"`
+	Timeout    timeouts.Value `tfsdk:"timeouts"`
 	//filter
 	PgFilter *portGroupFilterType `tfsdk:"filter"`
 }

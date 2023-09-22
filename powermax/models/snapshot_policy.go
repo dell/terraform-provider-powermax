@@ -17,6 +17,7 @@ limitations under the License.
 package models
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -54,6 +55,7 @@ type SnapshotPolicyModel struct {
 type SnapshotPolicyDataSourceModel struct {
 	ID               types.String          `tfsdk:"id"`
 	SnapshotPolicies []SnapshotPolicyModel `tfsdk:"snapshot_policies"`
+	Timeout          timeouts.Value        `tfsdk:"timeouts"`
 	//filter
 	SnapshotPolicyFilter *SnapshotPolicyFilterType `tfsdk:"filter"`
 }

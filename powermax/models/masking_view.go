@@ -17,7 +17,10 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // MaskingViewResourceModel describes the resource data model.
 type MaskingViewResourceModel struct {
@@ -31,6 +34,7 @@ type MaskingViewResourceModel struct {
 
 // MaskingViewDataSourceModel describes the data source data model.
 type MaskingViewDataSourceModel struct {
+	Timeout      timeouts.Value     `tfsdk:"timeouts"`
 	MaskingViews []MaskingViewModel `tfsdk:"masking_views"`
 	ID           types.String       `tfsdk:"id"`
 	//filter

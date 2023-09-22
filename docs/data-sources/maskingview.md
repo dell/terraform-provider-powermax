@@ -50,7 +50,13 @@ limitations under the License.
 # The information fetched from this data source can be used for getting the details / for further processing in resource block.
 
 # Returns all of the PowerMax masking views and their details
-data "powermax_maskingview" "allMaskingViews" {}
+data "powermax_maskingview" "allMaskingViews" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
+}
 
 output "allMaskingViewsResult" {
   value = data.powermax_maskingview.allMaskingViews.masking_views
@@ -58,6 +64,11 @@ output "allMaskingViewsResult" {
 
 # Returns a subset of the PowerMax masking views based on the names provided in the `names` filter block and their details
 data "powermax_maskingview" "maskingViewFilter" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   filter {
     # Optional list of names to filter upon
     names = ["terraform_mv_1", "terraform_mv_2"]
@@ -78,6 +89,7 @@ output "maskingViewFilterResult" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -90,6 +102,14 @@ output "maskingViewFilterResult" {
 Optional:
 
 - `names` (Set of String)
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--masking_views"></a>

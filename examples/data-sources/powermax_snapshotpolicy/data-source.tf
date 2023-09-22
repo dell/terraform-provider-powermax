@@ -16,6 +16,11 @@ limitations under the License.
 
 # Returns all of the PowerMax snapshot policies and their details
 data "powermax_snapshotpolicy" "SnapshotPolicyAll" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "SnapshotPolicyAll" {
@@ -24,6 +29,11 @@ output "SnapshotPolicyAll" {
 
 # Returns a subset of the PowerMax snapshot policies based on the names provided in the `names` filter block and their details
 data "powermax_snapshotpolicy" "SnapshotPolicyFiltered" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   filter {
     # Optional list of names to filter upon
     names = [

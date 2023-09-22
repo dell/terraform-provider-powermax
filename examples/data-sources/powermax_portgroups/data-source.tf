@@ -20,6 +20,11 @@ limitations under the License.
 
 # List fibre portgroups.
 data "powermax_portgroups" "fibreportgroups" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   # Optional filter to list specified Portgroups names and/or type
   filter {
     # type for which portgroups to be listed  - fibre or iscsi
@@ -41,6 +46,12 @@ data "powermax_portgroups" "scsiportgroups" {
 
 # List all portgroups.
 data "powermax_portgroups" "allportgroups" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
+
   #filter {
   # Optional list of IDs to filter
   #names = [

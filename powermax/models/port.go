@@ -17,10 +17,14 @@ limitations under the License.
 
 package models
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // PortDataSourceModel describes the port data source model.
 type PortDataSourceModel struct {
+	Timeout     timeouts.Value    `tfsdk:"timeouts"`
 	ID          types.String      `tfsdk:"id"`
 	PortDetails []PortDetailModal `tfsdk:"port_details"`
 	PortFilter  *portFilterType   `tfsdk:"filter"`

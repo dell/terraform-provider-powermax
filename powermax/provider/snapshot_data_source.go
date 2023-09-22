@@ -25,6 +25,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -50,12 +51,13 @@ func (d *snapshotDataSource) Metadata(_ context.Context, req datasource.Metadata
 	resp.TypeName = req.ProviderTypeName + "_snapshot"
 }
 
-func (d *snapshotDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *snapshotDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Data source for a specific StorageGroup Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
 		Description:         "Data source for a specific StorageGroup Snapshots in PowerMax array. PowerMax Snaphots is a local replication solution that is designed to nondisruptively create point-in-time copies (snapshots) of critical data.",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description: "Identifier",
 				Computed:    true,
@@ -282,6 +284,13 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
 
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, plan.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -301,6 +310,11 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 	for _, sngc := range list.SnapshotNamesAndCounts {
 		val, _, err := helper.GetStorageGroupSnapshotSnapIDs(ctx, *d.client, plan.StorageGroup.Name.ValueString(), *sngc.Name)
 		if err != nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			errStr := constants.ReadSnapshots + " with error: "
 			message := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError(
@@ -313,6 +327,11 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			var detail models.SnapshotDetailModal
 			snapDetail, _, err := helper.GetSnapshotSnapIDSG(ctx, *d.client, plan.StorageGroup.Name.ValueString(), *sngc.Name, id)
 			if err != nil {
+				// Check to see if timeout was hit
+				helper.ExceedTimeoutErrorCheck(err, resp)
+				if resp.Diagnostics.HasError() {
+					return
+				}
 				errStr := constants.ReadSnapshots + " with error: "
 				message := helper.GetErrorString(err, errStr)
 				resp.Diagnostics.AddError(
@@ -323,6 +342,11 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			}
 			errState := helper.UpdateSnapshotDatasourceState(ctx, snapDetail, &detail)
 			if errState != nil {
+				// Check to see if timeout was hit
+				helper.ExceedTimeoutErrorCheck(err, resp)
+				if resp.Diagnostics.HasError() {
+					return
+				}
 				errStr := constants.ReadSnapshots + " with error: "
 				message := helper.GetErrorString(errState, errStr)
 				resp.Diagnostics.AddError(
@@ -334,6 +358,7 @@ func (d *snapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			state.Snapshots = append(state.Snapshots, detail)
 		}
 	}
+	state.Timeout = plan.Timeout
 	state.ID = types.StringValue("snapshot-datasource")
 
 	// Save data into Terraform state

@@ -25,6 +25,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -50,12 +51,13 @@ func (d *portDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 	resp.TypeName = req.ProviderTypeName + "_port"
 }
 
-func (d *portDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *portDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Data source for reading ports in PowerMax array. A port typically refers to the interface that allows for connections between the PowerMax system and other devices.",
 		Description:         "Data source for reading ports in PowerMax array. A port typically refers to the interface that allows for connections between the PowerMax system and other devices.",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description: "Identifier",
 				Computed:    true,
@@ -433,6 +435,14 @@ func (d *portDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, plan.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	portIds, err := helper.FilterPortIds(ctx, &state, &plan, *d.client)
 	if err != nil {
 		errStr := constants.ReadPortDetailErrorMsg + "with error:"
@@ -446,6 +456,11 @@ func (d *portDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	for _, val := range portIds {
 		port, _, err := helper.GetPort(ctx, *d.client, val.DirectorId, val.PortId)
 		if err != nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			errStr := constants.ReadPortDetailErrorMsg + "with error: "
 			message := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError(
@@ -465,6 +480,7 @@ func (d *portDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		state.PortDetails = append(state.PortDetails, model)
 	}
 	state.ID = types.StringValue("port-datasource")
+	state.Timeout = plan.Timeout
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

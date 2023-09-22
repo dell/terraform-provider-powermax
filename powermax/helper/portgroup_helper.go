@@ -54,7 +54,7 @@ func GetPmaxPortsFromTfsdkPG(tfsdkPg models.PortGroup) []pmax.SymmetrixPortKey {
 	return nil
 }
 
-// GetPortGroupList get the list of portgroups
+// GetPortGroupList get the list of portgroups.
 func GetPortGroupList(ctx context.Context, client client.Client, pgPlan models.PortgroupsDataSourceModel) (*powermax.ListPortGroupResult, *http.Response, error) {
 	// Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups
 	portGroupsParam := client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroups(ctx, client.SymmetrixID)
@@ -73,7 +73,7 @@ func GetPortGroupList(ctx context.Context, client client.Client, pgPlan models.P
 	return client.PmaxOpenapiClient.SLOProvisioningApi.ListPortGroupsExecute(portGroupsParam)
 }
 
-// CreatePortGroup get the list of portgroups
+// CreatePortGroup get the list of portgroups.
 func CreatePortGroup(ctx context.Context, client client.Client, plan models.PortGroup) (*powermax.PortGroup, *http.Response, error) {
 	pmaxPorts := GetPmaxPortsFromTfsdkPG(plan)
 	// Read the portgroup based on portgroup type and if nothing is mentioned, then it returns all the port groups

@@ -24,6 +24,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,11 +48,12 @@ func (d *volumeDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 	resp.TypeName = req.ProviderTypeName + "_volume"
 }
 
-func (d *volumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *volumeDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description:         "Data source for reading Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
 		MarkdownDescription: "Data source for reading Volumes in PowerMax array. PowerMax volumes is an identifiable unit of data storage. Storage groups are sets of volumes.",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description: "Placeholder for acc testing",
 				Computed:    true,
@@ -507,6 +509,14 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, state.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	param, err := helper.GetVolumeFilterParam(ctx, d.client, state)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -517,6 +527,11 @@ func (d *volumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 	state.Volumes, err = helper.UpdateVolumeState(ctx, d.client, param)
 	if err != nil {
+		// Check to see if timeout was hit
+		helper.ExceedTimeoutErrorCheck(err, resp)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Failed to update volume state",
 			err.Error(),

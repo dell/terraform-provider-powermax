@@ -17,6 +17,15 @@ limitations under the License.
 
 package helper
 
+import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+)
+
 // IsParamUpdated General Reusable Functions.
 func IsParamUpdated(updatedParams []string, paramName string) bool {
 	isParamUpdate := false
@@ -51,4 +60,24 @@ func CompareStringSlice(planInitiators, stateInitiators []string) bool {
 		}
 	}
 	return len(itemAppearsTimes) == 0
+}
+
+// ExceedTimeoutErrorCheck checks for the "context deadline exceeded" error message and returns the custom error message.
+func ExceedTimeoutErrorCheck(err error, resp *datasource.ReadResponse) {
+	if err != nil && strings.Contains(err.Error(), "context deadline exceeded") {
+		resp.Diagnostics.AddError("Error reading", "Current timeout exceded, if more time is needed please extend using the `timeout` attribute.")
+	}
+}
+
+// SetupTimeoutReadDatasource Sets the datasource read timeout.
+func SetupTimeoutReadDatasource(ctx context.Context, resp *datasource.ReadResponse, timeout timeouts.Value) (context.Context, context.CancelFunc) {
+
+	// Sets the timeout if one is set in the provider code
+	// Otherwise defaults to 2 minutes
+	readTimeout, err := timeout.Read(ctx, 2*time.Minute)
+	if err != nil {
+		resp.Diagnostics.Append(err...)
+	}
+
+	return context.WithTimeout(ctx, readTimeout)
 }

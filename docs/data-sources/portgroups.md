@@ -51,6 +51,11 @@ limitations under the License.
 
 # List fibre portgroups.
 data "powermax_portgroups" "fibreportgroups" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   # Optional filter to list specified Portgroups names and/or type
   filter {
     # type for which portgroups to be listed  - fibre or iscsi
@@ -72,6 +77,12 @@ data "powermax_portgroups" "scsiportgroups" {
 
 # List all portgroups.
 data "powermax_portgroups" "allportgroups" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
+
   #filter {
   # Optional list of IDs to filter
   #names = [
@@ -91,6 +102,7 @@ data "powermax_portgroups" "allportgroups" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -104,6 +116,14 @@ Optional:
 
 - `names` (Set of String)
 - `type` (String) The Type of the portgroup.
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--port_groups"></a>

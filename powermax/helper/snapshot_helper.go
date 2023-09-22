@@ -230,22 +230,22 @@ func ModifySnapshot(ctx context.Context, client client.Client, plan *models.Snap
 	return nil
 }
 
-// GetStorageGroupSnapshots get SG snapshots
+// GetStorageGroupSnapshots get SG snapshots.
 func GetStorageGroupSnapshots(ctx context.Context, client client.Client, sgName string) (*powermax.StorageGroupSnapshotList, *http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshots(ctx, client.SymmetrixID, sgName).Execute()
 }
 
-// GetStorageGroupSnapshotSnapIDs get SG snapshots snap ids
+// GetStorageGroupSnapshotSnapIDs get SG snapshots snap ids.
 func GetStorageGroupSnapshotSnapIDs(ctx context.Context, client client.Client, sgName string, snapIDName string) (*powermax.StorageGroupSnapshotSnapIDList, *http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.GetStorageGroupSnapshotSnapIDs(ctx, client.SymmetrixID, sgName, snapIDName).Execute()
 }
 
-// GetSnapshotSnapIDSG get SG snapshots snap details
+// GetSnapshotSnapIDSG get SG snapshots snap details.
 func GetSnapshotSnapIDSG(ctx context.Context, client client.Client, sgName string, snapIDName string, snapID int64) (*powermax.SnapVXSnapshotInstance, *http.Response, error) {
 	return client.PmaxOpenapiClient.ReplicationApi.GetSnapshotSnapIDSG(ctx, client.SymmetrixID, sgName, snapIDName, snapID).Execute()
 }
 
-// CreateSnapshot creates a snapshot on a particular SG
+// CreateSnapshot creates a snapshot on a particular SG.
 func CreateSnapshot(ctx context.Context, client client.Client, sgName string, plan models.SnapshotResourceModel) (*powermax.SnapVXSnapshotGeneration, *http.Response, error) {
 	// Create Param Attributes
 	snapshotCreateParam := powermax.StorageGroupSnapshotCreate{}

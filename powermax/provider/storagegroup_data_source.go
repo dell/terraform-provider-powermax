@@ -24,6 +24,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -59,6 +60,7 @@ func (d *StorageGroupDataSource) Schema(ctx context.Context, req datasource.Sche
 		Description:         "Data Source for reading StorageGroups in PowerMax array. PowerMax storage groups are a collection of devices that are stored on the array. An application, a server, or a collection of servers use them.",
 
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Computed:    true,
 				Description: "Placeholder value to run tests",
@@ -279,6 +281,13 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, data.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	var sgIDs []string
 	// Get storage group IDs from config or query all if not specified
 	if data.StorageGroupFilter == nil || len(data.StorageGroupFilter.IDs) == 0 {
@@ -302,6 +311,11 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 		var sg models.StorageGroupResourceModel
 		err := helper.UpdateSgState(ctx, d.client, sgID, &sg)
 		if err != nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			resp.Diagnostics.AddError("Error reading storage group", err.Error())
 			return
 		}
@@ -309,7 +323,7 @@ func (d *StorageGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 	state.ID = types.StringValue("storage-group-data-source")
 	state.StorageGroupFilter = data.StorageGroupFilter
-
+	state.Timeout = data.Timeout
 	if len(state.StorageGroups) > 0 {
 		tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0]))
 		tflog.Info(ctx, fmt.Sprintf("State: %v", state.StorageGroups[0].VolumeIDs))

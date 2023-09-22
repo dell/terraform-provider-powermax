@@ -47,6 +47,11 @@ limitations under the License.
 
 # Returns all of the PowerMax snapshot policies and their details
 data "powermax_snapshotpolicy" "SnapshotPolicyAll" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "SnapshotPolicyAll" {
@@ -55,6 +60,11 @@ output "SnapshotPolicyAll" {
 
 # Returns a subset of the PowerMax snapshot policies based on the names provided in the `names` filter block and their details
 data "powermax_snapshotpolicy" "SnapshotPolicyFiltered" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
   filter {
     # Optional list of names to filter upon
     names = [
@@ -77,6 +87,7 @@ output "SnapshotPolicyFiltered" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -89,6 +100,14 @@ output "SnapshotPolicyFiltered" {
 Optional:
 
 - `names` (Set of String)
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--snapshot_policies"></a>

@@ -25,7 +25,7 @@ import (
 	"terraform-provider-powermax/powermax/models"
 )
 
-// CreateMaskingView Creates a new masking view
+// CreateMaskingView Creates a new masking view.
 func CreateMaskingView(ctx context.Context, client client.Client, plan models.MaskingViewResourceModel, hostOrHostGroupID string, isHost bool) (*pmax.MaskingView, *http.Response, error) {
 	hostOrHostGroupSelection := *pmax.NewHostOrHostGroupSelection()
 	if isHost {
@@ -51,7 +51,7 @@ func CreateMaskingView(ctx context.Context, client client.Client, plan models.Ma
 	return maskingViewReq.Execute()
 }
 
-// GetMaskingView Gets a Masking View
+// GetMaskingView Gets a Masking View.
 func GetMaskingView(ctx context.Context, client client.Client, name string) (*pmax.MaskingView, *http.Response, error) {
 	return client.PmaxOpenapiClient.SLOProvisioningApi.GetMaskingView(ctx, client.SymmetrixID, name).Execute()
 }

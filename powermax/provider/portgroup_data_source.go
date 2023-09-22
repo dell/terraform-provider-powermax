@@ -24,6 +24,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -56,6 +57,7 @@ func (d *PortgroupDataSource) Schema(ctx context.Context, req datasource.SchemaR
 		MarkdownDescription: "Data source for reading PortGroups in PowerMax array. PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group",
 		Description:         "Data source for reading PortGroups in PowerMax array. PowerMax port groups contain director and port identification and belong to a masking view. Ports can be added to and removed from the port group. Port groups that are no longer associated with a masking view can be deleted. Note the following recommendations: Port groups should contain four or more ports. Each port in a port group should be on a different director. A port can belong to more than one port group. However, for storage systems running HYPERMAX OS 5977 or higher, you cannot mix different types of ports (physical FC ports, virtual ports, and iSCSI virtual ports) within a single port group",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description: "Identifier",
 				Computed:    true,
@@ -170,10 +172,22 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, pgPlan.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	var pgNames []string
 
 	portGroupIDList, _, err := helper.GetPortGroupList(ctx, *d.client, pgPlan)
 	if err != nil {
+		// Check to see if timeout was hit
+		helper.ExceedTimeoutErrorCheck(err, resp)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		errStr := ""
 		msgStr := helper.GetErrorString(err, errStr)
 		resp.Diagnostics.AddError(
@@ -203,6 +217,11 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	for _, elemid := range pgNames {
 		pgResponse, _, err := helper.ReadPortgroupByID(ctx, *d.client, elemid)
 		if err != nil || pgResponse == nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			errStr := fmt.Sprintf("Error reading port group with id %s", elemid)
 			msgStr := helper.GetErrorString(err, "")
 			resp.Diagnostics.AddError(errStr, msgStr)
@@ -217,6 +236,7 @@ func (d *PortgroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 	//check if there is any error while getting the port group
 	pgState.ID = types.StringValue("1")
 	pgState.PgFilter = pgPlan.PgFilter
+	pgState.Timeout = pgPlan.Timeout
 
 	tflog.Trace(ctx, "read PortGroup data source")
 

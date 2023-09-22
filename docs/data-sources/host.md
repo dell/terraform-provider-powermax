@@ -52,26 +52,36 @@ limitations under the License.
 
 # Returns all of the PowerMax hosts and their details
 data "powermax_host" "HostDsAll" {
+  # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+  # If unset defaults to 2 minute timeout
+  # timeouts = {
+  #   read = "3m"
+  # }
 }
 
 output "hostDsResultAll" {
   value = data.powermax_host.HostDsAll
 }
 
-# Returns a subset of the PowerMax hosts based on the names provided in the `names` filter block and their details
-data "powermax_host" "HostDsFiltered" {
-  filter {
-    # Optional list of names to filter upon
-    names = [
-      "Host124",
-      "Host173",
-    ]
-  }
-}
+# # Returns a subset of the PowerMax hosts based on the names provided in the `names` filter block and their details
+# data "powermax_host" "HostDsFiltered" {
+#   # Optional Update the read timeout with (XXm) for minutes or (XXs) for timeout in seconds
+#   # If unset defaults to 2 minute timeout
+#   # timeouts = {
+#   #   read = "3m"
+#   # }
+#   filter {
+#     # Optional list of names to filter upon
+#     names = [
+#       "Host124",
+#       "Host173",
+#     ]
+#   }
+# }
 
-output "hostDsResult" {
-  value = data.powermax_host.HostDsFiltered
-}
+# output "hostDsResult" {
+#   value = data.powermax_host.HostDsFiltered
+# }
 
 # After the successful execution of above said block, We can see the output value by executing 'terraform output' command.
 # Also, we can use the fetched information by the variable data.powermax_host.example
@@ -83,6 +93,7 @@ output "hostDsResult" {
 ### Optional
 
 - `filter` (Block, Optional) (see [below for nested schema](#nestedblock--filter))
+- `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
@@ -95,6 +106,14 @@ output "hostDsResult" {
 Optional:
 
 - `names` (Set of String)
+
+
+<a id="nestedatt--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
 
 <a id="nestedatt--hosts"></a>

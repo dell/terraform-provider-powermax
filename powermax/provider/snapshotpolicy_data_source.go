@@ -24,6 +24,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -49,12 +50,13 @@ func (d *snapshotPolicyDataSource) Metadata(_ context.Context, req datasource.Me
 	resp.TypeName = req.ProviderTypeName + "_snapshotpolicy"
 }
 
-func (d *snapshotPolicyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *snapshotPolicyDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Data source for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
 		Description:         "Data source for a specific Snapshot Policy in PowerMax array. PowerMax snapshot policy feature provides snapshot orchestration at scale (1,024 snaps per storage group). The resource simplifies snapshot management for standard and cloud snapshots.",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description: "Identifier",
 				Computed:    true,
@@ -175,6 +177,13 @@ func (d *snapshotPolicyDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, state.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	var snapshotPolicyIds []string
 	// Get snapshot policy IDs from config or query all if not specified
 	if state.SnapshotPolicyFilter == nil || len(state.SnapshotPolicyFilter.Names) == 0 {
@@ -196,6 +205,11 @@ func (d *snapshotPolicyDataSource) Read(ctx context.Context, req datasource.Read
 	for _, id := range snapshotPolicyIds {
 		snapshotPolicyResponse, _, err := helper.GetSnapshotPolicy(ctx, *d.client, id)
 		if err != nil || snapshotPolicyResponse == nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			errStr := ""
 			msgStr := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError("Error reading snapshot policy with id", msgStr)

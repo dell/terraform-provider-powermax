@@ -25,6 +25,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"terraform-provider-powermax/powermax/models"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -50,12 +51,13 @@ func (d *hostGroupDataSource) Metadata(_ context.Context, req datasource.Metadat
 	resp.TypeName = req.ProviderTypeName + "_hostgroup"
 }
 
-func (d *hostGroupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *hostGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
 		Description:         "Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
 		Attributes: map[string]schema.Attribute{
+			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{
 				Description: "Identifier",
 				Computed:    true,
@@ -180,6 +182,13 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
+	ctx, cancel := helper.SetupTimeoutReadDatasource(ctx, resp, plan.Timeout)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	defer cancel()
+
 	// Apply Filter hostgroup filter
 	hostGroupIDs, err := helper.FilterHostGroupIds(ctx, &state, &plan, *d.client)
 
@@ -199,6 +208,11 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		groupDetailModel := d.client.PmaxOpenapiClient.SLOProvisioningApi.GetHostGroup(ctx, d.client.SymmetrixID, hostGroupID)
 		groupDetail, _, err := groupDetailModel.Execute()
 		if err != nil {
+			// Check to see if timeout was hit
+			helper.ExceedTimeoutErrorCheck(err, resp)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 			errStr := constants.ReadHostGroupListDetailsErrorMsg + "with error: "
 			message := helper.GetErrorString(err, errStr)
 			resp.Diagnostics.AddError(
@@ -214,6 +228,7 @@ func (d *hostGroupDataSource) Read(ctx context.Context, req datasource.ReadReque
 		}
 		state.HostGroupDetails = append(state.HostGroupDetails, model)
 	}
+	state.Timeout = plan.Timeout
 	state.ID = types.StringValue("HostGroupDatasoure")
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)

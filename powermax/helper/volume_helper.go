@@ -208,19 +208,19 @@ func UpdateVol(ctx context.Context, client *client.Client, planVol, stateVol mod
 	return updatedParameters, updateFailedParameters, errorMessages
 }
 
-// GetVolume on SG
+// GetVolume on SG.
 func GetVolume(ctx context.Context, client client.Client, volID string) (*powermax.Volume, *http.Response, error) {
 	return client.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, client.SymmetrixID, volID).Execute()
 }
 
-// ListVolumes on SG
+// ListVolumes on SG.
 func ListVolumes(ctx context.Context, client client.Client, plan models.VolumeResource) (*powermax.Iterator, *http.Response, error) {
 	param := client.PmaxOpenapiClient.SLOProvisioningApi.ListVolumes(ctx, client.SymmetrixID)
 	param = param.StorageGroupId(plan.StorageGroupName.ValueString())
 	return param.Execute()
 }
 
-// CreateVolume on SG
+// CreateVolume on SG.
 func CreateVolume(ctx context.Context, client client.Client, plan models.VolumeResource) (*powermax.StorageGroup, *http.Response, error) {
 	volumeAttributes := make([]powermax.VolumeAttribute, 0)
 	num := int64(1)

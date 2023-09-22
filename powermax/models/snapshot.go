@@ -17,11 +17,13 @@ limitations under the License.
 package models
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/datasource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // SnapshotDataSourceModel describes the hostgroup data source model.
 type SnapshotDataSourceModel struct {
+	Timeout      timeouts.Value        `tfsdk:"timeouts"`
 	ID           types.String          `tfsdk:"id"`
 	Snapshots    []SnapshotDetailModal `tfsdk:"snapshots"`
 	StorageGroup *FilterTypeSnapshot   `tfsdk:"storage_group"`

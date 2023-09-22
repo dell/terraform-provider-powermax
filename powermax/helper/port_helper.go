@@ -77,14 +77,13 @@ func PortDetailMapper(ctx context.Context, port *powermax.DirectorPort) (models.
 		ipAttributeList = append(ipAttributeList, types.StringValue(ini))
 	}
 	model.IPAddresses, _ = types.ListValue(types.StringType, ipAttributeList)
-
 	if err != nil {
 		return model, err
 	}
 	return model, nil
 }
 
-// GetPort Get details of a specific port
+// GetPort Get details of a specific port.
 func GetPort(ctx context.Context, client client.Client, directorID string, portID string) (*powermax.DirectorPort, *http.Response, error) {
 	return client.PmaxOpenapiClient.SystemApi.GetDirectorPorts1(ctx, client.SymmetrixID, directorID, portID).Execute()
 }
