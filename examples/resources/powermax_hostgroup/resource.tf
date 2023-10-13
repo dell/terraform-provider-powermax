@@ -18,7 +18,7 @@ limitations under the License.
 # Available actions: Create, Update (name, host_ids, consistent_lun, host_flags), Delete and Import an existing host group from the PowerMax Array.
 # After `terraform apply` of this example file it will create a new host_group with the name set in `name` attribute on the PowerMax
 
-# PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts
+# PowerMax host groups are groups of PowerMax Hosts. see the host example for more information on hosts
 resource "powermax_hostgroup" "test_host_group" {
 
   # Attributes which are able to be modified after create (name, host_ids, consistent_lun, host_flags)

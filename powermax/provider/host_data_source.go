@@ -66,8 +66,8 @@ func (d *HostDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest,
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
-		Description:         "Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
+		MarkdownDescription: "Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources. A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
+		Description:         "Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources. A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
 		Attributes: map[string]schema.Attribute{
 			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{

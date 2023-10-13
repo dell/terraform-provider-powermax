@@ -19,12 +19,12 @@ linkTitle: "powermax_maskingview"
 page_title: "powermax_maskingview Data Source - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.
+  Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some device entries.
 ---
 
 # powermax_maskingview (Data Source)
 
-Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.
+Data source for reading Masking Views in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some device entries.
 
 ## Example Usage
 

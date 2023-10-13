@@ -19,12 +19,12 @@ linkTitle: "powermax_maskingview"
 page_title: "powermax_maskingview Resource - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Resource for managing MaskingViews in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.
+  Resource for managing MaskingViews in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some device entries.
 ---
 
 # powermax_maskingview (Resource)
 
-Resource for managing MaskingViews in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some devices entries.
+Resource for managing MaskingViews in PowerMax array. PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. Devices are masked and mapped automatically. The groups must contain some device entries.
 
 
 ## Example Usage
@@ -51,7 +51,7 @@ limitations under the License.
 # After `terraform apply` of this example file it will create a new masking_view with the name set in `name` attribute on the PowerMax
 
 # PowerMax masking views are a container of a storage group, a port group, and an initiator group, and makes the storage group visible to the host. 
-# Devices are masked and mapped automatically. The groups must contain some devices entries.
+# Devices are masked and mapped automatically. The groups must contain some device entries.
 resource "powermax_maskingview" "test" {
 
   # Attributes which are able to be modified after create (name)

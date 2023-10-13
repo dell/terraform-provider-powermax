@@ -54,8 +54,8 @@ func (d *hostGroupDataSource) Metadata(_ context.Context, req datasource.Metadat
 func (d *hostGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
-		Description:         "Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.",
+		MarkdownDescription: "Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts. see the host example for more information on hosts.",
+		Description:         "Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts. see the host example for more information on hosts.",
 		Attributes: map[string]schema.Attribute{
 			"timeouts": timeouts.Attributes(ctx),
 			"id": schema.StringAttribute{

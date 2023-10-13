@@ -19,12 +19,12 @@ linkTitle: "powermax_host"
 page_title: "powermax_host Data Source - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage
+  Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources. A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage
 ---
 
 # powermax_host (Data Source)
 
-Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage
+Data source for reading Hosts in PowerMax array. PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources. A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage
 
 ## Example Usage
 

@@ -19,12 +19,12 @@ linkTitle: "powermax_hostgroup"
 page_title: "powermax_hostgroup Data Source - terraform-provider-powermax"
 subcategory: ""
 description: |-
-  Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.
+  Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts. see the host example for more information on hosts.
 ---
 
 # powermax_hostgroup (Data Source)
 
-Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts see the host example for more information on hosts.
+Data source for reading HostGroups in PowerMax array. PowerMax host groups are groups of PowerMax Hosts. see the host example for more information on hosts.
 
 ## Example Usage
 

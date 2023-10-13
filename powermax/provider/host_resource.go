@@ -227,8 +227,8 @@ func (r *Host) Schema(ctx context.Context, req resource.SchemaRequest, resp *res
 	resp.Schema = schema.Schema{
 
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Resource for managing Host in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
-		Description:         "Resource for managing Host in PowerMax array. PowerMax hosts systems are storage hosts that use storage system LUN resources. A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
+		MarkdownDescription: "Resource for managing Host in PowerMax array. PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources. A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
+		Description:         "Resource for managing Host in PowerMax array. PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources. A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage",
 
 		Attributes: map[string]schema.Attribute{
 

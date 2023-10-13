@@ -18,8 +18,8 @@ limitations under the License.
 # Available actions: Create, Update (name, initiator, consistent_lun, host_flags), Delete and Import an existing host from the PowerMax Array.
 # After `terraform apply` of this example file it will create a new host with the name set in `name` attribute on the PowerMax
 
-# PowerMax hosts systems are storage hosts that use storage system LUN resources.
-# A logical unit number (LUN) is an identifier that is used for labeling and designating subsystems of physical or virtual storage.
+# PowerMax hosts systems are storage hosts that use storage system logical unit number (LUN) resources.
+# A LUN is an identifier that is used for labeling and designating subsystems of physical or virtual storage.
 resource "powermax_host" "host_1" {
 
   # Attributes which are able to be modified after create (name, initiator, consistent_lun, host_flags)
