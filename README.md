@@ -41,7 +41,7 @@ The Terraform Provider for Dell PowerMax is released and licensed under the MPL-
 
 | **Terraform Provider** | **PowerMax Unisphere Version** | **OS**                                | **Terraform**    | **Golang** |
 |------------------------|:-----------------------|:--------------------------------------|------------------|------------|
-| v1.0.1                 | 10.0                           | ubuntu22.04 <br> rhel9.x <br> rhel8.x | 1.4.x <br> 1.5.x         | 1.20.x
+| v1.0.2                 | 10.0                           | ubuntu22.04 <br> rhel9.x <br> rhel8.x | 1.4.x <br> 1.5.x         | 1.20.x
 
 ## List of DataSources in Terraform Provider for Dell PowerMax
   * [Volume](docs/data-sources/volume.md)
