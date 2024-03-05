@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 -->
+# v1.0.2
+## Release Summary
+The release addresses security vulnerability reported in libraries.
 # v1.0.1
 ## Release Summary
 The release address security vulnerability reported in gRPC library.

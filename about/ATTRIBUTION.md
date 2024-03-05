@@ -56,7 +56,7 @@ License: [MIT license](https://github.com/joho/godotenv/blob/main/LICENCE)
 * * *
 
 Package: testify  
-Version: v1.7.2  
+Version: v1.8.4  
 Copyright: Copyright (c) 2012-2020 Mat Ryer, Tyler Bunnell and contributors.
 License: [MIT license](https://github.com/stretchr/testify/blob/master/LICENSE)
 
