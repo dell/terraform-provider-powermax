@@ -30,6 +30,7 @@ The Terraform Provider can be used to manage volumes, storage groups, port group
 * [List of DataSources in Terraform Provider for Dell PowerMax](#list-of-datasources-in-terraform-provider-for-dell-powermax)
 * [List of Resources in Terraform Provider for Dell PowerMax](#list-of-resources-in-terraform-provider-for-dell-powermax)
 * [Releasing, Maintenance and Deprecation](#releasing-maintenance-and-deprecation)
+* [New to Terraform?](#new-to-terraform)
 
 ## Support
 For any Terraform Provider for Dell PowerMax issues, questions or feedback, please follow our [support process](https://github.com/dell/dell-terraform-providers/blob/main/docs/SUPPORT.md)
@@ -78,3 +79,15 @@ Released code versions are located on tags in the form of "vx.y.z" where x.y.z c
 ## Documentation
 
 For more detailed information, please refer to [Dell Terraform Providers Documentation](https://dell.github.io/terraform-docs/docs/storage/platforms/powermax/).
+
+## New to Terraform?
+**Here are some helpful links to get you started if you are new to terraform before using our provider:**
+
+- Intro to Terraform: https://developer.hashicorp.com/terraform/intro 
+- Providers: https://developer.hashicorp.com/terraform/language/providers 
+- Resources: https://developer.hashicorp.com/terraform/language/resources
+- Datasources: https://developer.hashicorp.com/terraform/language/data-sources
+- Import: https://developer.hashicorp.com/terraform/language/import
+- Variables: https://developer.hashicorp.com/terraform/language/values/variables
+- Modules: https://developer.hashicorp.com/terraform/language/modules
+- State: https://developer.hashicorp.com/terraform/language/state
