@@ -180,7 +180,8 @@ func UpdateSgState(ctx context.Context, client *client.Client, sgID string, stat
 	storageGroup, _, err := client.PmaxOpenapiClient.SLOProvisioningApi.GetStorageGroup2(ctx, client.SymmetrixID, sgID).Execute()
 
 	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("StorageGroup %s is not on the powermax: ", sgID) + err.Error())
+		mes := fmt.Sprintf("StorageGroup %s is not on the powermax: ", sgID)
+		return fmt.Errorf(mes, err.Error())
 	}
 
 	err = CopyFields(ctx, storageGroup, state)
