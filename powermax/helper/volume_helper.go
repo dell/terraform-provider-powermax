@@ -268,9 +268,8 @@ func CreateVolume(ctx context.Context, client client.Client, plan models.VolumeR
 func UpdateVolumeState(ctx context.Context, p *client.Client, params powermax.ApiListVolumesRequest) (response []models.VolumeDatasourceEntity, err error) {
 	volIDs, _, err := params.Execute()
 	if err != nil {
-		errStr := ""
-		message := GetErrorString(err, errStr)
-		return nil, fmt.Errorf(message)
+		msg := GetErrorString(err, "")
+		return nil, fmt.Errorf(msg, "")
 	}
 	for _, vol := range volIDs.ResultList.GetResult() {
 		for _, volumeID := range vol {
@@ -278,9 +277,8 @@ func UpdateVolumeState(ctx context.Context, p *client.Client, params powermax.Ap
 			volumeModel := p.PmaxOpenapiClient.SLOProvisioningApi.GetVolume(ctx, p.SymmetrixID, fmt.Sprint(volumeID))
 			volResponse, _, err := volumeModel.Execute()
 			if err != nil {
-				errStr := ""
-				message := GetErrorString(err, errStr)
-				return nil, fmt.Errorf(message)
+				message := GetErrorString(err, "")
+				return nil, fmt.Errorf(message, "")
 
 			}
 			volState := models.VolumeDatasourceEntity{}
