@@ -1,0 +1,29 @@
+# nonk8s
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: dell-terraform-provider-powermax
+  description: "Terraform Provider for Dell PowerMax"
+  tags:
+    - devops
+    - automation
+    - terraform
+    - dell
+    - infrastructure-as-code
+    - terraform-provider
+    - powermax
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: dell/terraform-provider-powermax
+  links:   
+    - url: 'https://dell.github.io/terraform-docs/docs/storage/platforms/powermax/'
+      title: 'Dell Terraform Providers Documentation'
+      icon: 'web'
+    - url: 'https://github.com/dell/dell-terraform-providers/issues'
+      title: 'Contact Technical Support'
+      icon: 'help'
+spec:
+  type: service
+  lifecycle: production
+  owner: user:default/varun.chinta
+  visibility: all
