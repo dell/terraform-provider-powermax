@@ -28,10 +28,28 @@ Create a file called `main.tf` in your workspace with the following contents
 terraform {
   required_providers {
     powermax = { 
-      version = "1.0.0"
       source = "registry.terraform.io/dell/powermax"
     }
   }
+}
+
+provider "powermax" {
+  username      = "user"
+  password      = "password"
+  endpoint      = "https://yourhost.host.com:8443"
+  serial_number = "xxxxxxxxxxxx"
+  pmax_version  = "100"
+  insecure      = true
+
+  ## Provider can also be set using environment variables
+  ## If environment variables are set it will override this configuration
+  ## Example environment variables
+  # POWERMAX_USERNAME="username"
+  # POWERMAX_PASSWORD="password"
+  # POWERMAX_ENDPOINT="https://yourhost.host.com:8443"
+  # POWERMAX_SERIAL_NUMBER="xxxxxxxxxxxx"
+  # POWERMAX_POWERMAX_VERSION="100"
+  # POWERMAX_INSECURE="false"
 }
 ```
 Then, in that workspace, run

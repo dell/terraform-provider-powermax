@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
+Copyright (c) 2025 Dell Inc., or its subsidiaries. All Rights Reserved.
 
 Licensed under the Mozilla Public License Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package provider
 
 import (
 	"context"
+	"os"
+	"strconv"
 	"terraform-provider-powermax/client"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -71,44 +73,50 @@ func (p *PmaxProvider) Schema(ctx context.Context, req provider.SchemaRequest, r
 			"can be used to interact with a Dell PowerMax array in order to manage the array resources.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "IP or FQDN of the PowerMax host",
-				Description:         "IP or FQDN of the PowerMax host",
-				Required:            true,
+				MarkdownDescription: "IP or FQDN of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT",
+				Description:         "IP or FQDN of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT",
+				// This should remain optional so user can use environment variables if they choose.
+				Optional: true,
 			},
 			"username": schema.StringAttribute{
-				MarkdownDescription: "The username of the PowerMax host.",
-				Description:         "The username of the PowerMax host.",
-				Required:            true,
+				MarkdownDescription: "The username of the PowerMax host. This can also be set using the environment variable POWERMAX_USERNAME",
+				Description:         "The username of the PowerMax host. This can also be set using the environment variable POWERMAX_USERNAME",
+				// This should remain optional so user can use environment variables if they choose.
+				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"password": schema.StringAttribute{
-				MarkdownDescription: "The password of the PowerMax host.",
-				Description:         "The password of the PowerMax host.",
-				Required:            true,
-				Sensitive:           true,
+				MarkdownDescription: "The password of the PowerMax host. This can also be set using the environment variable POWERMAX_PASSWORD",
+				Description:         "The password of the PowerMax host. This can also be set using the environment variable POWERMAX_PASSWORD",
+				// This should remain optional so user can use environment variables if they choose.
+				Optional:  true,
+				Sensitive: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"serial_number": schema.StringAttribute{
-				MarkdownDescription: "The serial_number of the PowerMax host.",
-				Description:         "The serial_number of the PowerMax host.",
-				Required:            true,
+				MarkdownDescription: "The serial_number of the PowerMax host. This can also be set using the environment variable POWERMAX_SERIAL_NUMBER",
+				Description:         "The serial_number of the PowerMax host. This can also be set using the environment variable POWERMAX_SERIAL_NUMBER",
+				// This should remain optional so user can use environment variables if they choose.
+				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"insecure": schema.BoolAttribute{
-				MarkdownDescription: "Boolean variable to specify whether to validate SSL certificate or not.",
-				Description:         "Boolean variable to specify whether to validate SSL certificate or not.",
-				Optional:            true,
+				MarkdownDescription: "Boolean variable to specify whether to validate SSL certificate or not. This can also be set using the environment variable POWERMAX_INSECURE",
+				Description:         "Boolean variable to specify whether to validate SSL certificate or not. This can also be set using the environment variable POWERMAX_INSECURE",
+				// This should remain optional so user can use environment variables if they choose.
+				Optional: true,
 			},
 			"pmax_version": schema.StringAttribute{
-				MarkdownDescription: "The version of the PowerMax host.",
-				Description:         "The version of the PowerMax host.",
-				Required:            true,
+				MarkdownDescription: "The version of the PowerMax host. This can also be set using the environment variable POWERMAX_POWERMAX_VERSION",
+				Description:         "The version of the PowerMax host. This can also be set using the environment variable POWERMAX_POWERMAX_VERSION",
+				// This should remain optional so user can use environment variables if they choose.
+				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -127,6 +135,36 @@ func (p *PmaxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		return
 	}
 
+	usernameEnv := os.Getenv("POWERMAX_USERNAME")
+	if usernameEnv != "" {
+		data.Username = types.StringValue(usernameEnv)
+	}
+
+	passEnv := os.Getenv("POWERMAX_PASSWORD")
+	if passEnv != "" {
+		data.Password = types.StringValue(passEnv)
+	}
+
+	endpointEnv := os.Getenv("POWERMAX_ENDPOINT")
+	if endpointEnv != "" {
+		data.Endpoint = types.StringValue(endpointEnv)
+	}
+
+	serialNumberEnv := os.Getenv("POWERMAX_SERIAL_NUMBER")
+	if serialNumberEnv != "" {
+		data.SerialNumber = types.StringValue(serialNumberEnv)
+	}
+
+	versionEnv := os.Getenv("POWERMAX_VERSION")
+	if versionEnv != "" {
+		data.PmaxVersion = types.StringValue(versionEnv)
+	}
+
+	insecureEnv, errInsecure := strconv.ParseBool(os.Getenv("POWERMAX_INSECURE"))
+	if errInsecure == nil {
+		data.Insecure = types.BoolValue(insecureEnv)
+	}
+
 	// Configuration values are now available.
 	pmaxClient, err := client.NewClient(
 		ctx,
@@ -142,6 +180,16 @@ func (p *PmaxProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 		resp.Diagnostics.AddError(
 			"Unable to create powermax client",
 			err.Error(),
+		)
+		return
+	}
+
+	// Do a dummy call to validate the client configuration
+	_, _, errClient := pmaxClient.PmaxOpenapiClient.SLOProvisioningApi.ListHosts(ctx, pmaxClient.SymmetrixID).Execute()
+	if errClient != nil {
+		resp.Diagnostics.AddError(
+			"Unable to create powermax client",
+			"Please validate that the endpoint, username, serial_number and password are correct.",
 		)
 		return
 	}
