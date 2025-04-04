@@ -42,4 +42,14 @@ provider "powermax" {
   serial_number = var.serial_number
   pmax_version  = var.pmax_version
   insecure      = true
+
+  ## Provider can also be set using environment variables
+  ## If environment variables are set it will override this configuration
+  ## Example environment variables
+  # POWERMAX_USERNAME="username"
+  # POWERMAX_PASSWORD="password"
+  # POWERMAX_ENDPOINT="https://yourhost.host.com:8443"
+  # POWERMAX_SERIAL_NUMBER="xxxxxxxxxxxx"
+  # POWERMAX_POWERMAX_VERSION="100"
+  # POWERMAX_INSECURE="false"
 }
