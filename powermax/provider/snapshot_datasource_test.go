@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -50,7 +50,7 @@ func TestAccSnapshotDataSourceSnapshotsError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetStorageGroupSnapshots).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetStorageGroupSnapshots).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -66,7 +66,7 @@ func TestAccSnapshotDataSourceSnapshotsSnapIdsError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetStorageGroupSnapshotSnapIDs).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetStorageGroupSnapshotSnapIDs).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -82,7 +82,7 @@ func TestAccSnapshotDataSourceSnapshotsSnapDetailsError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -98,7 +98,7 @@ func TestAccSnapshotDataSourceSnapshotMapperError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateSnapshotDatasourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSnapshotDatasourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

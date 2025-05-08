@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -78,7 +78,7 @@ func TestAccSnapshotPolicyDsGetListError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotPolicies).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotPolicies).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotPolicyAllDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -94,7 +94,7 @@ func TestAccSnapshotPolicyDsGetSpecificPolicyError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotPolicyAllDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -110,7 +110,7 @@ func TestAccSnapshotPolicyDsMappingError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.CopyFields).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CopyFields).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + snapshotPolicyAllDatasourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

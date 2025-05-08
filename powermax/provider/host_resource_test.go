@@ -25,7 +25,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -234,7 +234,7 @@ func TestAccHostResourceReadError(t *testing.T) {
 			// Read error
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetHost).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetHost).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config: ProviderConfig + `
 				resource "powermax_host" "Test_Host" {
@@ -281,7 +281,7 @@ func TestAccHostResourceModifyError(t *testing.T) {
 			// Modify error
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateHost).Return(nil, nil, errorString).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateHost).Return(nil, nil, errorString).Build()
 				},
 				Config: ProviderConfig + `
 				resource "powermax_host" "Test_Host" {
@@ -310,7 +310,7 @@ func TestAccHostResourceCreateReadError(t *testing.T) {
 			// Create and Read Error
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetHost).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetHost).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config: ProviderConfig + `
 				resource "powermax_host" "Test_Host" {

@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -55,7 +55,7 @@ func TestAccVolumeDatasourceInvalidFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetVolumeFilterParam).Return(nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetVolumeFilterParam).Return(nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeDatasourceConfig,
 				ExpectError: regexp.MustCompile("mock error"),
@@ -73,7 +73,7 @@ func TestAccVolumeDatasourceErrorUpdatingState(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateVolumeState).Return(nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateVolumeState).Return(nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeDatasourceConfig,
 				ExpectError: regexp.MustCompile("mock error"),
