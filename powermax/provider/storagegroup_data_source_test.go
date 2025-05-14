@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -84,7 +84,7 @@ func TestAccStorageGroupDataSourceError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetStorageGroupList).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetStorageGroupList).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SgAllDataSourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -100,7 +100,7 @@ func TestAccStorageGroupDataSourceMapperError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SgDataSourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

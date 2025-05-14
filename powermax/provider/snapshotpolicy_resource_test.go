@@ -23,11 +23,11 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-var deleteMocker *Mocker
+var deleteMocker *mockey.Mocker
 
 func TestAccSnapshotPolicyResource(t *testing.T) {
 	var snapPolicyTerraformName = "powermax_snapshotpolicy.terraform_test_sp"
@@ -90,7 +90,7 @@ func TestAccSnapshotPolicyResource(t *testing.T) {
 			// Modify Error Check
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.ModifySnapshotPolicy).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.ModifySnapshotPolicy).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -101,7 +101,7 @@ func TestAccSnapshotPolicyResource(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.GetSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
 				ExpectError: regexp.MustCompile(`.*Error reading snapshot policy*.`),
@@ -112,7 +112,7 @@ func TestAccSnapshotPolicyResource(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.GetSnapshotPolicyStorageGroups).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotPolicyStorageGroups).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
 				ExpectError: regexp.MustCompile(`.*Error getting snapshot policy storage groups*.`),
@@ -123,7 +123,7 @@ func TestAccSnapshotPolicyResource(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.UpdateSnapshotPolicyResourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSnapshotPolicyResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceUpdateErr,
 				ExpectError: regexp.MustCompile(`.*Error reading snapshot policy*.`),
@@ -158,8 +158,8 @@ func TestAccSnapshotPolicyResourceCreateError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					deleteMocker = Mock(helper.DeleteSnapshotPolicy).Return(nil, fmt.Errorf("mock error")).Build()
-					FunctionMocker = Mock(helper.CreateSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					deleteMocker = mockey.Mock(helper.DeleteSnapshotPolicy).Return(nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CreateSnapshotPolicy).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -185,7 +185,7 @@ func TestAccSnapshotPolicyResourceSgError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotPolicyStorageGroups).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotPolicyStorageGroups).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -201,7 +201,7 @@ func TestAccSnapshotPolicyResourceMapperError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateSnapshotPolicyResourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSnapshotPolicyResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotPolicyResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

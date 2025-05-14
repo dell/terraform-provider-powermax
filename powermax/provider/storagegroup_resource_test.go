@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -90,7 +90,7 @@ func TestAccStorageGroupResourceA(t *testing.T) {
 			// Read Mapping Error Check
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + StorageGroupResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -107,7 +107,7 @@ func TestAccStorageGroupResourceCreateErrors(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.CreateStorageGroup).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CreateStorageGroup).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + StorageGroupResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -117,7 +117,7 @@ func TestAccStorageGroupResourceCreateErrors(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSgState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + StorageGroupResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -136,7 +136,7 @@ func TestAccStorageGroupResourceAddRemoveErrors(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.AddRemoveVolume).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.AddRemoveVolume).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + StorageGroupResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

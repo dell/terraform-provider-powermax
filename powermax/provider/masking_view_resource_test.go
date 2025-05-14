@@ -24,7 +24,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
@@ -123,7 +123,7 @@ func TestAccMaskingViewResourceCreateErrors(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.CreateMaskingView).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CreateMaskingView).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -133,7 +133,7 @@ func TestAccMaskingViewResourceCreateErrors(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.CopyFields).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CopyFields).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -143,7 +143,7 @@ func TestAccMaskingViewResourceCreateErrors(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.GetMaskingView).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetMaskingView).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -153,7 +153,7 @@ func TestAccMaskingViewResourceCreateErrors(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.GetMaskingView).Return(&hostGroupErrorResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.GetMaskingView).Return(&hostGroupErrorResponse, nil, nil).Build()
 				},
 				Config:      ProviderConfig + maskingViewCreateWithHostGroup,
 				ExpectError: regexp.MustCompile(`.*Error creating masking view*.`),
@@ -163,7 +163,7 @@ func TestAccMaskingViewResourceCreateErrors(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.GetMaskingView).Return(&hostErrorResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.GetMaskingView).Return(&hostErrorResponse, nil, nil).Build()
 				},
 				Config:      ProviderConfig + maskingViewCreateWithHost,
 				ExpectError: regexp.MustCompile(`.*Error creating masking view*.`),

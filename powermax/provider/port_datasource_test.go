@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -90,7 +90,7 @@ func TestAccPortDatasourceDetailError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetPort).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetPort).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + PortDataSourceParamsFiltered,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -106,7 +106,7 @@ func TestAccPortDatasourceDetailMapperError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.PortDetailMapper).Return(nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.PortDetailMapper).Return(nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + PortDataSourceParamsFiltered,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

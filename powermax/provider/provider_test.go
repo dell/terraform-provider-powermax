@@ -23,7 +23,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/joho/godotenv"
@@ -38,7 +38,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 var ProviderConfig = ""
-var FunctionMocker *Mocker
+var FunctionMocker *mockey.Mocker
 
 func init() {
 	err := godotenv.Load("powermax.env")

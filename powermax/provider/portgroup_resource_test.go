@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -103,7 +103,7 @@ func TestAccPortgroupResource(t *testing.T) {
 			// Read test Error
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.ReadPortgroupByID).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.ReadPortgroupByID).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + createPortGroupConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -114,7 +114,7 @@ func TestAccPortgroupResource(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.UpdatePortGroup).Return(nil, nil, errorString).Build()
+					FunctionMocker = mockey.Mock(helper.UpdatePortGroup).Return(nil, nil, errorString).Build()
 				},
 				Config:      ProviderConfig + createPortGroupConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -132,7 +132,7 @@ func TestAccPortgroupResourceCreateError(t *testing.T) {
 			// Create and Read test
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.CreatePortGroup).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CreatePortGroup).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + createPortGroupConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -92,7 +92,7 @@ func TestAccHostGroupDatasourceFilteredIdError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.FilterHostGroupIds).Return(nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.FilterHostGroupIds).Return(nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + HostGroupDataSourceParamsFiltered,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -110,7 +110,7 @@ func TestAccHostGroupDatasourceHostGroupDetailMapperError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.HostGroupDetailMapper).Return(nil, diags).Build()
+					FunctionMocker = mockey.Mock(helper.HostGroupDetailMapper).Return(nil, diags).Build()
 				},
 				Config:      ProviderConfig + HostGroupDataSourceParamsAll,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

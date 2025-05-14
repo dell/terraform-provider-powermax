@@ -18,21 +18,21 @@ limitations under the License.
 package provider
 
 import (
-	"dell/powermax-go-client"
+	powermax "dell/powermax-go-client"
 	"fmt"
 	"regexp"
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
-var createFunctionMockerLocal *Mocker
-var readFunctionMockerLocal *Mocker
-var readSpecificFunctionMockerLocal *Mocker
+var createFunctionMockerLocal *mockey.Mocker
+var readFunctionMockerLocal *mockey.Mocker
+var readSpecificFunctionMockerLocal *mockey.Mocker
 var resourceVolSGName = "tfacc_ds_vol_sg_sOCTK"
 var resourceVolName = "tfacc_res_vol"
 
@@ -100,8 +100,8 @@ func TestAccVolumeResourceReadError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
-					FunctionMocker = Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					createFunctionMockerLocal = mockey.Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeUpdateNameSizeMobility,
 				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
@@ -111,7 +111,7 @@ func TestAccVolumeResourceReadError(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.UpdateVolResourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateVolResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
 				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
@@ -180,7 +180,7 @@ func TestAccVolumeResourceCreateError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.CreateVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CreateVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -202,8 +202,8 @@ func TestAccVolumeResourceListError(t *testing.T) {
 					if createFunctionMockerLocal != nil {
 						createFunctionMockerLocal.UnPatch()
 					}
-					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
-					FunctionMocker = Mock(helper.ListVolumes).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					createFunctionMockerLocal = mockey.Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.ListVolumes).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -228,8 +228,8 @@ func TestAccVolumeResourceNewVolumeMissingError(t *testing.T) {
 					if createFunctionMockerLocal != nil {
 						createFunctionMockerLocal.UnPatch()
 					}
-					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
-					FunctionMocker = Mock(helper.ListVolumes).Return(&missingPmax, nil, nil).Build()
+					createFunctionMockerLocal = mockey.Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.ListVolumes).Return(&missingPmax, nil, nil).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
 				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
@@ -251,8 +251,8 @@ func TestAccVolumeResourceVolumeDetailstError(t *testing.T) {
 					if createFunctionMockerLocal != nil {
 						createFunctionMockerLocal.UnPatch()
 					}
-					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
-					FunctionMocker = Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					createFunctionMockerLocal = mockey.Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.GetVolume).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
 				ExpectError: regexp.MustCompile(`.*Error creating volume*.`),
@@ -287,10 +287,10 @@ func TestAccVolumeResourceVolumeMapperError(t *testing.T) {
 					if createFunctionMockerLocal != nil {
 						createFunctionMockerLocal.UnPatch()
 					}
-					readFunctionMockerLocal = Mock(helper.ListVolumes).Return(&fakeList, nil, nil).Build()
-					readSpecificFunctionMockerLocal = Mock(helper.GetVolume).Return(&fakeVol, nil, nil).Build()
-					createFunctionMockerLocal = Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
-					FunctionMocker = Mock(helper.UpdateVolResourceState).Return(fmt.Errorf("mock error")).Build()
+					readFunctionMockerLocal = mockey.Mock(helper.ListVolumes).Return(&fakeList, nil, nil).Build()
+					readSpecificFunctionMockerLocal = mockey.Mock(helper.GetVolume).Return(&fakeVol, nil, nil).Build()
+					createFunctionMockerLocal = mockey.Mock(helper.CreateVolume).Return(&createResponse, nil, nil).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateVolResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + VolumeResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),

@@ -23,7 +23,7 @@ import (
 	"terraform-provider-powermax/powermax/helper"
 	"testing"
 
-	. "github.com/bytedance/mockey"
+	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
@@ -108,7 +108,7 @@ func TestAccSnapshotResourceReadError(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceLinkConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -118,7 +118,7 @@ func TestAccSnapshotResourceReadError(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceLinkConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -147,7 +147,7 @@ func TestAccSnapshotResourceModifyError(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.ModifySnapshot).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.ModifySnapshot).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceLinkConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -177,7 +177,7 @@ func TestAccSnapshotResourceCreateSnapshotError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.CreateSnapshot).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.CreateSnapshot).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -193,7 +193,7 @@ func TestAccSnapshotResourceSnapshotsSnapIdsError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetStorageGroupSnapshotSnapIDs).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetStorageGroupSnapshotSnapIDs).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -209,7 +209,7 @@ func TestAccSnapshotResourceSnapshotsSnapDetailsError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceConfig,
 				ExpectError: regexp.MustCompile(`.*Error creating snapshot*.`),
@@ -225,7 +225,7 @@ func TestAccSnapshotResourceSnapshotMapperError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:      ProviderConfig + SnapshotResourceConfig,
 				ExpectError: regexp.MustCompile(`.*mock error*.`),
@@ -249,7 +249,7 @@ func TestAccSnapshotResourceImportError(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					FunctionMocker = Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.GetSnapshotSnapIDSG).Return(nil, nil, fmt.Errorf("mock error")).Build()
 				},
 				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
 				ResourceName:  "powermax_snapshot.test",
@@ -262,7 +262,7 @@ func TestAccSnapshotResourceImportError(t *testing.T) {
 					if FunctionMocker != nil {
 						FunctionMocker.UnPatch()
 					}
-					FunctionMocker = Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
+					FunctionMocker = mockey.Mock(helper.UpdateSnapshotResourceState).Return(fmt.Errorf("mock error")).Build()
 				},
 				Config:        ProviderConfig + SnapshotResourceConfigSgNameError,
 				ResourceName:  "powermax_snapshot.test",
