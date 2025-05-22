@@ -99,11 +99,8 @@ func CreatePortGroup(ctx context.Context, client client.Client, plan models.Port
 func UpdatePGState(pgState, pgPlan *models.PortGroup, pgResponse *pmax.PortGroup) {
 	pgState.ID = types.StringValue(pgResponse.PortGroupId)
 	pgState.Name = types.StringValue(pgResponse.PortGroupId)
-	if portGroupProtocol, ok := pgResponse.GetPortGroupProtocolOk(); ok {
-		pgState.Protocol = types.StringValue(*portGroupProtocol)
-	} else {
-		pgState.Protocol = pgPlan.Protocol
-	}
+	// Always use the state protocol to avoid Response collisions
+	pgState.Protocol = pgPlan.Protocol
 
 	if portGroupNoMaskingview, ok := pgResponse.GetNumOfMaskingViewsOk(); ok {
 		pgState.NumOfMaskingViews = types.Int64Value(*portGroupNoMaskingview)
