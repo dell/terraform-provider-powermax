@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
+Copyright (c) 2025 Dell Inc., or its subsidiaries. All Rights Reserved.
 
 Licensed under the Mozilla Public License Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@ limitations under the License.
 package provider
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/bytedance/mockey"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/joho/godotenv"
 )
 
 // testAccProtoV6ProviderFactories are used to instantiate a provider during
@@ -39,19 +40,14 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 
 var ProviderConfig = ""
 var FunctionMocker *mockey.Mocker
+var globalEnvMap = getEnvMap()
 
 func init() {
-	err := godotenv.Load("powermax.env")
-	if err != nil {
-		log.Fatal("Error loading .env file: ", err)
-		return
-	}
-
-	username := os.Getenv("POWERMAX_USERNAME")
-	password := os.Getenv("POWERMAX_PASSWORD")
-	endpoint := os.Getenv("POWERMAX_ENDPOINT")
-	serialNumber := os.Getenv("POWERMAX_SERIAL_NUMBER")
-	pmaxVersion := os.Getenv("POWERMAX_VERSION")
+	username := globalEnvMap["POWERMAX_USERNAME"]
+	password := globalEnvMap["POWERMAX_PASSWORD"]
+	endpoint := globalEnvMap["POWERMAX_ENDPOINT"]
+	serialNumber := globalEnvMap["POWERMAX_SERIAL_NUMBER"]
+	pmaxVersion := globalEnvMap["POWERMAX_VERSION"]
 
 	ProviderConfig = fmt.Sprintf(`
 		provider "powermax" {
@@ -67,19 +63,19 @@ func init() {
 
 func testAccPreCheck(t *testing.T) {
 	// Check that the required environment variables are set.
-	if os.Getenv("POWERMAX_ENDPOINT") == "" {
+	if globalEnvMap["POWERMAX_ENDPOINT"] == "" {
 		t.Fatal("POWERMAX_ENDPOINT environment variable not set")
 	}
-	if os.Getenv("POWERMAX_USERNAME") == "" {
+	if globalEnvMap["POWERMAX_USERNAME"] == "" {
 		t.Fatal("POWERMAX_USERNAME environment variable not set")
 	}
-	if os.Getenv("POWERMAX_PASSWORD") == "" {
+	if globalEnvMap["POWERMAX_PASSWORD"] == "" {
 		t.Fatal("POWERMAX_PASSWORD environment variable not set")
 	}
-	if os.Getenv("POWERMAX_SERIAL_NUMBER") == "" {
+	if globalEnvMap["POWERMAX_SERIAL_NUMBER"] == "" {
 		t.Fatal("POWERMAX_SERIAL_NUMBER environment variable not set")
 	}
-	if os.Getenv("POWERMAX_VERSION") == "" {
+	if globalEnvMap["POWERMAX_VERSION"] == "" {
 		t.Fatal("POWERMAX_VERSION environment variable not set")
 	}
 
@@ -88,4 +84,44 @@ func testAccPreCheck(t *testing.T) {
 	if FunctionMocker != nil {
 		FunctionMocker.UnPatch()
 	}
+}
+
+func getEnvMap() map[string]string {
+	envMap, err := loadEnvFile("powermax.env")
+	if err != nil {
+		log.Fatal("Error loading .env file: ", err)
+		return envMap
+	}
+	return envMap
+}
+
+func loadEnvFile(path string) (map[string]string, error) {
+	envMap := make(map[string]string)
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 || line[0] == '#' {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		envMap[key] = value
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return envMap, nil
 }
