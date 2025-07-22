@@ -87,7 +87,7 @@ The following arguments are used to configure the provider
 
 ### Required
 
-- `endpoint` (String) IP or FQDN of the PowerMax host
+- `endpoint` (String) Schema + IP or FQDN + port IE: (https://x.x.x.x:8443) of the PowerMax host
 - `password` (String, Sensitive) The password of the PowerMax host.
 - `pmax_version` (String) The version of the PowerMax host.
 - `serial_number` (String) The serial_number of the PowerMax host.
