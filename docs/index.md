@@ -94,7 +94,7 @@ provider "powermax" {
 
 ### Optional
 
-- `endpoint` (String) IP or FQDN of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT
+- `endpoint` (String) Schema + IP or FQDN + port IE: (https://x.x.x.x:8443) of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT
 - `insecure` (Boolean) Boolean variable to specify whether to validate SSL certificate or not. This can also be set using the environment variable POWERMAX_INSECURE
 - `password` (String, Sensitive) The password of the PowerMax host. This can also be set using the environment variable POWERMAX_PASSWORD
 - `pmax_version` (String) The version of the PowerMax host. This can also be set using the environment variable POWERMAX_POWERMAX_VERSION

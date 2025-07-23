@@ -73,8 +73,8 @@ func (p *PmaxProvider) Schema(ctx context.Context, req provider.SchemaRequest, r
 			"can be used to interact with a Dell PowerMax array in order to manage the array resources.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				MarkdownDescription: "IP or FQDN of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT",
-				Description:         "IP or FQDN of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT",
+				MarkdownDescription: "Schema + IP or FQDN + port IE: (https://x.x.x.x:8443) of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT",
+				Description:         "Schema + IP or FQDN + port IE: (https://x.x.x.x:8443) of the PowerMax host. This can also be set using the environment variable POWERMAX_ENDPOINT",
 				// This should remain optional so user can use environment variables if they choose.
 				Optional: true,
 			},
