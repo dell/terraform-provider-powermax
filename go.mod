@@ -1,8 +1,9 @@
-module github.com/GIT_USER_ID/GIT_REPO_ID
+module terraform-provider-powermax
 
 go 1.25.8
 
 require (
+	dell/powermax-go-client v0.0.0
 	github.com/bytedance/mockey v1.4.6
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
@@ -96,3 +97,5 @@ require (
 )
 
 exclude github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
+
+replace dell/powermax-go-client => ./powermax-go-client-100
