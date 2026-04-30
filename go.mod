@@ -99,3 +99,5 @@ require (
 exclude github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 
 replace dell/powermax-go-client => ./powermax-go-client-100
+
+replace github.com/go-jose/go-jose/v4 => github.com/go-jose/go-jose/v4 v4.1.4
