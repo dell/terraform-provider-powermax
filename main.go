@@ -28,7 +28,7 @@ import (
 )
 
 // Provider documentation generation.
-//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.19.4 generate --provider-name terraform-provider-powermax
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name terraform-provider-powermax
 
 var (
 	// these will be set by the goreleaser configuration
