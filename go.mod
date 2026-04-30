@@ -105,3 +105,5 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.80.0
 replace go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.43.0
 
 replace golang.org/x/net => golang.org/x/net v0.53.0
+
+replace github.com/go-jose/go-jose/v4 => github.com/go-jose/go-jose/v4 v4.1.4
