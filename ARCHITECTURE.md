@@ -4,7 +4,7 @@
 
 <!-- yaml-metadata-start -->
 scope_paths: ["./"]
-capture_git_sha: "55f319261e287c97b7dd988c50bf09546d87ae87"
+capture_git_sha: "4ee9e5f81d27df1681427850ddd3f948837e69b7"
 status: "current"
 auto_update: false
 preview_before_apply: true
@@ -16,7 +16,7 @@ scaffold_version: "1.0"
 ## Purpose and Structure
 
 Terraform provider for Dell PowerMax enterprise storage arrays.
-Implements 8 managed resources and 1 data sources
+Implements 8 managed resources and 9 data sources
 using HashiCorp's Terraform Plugin Framework, enabling
 infrastructure-as-code management via REST API.
 
@@ -34,7 +34,7 @@ Core over gRPC (go-plugin protocol).
 | Entry point | `main.go` | `providerserver.Serve` — starts gRPC server |
 | Provider | `powermax/provider/provider.go` | Schema, Configure, resource/datasource registration |
 | Resources | `powermax/provider/*_resource.go` | CRUD lifecycle for 8 managed resources |
-| Data sources | `powermax/provider/*_datasource.go` | Read-only queries for 1 data sources |
+| Data sources | `powermax/provider/*_datasource.go` | Read-only queries for 9 data sources |
 | Vendored SDK | `powermax-go-client-100/` | Local PowerMax Go SDK |
 | SDK archives | `goClientZip/` | SDK distribution archives |
 | Client wrapper | `client/` | Wraps vendored SDK |
