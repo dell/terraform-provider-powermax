@@ -1,5 +1,5 @@
 <!--
-# Copyright (c) 2023 Dell Inc., or its subsidiaries. All Rights Reserved.
+# Copyright (c) 2023-2026 Dell Inc., or its subsidiaries. All Rights Reserved.
 #
 # Licensed under the Mozilla Public License Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 -->
+# v1.0.4
+## Release Summary
+The release addresses security vulnerabilities in dependencies and includes bug fixes for OpenAPI spec, client zip issues, and endpoint variable clarification.
+## Enhancements
+* Added BlackDuck security fixes
+* Fixed OpenAPI spec and client zip issues
+* Added clarification to endpoint variable
+## Bug Fixes
+N/A
+
 # v1.0.2
 ## Release Summary
-The release addresses security vulnerability reported in libraries.
-# v1.0.1
-## Release Summary
 The release address security vulnerability reported in gRPC library.
-# v1.0.0
+
+# v1.0.1
 ## Release Summary
 The release supports resources and data sources mentioned in the Features section for Dell PowerMax.
 ## Features
